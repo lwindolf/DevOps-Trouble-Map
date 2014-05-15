@@ -6,7 +6,7 @@ Why is so much knowledge about your IT architecture implicit? Why do we need to 
 When you care about above questions try "DevOps Trouble Map" which
 
 - doesn't reinvent monitoring, but integrates with Nagios, Icinga & Co.
-- provides automatic layer 4 system archictecture charts
-- maps alerts live into system architecture charts
+- provides automatic *layer 4 system archictecture charts*.
+- maps alerts live into system architecture charts.
 
 Note that the project is pre-alpha right now.
