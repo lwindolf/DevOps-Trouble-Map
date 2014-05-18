@@ -18,6 +18,6 @@ DOTM will use the following technologies
 
 - Simple remote agent (C or Perl...)
 - Redis as backend store
-- Python bobo with Jinja templating
+- Python bottle with Jinja templating
 - JSON backend data access
 - any jQuery library for rendering
