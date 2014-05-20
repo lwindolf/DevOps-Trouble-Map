@@ -1,0 +1,14 @@
+Dependencies
+------------
+
+On Debian run
+
+   apt-get install build-essential libevent-dev libglib2.0-dev
+   
+
+Building
+--------
+
+- autoreconf -i
+- ./configure
+- make && make install
