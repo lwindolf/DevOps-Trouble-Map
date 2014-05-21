@@ -16,7 +16,7 @@ Software Stack
 
 DOTM will use the following technologies
 
-- Simple remote agent (C or Perl...)
+- Simple remote agent "dotm-node" (in C using libevent and glib)
 - Redis as backend store
 - Python bottle with Jinja templating
 - JSON backend data access
