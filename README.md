@@ -21,3 +21,7 @@ DOTM will use the following technologies
 - Python bottle with Jinja templating
 - JSON backend data access
 - any jQuery library for rendering
+
+
+
+![architecture overview](doc/dotm-architecture.png?raw=true)
