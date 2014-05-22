@@ -33,8 +33,27 @@ do
 		continue
 	fi
 
-	# FIXME: Validate output
+	# Validate output
+	# - check for node name
+	# - check for connection list
+	# - check for IP list
+	if [[ ! "$output" =~ ^hostname= ]]; then
+		echo "ERROR: Result from '$c' missing hostname! Ignoring it." >&1
+		continue
+	fi
 
+	# There should be at least one established connection (that's us!)
+	if [[ ! "$output" =~ ESTABLISHED ]]; then
+		echo "ERROR: Result from '$c' missing connection listing! Ignoring it." >&1
+		continue
+	fi
+	
+	# There should be at least one interface listed
+	if [[ ! "$output" =~ inet\  ]]; then
+		echo "ERROR: Result from '$c' missing interface listing! Ignoring it." >&1
+		continue
+	fi
+	
 	# FIXME: Parse output and store into Redis
 done
 
