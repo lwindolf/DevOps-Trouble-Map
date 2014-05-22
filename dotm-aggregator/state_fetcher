@@ -7,7 +7,6 @@
 
 NETCAT="nc"
 REDIS_CLI="redis-cli -n 0 -h localhost -p 6379"
-CLIENTS=$($REDIS_CLI lrange dotm::nodes 0 -1)
 
 # egrep expressions, filtering common ports
 LISTEN_FILTER="53|22|5666|4949|4848|25|631"		
@@ -28,6 +27,7 @@ if [ "$CLIENTS" == "" ]; then
 	exit 1
 fi
 
+CLIENTS=$($REDIS_CLI lrange dotm::nodes 0 -1)
 for c in $CLIENTS;
 do
 	echo "Fetching from '$c'..."
