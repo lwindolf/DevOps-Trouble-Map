@@ -59,8 +59,26 @@ do
 	fi
 	
 	# FIXME: Parse output and store into Redis
-	echo "$output" | grep "^tcp.*LISTEN" | egrep -v "$LISTEN_FILTER"
-	echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER"
+
+	echo "Services:"
+	declare -A listen_ports
+	while read proto recvq sendq localaddr remoteaddr state program rest; do
+		echo "  -> listening on port ${localaddr##*:}	${program##*/}"
+		listen_ports[${localaddr##*:}]=${program##*/}
+	done < <(echo "$output" | grep "^tcp.*LISTEN" | egrep -v "$LISTEN_FILTER")
+
+	echo "Connections:"
+	while read proto recvq sendq localaddr remoteaddr state program rest; do
+		if [[ "$localaddr" =~ ^127 && "$remoteaddr" =~ ^127 ]]; then
+			echo "  -> ignoring local connection $localaddr -> $remoteaddr"
+		elif [ "${listen_ports[${localaddr##*:}]}" == "" ]; then
+			echo "  -> outgoing connection to $remoteaddr (by $program)"
+		else
+			echo "  -> incoming from $remoteaddr (to ${listen_ports[${localaddr##*:}]}"
+		fi
+	done < <(echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER")
+
+	echo "Interfaces:"
 	echo "$output" | grep "inet " | grep -v "host lo"
 done
 
