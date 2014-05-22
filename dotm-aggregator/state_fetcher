@@ -1,0 +1,41 @@
+#!/bin/bash
+
+
+# This is a temporary hack to provide the "period state fetcher2
+# functionality. As Bash is not the best choice for data transformations
+# it should be reimplemented in Python using a real Redis binding
+
+NETCAT="nc"
+REDIS_CLI="redis-cli -n 0 -h localhost -p 6379"
+CLIENTS=$($REDIS_CLI lrange dotm::nodes 0 -1)
+
+if ! $REDIS_CLI info >/dev/null; then
+	echo "ERROR: Cannot run '$REDIS_CLI'! Is it installed?" >&2
+	exit 1
+fi
+
+if ! $NETCAT -h 2>/dev/null; then
+	echo "ERROR: Cannot run '$NETCAT'! Is it installed?" >&2
+	exit 1
+fi
+
+if [ "$CLIENTS" == "" ]; then
+	echo "ERROR: Could not determine list of client nodes!" >&2
+	exit 1
+fi
+
+for c in $CLIENTS;
+do
+	echo "Fetching from '$c'..."
+	output=$(nc "$c" 4848)
+	if [ $? -ne 0 ]; then
+		echo "ERROR: Fetching status from '$c' failed!" >&2
+		continue
+	fi
+
+	# FIXME: Validate output
+
+	# FIXME: Parse output and store into Redis
+done
+
+echo "Done."
