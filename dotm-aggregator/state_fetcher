@@ -61,6 +61,7 @@ do
 	# FIXME: Parse output and store into Redis
 	echo "$output" | grep "^tcp.*LISTEN" | egrep -v "$LISTEN_FILTER"
 	echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER"
+	echo "$output" | grep "inet " | grep -v "host lo"
 done
 
 echo "Done."
