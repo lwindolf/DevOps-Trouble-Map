@@ -142,6 +142,13 @@ main(int argc, char **argv)
 #define NETSTAT_COMMAND "/bin/netstat -an"
 #define NETSTAT_ERROR_MSG "Error when calling netstat!"
 
+#define IPADDR_COMMAND "/sbin/ip addr"
+#define IPADDR_ERROR_MSG "Error when calling ip addr!"
+
+#define HOSTNAME_LINE "hostname="
+
+#define NEW_LINE "\n"
+
 static void
 listener_cb(struct evconnlistener *listener, evutil_socket_t fd,
     struct sockaddr *sa, int socklen, void *user_data)
@@ -162,6 +169,15 @@ listener_cb(struct evconnlistener *listener, evutil_socket_t fd,
 	bufferevent_enable(bev, EV_WRITE);
 	bufferevent_disable(bev, EV_READ);
 	setlocale(LC_ALL, "C");
+
+	/* First give hostname */
+	bufferevent_write (bev, HOSTNAME_LINE, strlen (HOSTNAME_LINE));
+	bufferevent_write (bev, g_get_host_name (), strlen (g_get_host_name ()));
+
+	bufferevent_write (bev, NEW_LINE, strlen (NEW_LINE));
+
+	// FIXME: prefix output to allow exact matching!
+
 	// FIXME: according to glib manual G_SPAN_SEARCH_PATH security issue
 	// so g_spawn_sync needs to be used instead!
 	if (!g_spawn_command_line_sync (NETSTAT_COMMAND, &output, &errout, &status, &err)) {
@@ -173,6 +189,26 @@ listener_cb(struct evconnlistener *listener, evutil_socket_t fd,
 		bufferevent_write(bev, output, strlen(output));
 	else
 		bufferevent_write(bev, NETSTAT_ERROR_MSG, strlen(NETSTAT_ERROR_MSG));
+
+	g_free (output);
+	g_free (errout);
+	output = NULL;
+	errout = NULL;
+
+	bufferevent_write (bev, NEW_LINE, strlen (NEW_LINE));
+
+	if (!g_spawn_command_line_sync (IPADDR_COMMAND, &output, &errout, &status, &err)) {
+		fprintf (stderr, "Failed to run '%s': %s\n", IPADDR_COMMAND, err->message);
+		g_error_free (err);
+	}
+
+	if (output)
+		bufferevent_write(bev, output, strlen(output));
+	else
+		bufferevent_write(bev, IPADDR_ERROR_MSG, strlen(IPADDR_ERROR_MSG));
+
+	g_free (output);
+	g_free (errout);
 }
 
 static void
