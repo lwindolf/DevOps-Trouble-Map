@@ -144,7 +144,7 @@ main(int argc, char **argv)
 	return 0;
 }
 
-#define NETSTAT_COMMAND "/bin/netstat -an"
+#define NETSTAT_COMMAND "/bin/netstat -antlp"
 #define NETSTAT_ERROR_MSG "Error when calling netstat!"
 
 #define IPADDR_COMMAND "/sbin/ip addr"
