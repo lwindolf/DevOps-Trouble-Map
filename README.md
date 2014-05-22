@@ -25,3 +25,9 @@ DOTM will use the following technologies
 
 
 ![architecture overview](doc/dotm-architecture.png?raw=true)
+
+Redis Data Schema
+-----------------
+
+- dotm::nodes (list of node names, resovable via local resolver and to be identical with remote hostname)
+- dotm::services::&lt;node name>::&lt;port> (hash: 'process' => &lt;string>, 'connections' => &lt;int>, 'last_seen' => &lt;timestamp>)
