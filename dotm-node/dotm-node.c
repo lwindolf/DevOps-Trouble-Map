@@ -1,4 +1,9 @@
-/* daemonize() from gtk-transmission daemon (GPLv2 or 3) 
+/*
+   DevOps TroubleMap - node agent
+
+   Copyright (C) Lars Windolf  <lars.lindner@gmail.com>
+
+   daemonize() from gtk-transmission daemon (GPLv2 or 3) 
    Copyright (C) 2008-2014 Mnemosyne LLC
 */
 
