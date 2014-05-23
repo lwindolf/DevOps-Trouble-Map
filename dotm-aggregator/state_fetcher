@@ -22,12 +22,12 @@ if ! $NETCAT -h 2>/dev/null; then
 	exit 1
 fi
 
+CLIENTS=$($REDIS_CLI lrange dotm::nodes 0 -1)
 if [ "$CLIENTS" == "" ]; then
 	echo "ERROR: Could not determine list of client nodes!" >&2
 	exit 1
 fi
 
-CLIENTS=$($REDIS_CLI lrange dotm::nodes 0 -1)
 for c in $CLIENTS;
 do
 	echo "Fetching from '$c'..."
@@ -59,6 +59,7 @@ do
 	fi
 	
 	# FIXME: Parse output and store into Redis
+	now=$(date +%s)
 
 	echo "Services:"
 	declare -A listen_ports
@@ -69,12 +70,15 @@ do
 
 	echo "Connections:"
 	while read proto recvq sendq localaddr remoteaddr state program rest; do
+		localport=${localaddr##*:}
+		program=${program##*/}
 		if [[ "$localaddr" =~ ^127 && "$remoteaddr" =~ ^127 ]]; then
 			echo "  -> ignoring local connection $localaddr -> $remoteaddr"
 		elif [ "${listen_ports[${localaddr##*:}]}" == "" ]; then
 			echo "  -> outgoing connection to $remoteaddr (by $program)"
 		else
-			echo "  -> incoming from $remoteaddr (to ${listen_ports[${localaddr##*:}]}"
+			echo "  -> incoming from $remoteaddr (to $localport)"
+			echo $REDIS_CLI "hmset 'dotm::services::${c}::${localport}' process '$program' last_seen '$now' connections '$conn_count'"
 		fi
 	done < <(echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER")
 
