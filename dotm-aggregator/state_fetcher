@@ -70,15 +70,23 @@ do
 
 	echo "Connections:"
 	while read proto recvq sendq localaddr remoteaddr state program rest; do
+		localip=${localaddr%%:*}
 		localport=${localaddr##*:}
+		remoteip=${remoteaddr%%:*}
+		remoteport=${remoteaddr##*:}
 		program=${program##*/}
 		if [[ "$localaddr" =~ ^127 && "$remoteaddr" =~ ^127 ]]; then
-			echo "  -> ignoring local connection $localaddr -> $remoteaddr"
+			echo "  -> local connection $localaddr -> $remoteaddr"
+			conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
+			$REDIS_CLI hmset 'dotm::services::${c}::${localport}::${c}' process '$program' last_seen '$now' connections '$conn_count'
 		elif [ "${listen_ports[${localaddr##*:}]}" == "" ]; then
 			echo "  -> outgoing connection to $remoteaddr (by $program)"
+			conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
+			$REDIS_CLI hmset 'dotm::services::${remoteip}::${remoteport}::${c}' process '$program' last_seen '$now' connections '$conn_count'
 		else
 			echo "  -> incoming from $remoteaddr (to $localport)"
-			echo $REDIS_CLI "hmset 'dotm::services::${c}::${localport}' process '$program' last_seen '$now' connections '$conn_count'"
+			conn_count=$(echo "$output" | grep "[[:space:]]$localaddr[[:space:]]*$remoteip:[0-9][0-9]*[[:space:]]" | wc -l)
+			$REDIS_CLI hmset 'dotm::services::${c}::${localport}::${remoteaddr}' process '$program' last_seen '$now' connections '$conn_count'
 		fi
 	done < <(echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER")
 
