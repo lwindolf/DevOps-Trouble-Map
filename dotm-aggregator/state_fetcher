@@ -86,7 +86,7 @@ do
 		else
 			echo "  -> incoming from $remoteaddr (to $localport)"
 			conn_count=$(echo "$output" | grep "[[:space:]]$localaddr[[:space:]]*$remoteip:[0-9][0-9]*[[:space:]]" | wc -l)
-			$REDIS_CLI hmset 'dotm::services::${c}::${localport}::${remoteaddr}' process '$program' last_seen '$now' connections '$conn_count'
+			$REDIS_CLI hmset 'dotm::services::${c}::${localport}::${remoteip}' process '$program' last_seen '$now' connections '$conn_count'
 		fi
 	done < <(echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER")
 
