@@ -29,6 +29,12 @@ DOTM will use the following technologies
 Redis Data Schema
 -----------------
 
+So far the following relations are probably needed:
+
+![entity overview](doc/dotm-er.png?raw=true)
+
+Right now the following relation namespaces are used in Redis
+
 - dotm::nodes (list of node names, resovable via local resolver and to be identical with remote hostname)
 - dotm::services::&lt;node name>::&lt;port>::&lt;remote node/IP> (hash with the following key values):
   * 'process' => &lt;string>
