@@ -30,4 +30,9 @@ Redis Data Schema
 -----------------
 
 - dotm::nodes (list of node names, resovable via local resolver and to be identical with remote hostname)
-- dotm::services::&lt;node name>::&lt;port>::&lt;remote node/IP> (hash: 'process' => &lt;string>, 'connections' => &lt;int>, 'last_connection' =>  &lt;timestamp>, 'last_seen' => &lt;timestamp>)
+- dotm::services::&lt;node name>::&lt;port>::&lt;remote node/IP> (hash with the following key values):
+  * 'process' => &lt;string>
+  * 'connections' => &lt;int>
+  * 'last_connection' =>  &lt;timestamp>
+  * 'last_seen' => &lt;timestamp>
+
