@@ -16,7 +16,7 @@ Installation
 
 On Debian/Ubuntu:
 
-     apt-get install netcat redis-server python-redis python-bottle python-requests
+     apt-get install netcat redis-server python-redis python-bottle python-requests python-configparser
 
 Alternatively install the Python dependencies with PIP:
 
