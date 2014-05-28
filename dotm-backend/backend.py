@@ -1,21 +1,19 @@
 #!/usr/bin/python
 
-# To start run from root dir 'PYTHONPATH=dotm-monitor dotm-backend/backend.py'
-
 import json
+import redis
 from bottle import route, run
-from dotm_redis import DOTMRedis
 
 @route('/nodes')
 def nodes():
-	redis = DOTMRedis('mon')
+	r = redis.Redis()
 	# FIXME: Add node interconnections to JSON (but missing in Redis currently)
-	return json.dumps(redis.lrange("dotm::nodes"))
+	return json.dumps(r.lrange("dotm::nodes", 0, -1))
 
 @route('/node/<name>')
 def node(name):
-	redis = DOTMRedis('mon')
-	services = redis.keys('dotm::services::'+name+'*')
+	r = redis.Redis()
+	services = r.keys('dotm::services::'+name+'*')
 	output = 'name=' + name + '(' + ','.join(services) + ')'
 	return output
 
