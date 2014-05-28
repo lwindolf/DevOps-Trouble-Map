@@ -14,9 +14,9 @@ Note that the project is pre-alpha right now.
 Installation
 ------------
 
-On Debian:
+On Debian/Ubuntu:
 
-     apt-get install netcat redis-server python-redis python-bottle
+     apt-get install netcat redis-server python-redis python-bottle python-requests
 
 Alternatively install the Python dependencies with PIP:
 
