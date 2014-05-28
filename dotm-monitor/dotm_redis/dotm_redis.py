@@ -12,10 +12,7 @@ class DOTMRedis:
 	def clear(self):
 		self.conn.delete(self.name)
 
-	def keys(self, substring):
-		return self.conn.keys(substring) or []
-
-	def hkeys(self):
+	def keys(self):
 		return self.conn.hkeys(self.name) or []
 
 	def get(self, key):
@@ -44,7 +41,4 @@ class DOTMRedis:
 
 	def __contains__(self, key):
 		return self.conn.hexists(self.name, key)
-
-	def lrange(self, key, start=0, stop=-1):
-		return self.conn.lrange(key, start, stop)
 
