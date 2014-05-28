@@ -3,7 +3,7 @@ import redis
 
 class DOTMRedis:
 
-	version = '0.1.0'
+	version = '0.1.1'
 
 	def __init__(self, name, host='localhost', port=6379, **kw):
 		self.name = name
@@ -17,10 +17,6 @@ class DOTMRedis:
 
 	def get(self, key):
 		return self.conn.hget(self.name, key)
-
-	def update(self, other):
-		for k,v in other:
-			self[k] = v
 
 	def iter(self):
 		for k in self.keys():
