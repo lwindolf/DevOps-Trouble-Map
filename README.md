@@ -16,12 +16,12 @@ Installation
 
 On Debian:
 
-   apt-get install netcat redis-server python-redis python-bottle
+     apt-get install netcat redis-server python-redis python-bottle
 
 Alternatively install the Python dependencies with PIP:
 
-   pip3 install bottle
-   pip3 install -r dotm-monitor/requirements.txt
+     pip3 install bottle
+     pip3 install -r dotm-monitor/requirements.txt
    
 FIXME: How and where to install all the stuff
 
