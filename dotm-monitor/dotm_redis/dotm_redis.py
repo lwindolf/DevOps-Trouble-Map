@@ -12,7 +12,10 @@ class DOTMRedis:
 	def clear(self):
 		self.conn.delete(self.name)
 
-	def keys(self):
+	def keys(self, substring):
+		return self.conn.keys(substring) or []
+
+	def hkeys(self):
 		return self.conn.hkeys(self.name) or []
 
 	def get(self, key):
