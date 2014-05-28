@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# This file is part of Devops Trouble Map (short DOTM).
+#
+# DOTM is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# DOTM is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with DOTM.  If not, see <http://www.gnu.org/licenses/>.
 
 # This is a temporary hack to provide the "period state fetcher2
 # functionality. As Bash is not the best choice for data transformations
@@ -11,6 +25,19 @@ REDIS_CLI="redis-cli -n 0 -h localhost -p 6379"
 # egrep expressions, filtering common ports
 LISTEN_FILTER="53|22|5666|4949|4848|25|631"		
 ESTABLISHED_FILTER="${LISTEN_FILTER}"
+
+# Push a list of key values into a given Redis key
+#
+# $1		the key
+# $2...$n	key value pairs
+redis_push() {
+	key=$(shift)
+	output=$($REDIS_CLI hmset $key $@)
+	if [ $? -ne 0 -o "$output" != "OK" ]; then 
+		echo "ERROR: Failed to run '$REDIS_CLI hmset $key $@'!"
+		echo "$output"
+	fi
+}
 
 if ! $REDIS_CLI info >/dev/null; then
 	echo "ERROR: Cannot run '$REDIS_CLI'! Is it installed?" >&2
@@ -58,14 +85,17 @@ do
 		continue
 	fi
 	
-	# FIXME: Parse output and store into Redis
+	# Parse output and store into Redis
 	now=$(date +%s)
-
+	
 	echo "Services:"
 	declare -A listen_ports
+	declare -A used_services
 	while read proto recvq sendq localaddr remoteaddr state program rest; do
-		echo "  -> listening on port ${localaddr##*:}	${program##*/}"
-		listen_ports[${localaddr##*:}]=${program##*/}
+		localport=${localaddr##*:}
+		echo "  -> listening on port $localport	${program##*/}"
+		listen_ports[$localport]=${program##*/}
+		used_services[$localport]=0
 	done < <(echo "$output" | grep "^tcp.*LISTEN" | egrep -v "$LISTEN_FILTER")
 
 	echo "Connections:"
@@ -78,17 +108,34 @@ do
 		if [[ "$localaddr" =~ ^127 && "$remoteaddr" =~ ^127 ]]; then
 			echo "  -> local connection $localaddr -> $remoteaddr"
 			conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
-			$REDIS_CLI hmset 'dotm::services::${c}::${localport}::${c}' process '$program' last_seen '$now' connections '$conn_count'
+			redis_push 'dotm::connections::${c}::${localport}::${c}' process '$program' last_seen '$now' connections '$conn_count'
+			used_services[$localport]=1
 		elif [ "${listen_ports[${localaddr##*:}]}" == "" ]; then
+			# FIXME: Consolidate outgoing connections to 'Internet'
+			# according to list of configured known networks
 			echo "  -> outgoing connection to $remoteaddr (by $program)"
 			conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
-			$REDIS_CLI hmset 'dotm::services::${remoteip}::${remoteport}::${c}' process '$program' last_seen '$now' connections '$conn_count'
+			redis_push 'dotm::connections::${remoteip}::${remoteport}::${c}' process '$program' last_seen '$now' connections '$conn_count'
 		else
+			# FIXME: Consolidate incoming connections based on frequency
+			# e.g. count per net and combine to network if too many appear
 			echo "  -> incoming from $remoteaddr (to $localport)"
 			conn_count=$(echo "$output" | grep "[[:space:]]$localaddr[[:space:]]*$remoteip:[0-9][0-9]*[[:space:]]" | wc -l)
-			$REDIS_CLI hmset 'dotm::services::${c}::${localport}::${remoteip}' process '$program' last_seen '$now' connections '$conn_count'
+			redis_push 'dotm::connections::${c}::${localport}::${remoteip}' process '$program' last_seen '$now' connections '$conn_count'
+			used_services[$localport]=1
 		fi
 	done < <(echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER")
+
+	# Submit service list to indicate which ones are unused and which one are not
+	for port in ${!used_services[*]};
+	do
+		if [[ ${used_services[$port]} -eq 0 ]]; then
+			echo "  -> found unused service $port (${listen_ports[$port]})"
+			redis_push 'dotm::services::${c}::${localport}' process '$program' last_seen '$now'
+		else
+			redis_push 'dotm::services::${c}::${localport}' process '$program' last_seen '$now' last_connection '$now'
+		fi
+	done
 
 	echo "Interfaces:"
 	echo "$output" | grep "inet " | grep -v "host lo"
