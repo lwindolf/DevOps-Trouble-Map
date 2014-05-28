@@ -11,12 +11,12 @@ When you care about above questions try "DevOps Trouble Map" (short DOTM) which
 
 Note that the project is pre-alpha right now.
 
-Installation
-------------
+Server Installation
+--------------------
 
 On Debian/Ubuntu:
 
-     apt-get install netcat redis-server python-redis python-bottle python-requests
+     apt-get install netcat redis-server python-redis python-bottle python-requests python-configparser
 
 Alternatively install the Python dependencies with PIP:
 
@@ -24,6 +24,22 @@ Alternatively install the Python dependencies with PIP:
      pip3 install -r dotm-monitor/requirements.txt
    
 FIXME: How and where to install all the stuff
+
+Client Installation
+-------------------
+
+The dotm-node client is to be installed on all monitored servers. It can be build as following
+
+    cd dotm-node/
+    autoreconf -i
+    ./configure
+    make
+    make install
+
+The client is comprised of only a single binary "dotm-node" that should be shipped by any automation tool you run.
+
+FIXME: Currently there is no init script provided.
+
 
 Software Stack
 --------------
