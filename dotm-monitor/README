@@ -1,0 +1,22 @@
+Installing requirements
+-----------------------
+$ pip3 install -r requirements.txt
+Or install packages with modules listed in requirements.txt provided by your OS package manager.
+
+Configuring
+-----------
+Create file .mr.developer.cfg:
+[monitoring]
+url =  https://mon.example.com
+user = monuser
+paswd = monpaswd
+
+Running
+-------
+$ python3 mon_collector.py
+
+Testing
+-------
+$ redis-cli hgetall mon
+$ redis-cli hget mon uk-www2
+
