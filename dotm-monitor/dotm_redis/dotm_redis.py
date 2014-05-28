@@ -42,4 +42,6 @@ class DOTMRedis:
 	def __contains__(self, key):
 		return self.conn.hexists(self.name, key)
 
+	def lrange(self, key, start=0, stop=-1):
+		return self.conn.lrange(key, start, stop)
 
