@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# To start run from root dir 'PYTHONPATH=dotm-monitor dotm-backend/backend.py'
+
 import json
 from bottle import route, run
 from dotm_redis import DOTMRedis
