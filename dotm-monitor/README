@@ -1,3 +1,10 @@
+mon_collector.py
+================
+
+Description
+-----------
+Script to collect monitoring data from monitoding provider and put it in to Redis.
+
 Installing requirements
 -----------------------
 $ pip3 install -r requirements.txt
@@ -19,4 +26,20 @@ Testing
 -------
 $ redis-cli hgetall mon
 $ redis-cli hget mon uk-www2
+
+
+mon_api.py
+==========
+
+Description
+-----------
+Protorype of monitoring API to expose data collected by mon_collector.py via HTTP as JSON object.
+
+Running
+-------
+$ python3 mon_api.py
+
+Testing
+-------
+$ curl -i http://localhost:8081/mon/get/uk-www2
 
