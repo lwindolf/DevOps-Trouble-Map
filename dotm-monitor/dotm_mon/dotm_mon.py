@@ -33,6 +33,7 @@ class DOTMMonitor:
 		jsonData = json.loads(data.replace('\t', ' '))
 		js = jsonData.get('status').get('service_status')
 		rjs = {}
+		default_status = 'UNKNOWN'
 		for elem in js:
 			hostname = elem['host']
 			if hostname not in rjs:
@@ -42,40 +43,48 @@ class DOTMMonitor:
 						'CRITICAL': [],
 						'UNKNOWN': []
 						}
-			hostname_hash = hostname + '_' + md5(bytes(elem['service'], encoding='utf-8')).hexdigest()
-			if hostname_hash in rjs:
-				raise KeyError('Duplicate hash')
-			if elem['status'] in rjs[hostname]:
-				rjs[hostname][elem['status']].append(hostname_hash)
-			else:
-				rjs[hostname]['UNKNOWN'].append(hostname_hash)
-			rjs[hostname_hash] = {
+			service = {
 					'service': elem['service'],
-					'status': elem['status'],
 					'last_check': elem['last_check'],
 					'duration': elem['duration'],
 					'status_information': elem['status_information']
 					}
+			if elem['status'] in rjs[hostname]:
+				rjs[hostname][elem['status']].append(service)
+			else:
+				rjs[hostname][default_status].append(service)
 		return rjs
-		
 
 	def get_json(self):
 		"""
 		Returned json format:
-		$hostname: { “OK”: ["$hostnem_$hash1”, "$hostname_$hash3”], “CRITICAL”: [“$hostname_$hash2”], …  }
-		$hostname_$hash1: {
-			"service": "uwsgi 9006”,
-			"status": “OK”,
-			"last_check": "2014-05-26 18:49:46”,
-			"duration": "12d  7h 44m 24s”,
-			"status_information": "TCP OK - 0.000 second response time on port 9006"
-		}
-		$hostname_$hash2: {
-			"service": “Backups”,
-			"status": "CRITICAL”,
-			"last_check": "2014-05-26 18:08:19”,
-			"duration": "0d  0h 42m 53s”,
-			"status_information": "Backup is not in S3 (test-2014-05-27 not found)"
+
+		$hostname: {
+			"OK": [
+				{
+					"service": "Service01 name",
+					"last_check": "<timedate>",
+					"duration": "<nagios guration format>", #FIXME: figure out the way to unify it
+					"status_information": "Service01 status information"
+				},
+				{
+					"service": "Service02 name",
+					"last_check": "<timedate>",
+					"duration": "<nagios guration format>",
+					"status_information": "Service02 status information"
+				},
+			],
+			"CRITICAL": [
+				{
+					"service": "Service03 name",
+					"last_check": "<timedate>",
+					"duration": "<nagios guration format>",
+					"status_information": "Service03 status information"
+				},
+			],
+			.
+			.
+			.
 		}
 
 		states: OK, WARNING, CRITICAL, UNKNOWN
