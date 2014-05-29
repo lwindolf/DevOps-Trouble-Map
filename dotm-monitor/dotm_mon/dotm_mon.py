@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import requests
 import json
-from hashlib import md5
 
 class DOTMMonitor:
 
-	version = '0.1.0'
+	version = '0.1.1'
 
 	def __init__(self, mon_url, user=None, paswd=None, provider='icinga'):
 		self.user = user
