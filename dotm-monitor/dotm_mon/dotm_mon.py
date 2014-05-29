@@ -4,7 +4,7 @@ import json
 
 class DOTMMonitor:
 
-	version = '0.1.1'
+	version = '0.1.2'
 
 	def __init__(self, mon_url, user=None, paswd=None, provider='icinga'):
 		self.user = user
@@ -32,61 +32,47 @@ class DOTMMonitor:
 		jsonData = json.loads(data.replace('\t', ' '))
 		js = jsonData.get('status').get('service_status')
 		rjs = {}
-		default_status = 'UNKNOWN'
 		for elem in js:
 			hostname = elem['host']
+			service = elem['service']
 			if hostname not in rjs:
-				rjs[hostname] = {
-						'OK': [],
-						'WARNING': [],
-						'CRITICAL': [],
-						'UNKNOWN': []
-						}
-			service = {
-					'service': elem['service'],
-					'last_check': elem['last_check'],
-					'duration': elem['duration'],
-					'status_information': elem['status_information']
-					}
-			if elem['status'] in rjs[hostname]:
-				rjs[hostname][elem['status']].append(service)
-			else:
-				rjs[hostname][default_status].append(service)
+				rjs[hostname] = {}
+			rjs[hostname][service] = {
+				'status': elem['status'],
+				'last_check': elem['last_check'],
+				'duration': elem['duration'],
+				'status_information': elem['status_information']
+			}
 		return rjs
 
 	def get_json(self):
 		"""
 		Returned json format:
 
-		$hostname: {
-			"OK": [
-				{
-					"service": "Service01 name",
+		{
+			"hostname01": {
+				"Service01 name": {
+					"status": "OK",
 					"last_check": "<timedate>",
 					"duration": "<nagios guration format>", #FIXME: figure out the way to unify it
 					"status_information": "Service01 status information"
 				},
-				{
-					"service": "Service02 name",
+				"Service02 name": {
+					"status": "CRITICAL",
 					"last_check": "<timedate>",
 					"duration": "<nagios guration format>",
 					"status_information": "Service02 status information"
 				},
-			],
-			"CRITICAL": [
-				{
-					"service": "Service03 name",
-					"last_check": "<timedate>",
-					"duration": "<nagios guration format>",
-					"status_information": "Service03 status information"
-				},
-			],
+			},
+			"hostname02": {
+				.
+				.
+				.
+			},
 			.
 			.
 			.
 		}
-
-		states: OK, WARNING, CRITICAL, UNKNOWN
 		"""
 		if self.provider == 'icinga':
 			return self._get_json_icinga()
