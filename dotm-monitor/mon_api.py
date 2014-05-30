@@ -41,10 +41,8 @@ def get_host_key(host, key):
 	host_b = rdb_hosts.get(host)
 	if host_b:
 		host_obj = json.loads(host_b.decode('utf-8').replace('\'', '"'))
-		try:
+		if key in host_obj:
 			result = host_obj[key]
-		except KeyError:
-			pass
 	if not result:
 		response.status = 404
 	return result
