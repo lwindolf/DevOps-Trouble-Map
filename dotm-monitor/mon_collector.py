@@ -13,14 +13,15 @@ def collect():
 	mon_services_key = config['monitoring']['services_key'] # dotm::mon::services
 
 	mon = DOTMMonitor(mon_url, mon_user, mon_paswd)
-	rdb_hosts = DOTMRedis(mon_hosts_key)
-	rdb_services = DOTMRedis(mon_services_key)
+	rdb = DOTMRedis()
 
 	for key,value in mon.get_hosts().items():
-		rdb_hosts[key] = value
+		rdb.name = mon_hosts_key
+		rdb[key] = value
 
 	for key,value in mon.get_services().items():
-		rdb_services[key] = value
+		rdb.name = mon_services_key
+		rdb[key] = value
 
 
 if __name__ == "__main__":
