@@ -3,9 +3,9 @@ import redis
 
 class DOTMRedis:
 
-	version = '0.1.1'
+	version = '0.1.2'
 
-	def __init__(self, name, host='localhost', port=6379, **kw):
+	def __init__(self, name='dotm::default', host='localhost', port=6379, **kw):
 		self.name = name
 		self.conn = redis.Redis(host=host, port=port, **kw)
 

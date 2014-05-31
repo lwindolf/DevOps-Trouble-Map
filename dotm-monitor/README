@@ -1,3 +1,10 @@
+mon_collector.py
+================
+
+Description
+-----------
+Script to collect monitoring data from monitoding provider and put it in to Redis.
+
 Installing requirements
 -----------------------
 $ pip3 install -r requirements.txt
@@ -10,6 +17,8 @@ Create file .mr.developer.cfg:
 url =  https://mon.example.com
 user = monuser
 paswd = monpaswd
+hosts_key = dotm::mon::hosts
+services_key = dotm::mon::services
 
 Running
 -------
@@ -17,6 +26,24 @@ $ python3 mon_collector.py
 
 Testing
 -------
-$ redis-cli hgetall mon
-$ redis-cli hget mon uk-www2
+$ redis-cli hgetall dotm::mon::hosts
+$ redis-cli hget dotm::mon::services uk-www2
+
+
+mon_api.py
+==========
+
+Description
+-----------
+Protorype of monitoring API to expose data collected by mon_collector.py via HTTP as JSON object.
+
+Running
+-------
+$ python3 mon_api.py
+
+Testing
+-------
+$ curl -i http://localhost:8081/mon/get/uk-www2
+$ curl -i http://localhost:8081/mon/get/uk-www2/status
+$ curl -i http://localhost:8081/mon/get/uk-www2/service_status
 

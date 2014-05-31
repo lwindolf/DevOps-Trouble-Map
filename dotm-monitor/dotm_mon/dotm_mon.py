@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 import requests
 import json
-from hashlib import md5
 
 class DOTMMonitor:
 
-	version = '0.1.0'
+	version = '0.1.3'
 
 	def __init__(self, mon_url, user=None, paswd=None, provider='icinga'):
 		self.user = user
 		self.paswd = paswd
 		self.provider = provider
 		if provider == 'icinga':
-			self.mon_url = mon_url.rstrip('/') + '/cgi-bin/icinga/status.cgi?&style=detail&jsonoutput'
+			self.mon_url = mon_url.rstrip('/') + '/cgi-bin/icinga/status.cgi?style=hostservicedetail&jsonoutput'
 		elif provider == 'nagios':
 			#TODO: implement more providers for Monitoring.mon_url
 			pass
@@ -28,61 +27,99 @@ class DOTMMonitor:
 	def get_data(self):
 		return self._get_req().text
 
-	def _get_json_icinga(self):
+	def _get_hosts_icinga(self):
+		data = self.get_data()
+		jsonData = json.loads(data.replace('\t', ' '))
+		js = jsonData.get('status').get('host_status')
+		rjs = {}
+		for elem in js:
+			rjs[elem['host']] = {
+				'status': elem['status'],
+				'last_check': elem['last_check'],
+				'duration': elem['duration'],
+				'status_information': elem['status_information']
+			}
+		return rjs
+
+	def _get_services_icinga(self):
 		data = self.get_data()
 		jsonData = json.loads(data.replace('\t', ' '))
 		js = jsonData.get('status').get('service_status')
 		rjs = {}
 		for elem in js:
 			hostname = elem['host']
+			service = elem['service']
 			if hostname not in rjs:
-				rjs[hostname] = {
-						'OK': [],
-						'WARNING': [],
-						'CRITICAL': [],
-						'UNKNOWN': []
-						}
-			hostname_hash = hostname + '_' + md5(bytes(elem['service'], encoding='utf-8')).hexdigest()
-			if hostname_hash in rjs:
-				raise KeyError('Duplicate hash')
-			if elem['status'] in rjs[hostname]:
-				rjs[hostname][elem['status']].append(hostname_hash)
-			else:
-				rjs[hostname]['UNKNOWN'].append(hostname_hash)
-			rjs[hostname_hash] = {
-					'service': elem['service'],
-					'status': elem['status'],
-					'last_check': elem['last_check'],
-					'duration': elem['duration'],
-					'status_information': elem['status_information']
-					}
+				rjs[hostname] = {}
+			rjs[hostname][service] = {
+				'status': elem['status'],
+				'last_check': elem['last_check'],
+				'duration': elem['duration'],
+				'status_information': elem['status_information']
+			}
 		return rjs
-		
 
-	def get_json(self):
+	def get_hosts(self):
 		"""
-		Returned json format:
-		$hostname: { “OK”: ["$hostnem_$hash1”, "$hostname_$hash3”], “CRITICAL”: [“$hostname_$hash2”], …  }
-		$hostname_$hash1: {
-			"service": "uwsgi 9006”,
-			"status": “OK”,
-			"last_check": "2014-05-26 18:49:46”,
-			"duration": "12d  7h 44m 24s”,
-			"status_information": "TCP OK - 0.000 second response time on port 9006"
-		}
-		$hostname_$hash2: {
-			"service": “Backups”,
-			"status": "CRITICAL”,
-			"last_check": "2014-05-26 18:08:19”,
-			"duration": "0d  0h 42m 53s”,
-			"status_information": "Backup is not in S3 (test-2014-05-27 not found)"
-		}
+		Return json format:
 
-		states: OK, WARNING, CRITICAL, UNKNOWN
+		{
+			"hostname01": {
+				"status": "UP",
+				"last_check": "<timestamp>",
+				"duration": "<nagios duration format>", #FIXME: figure out the way to unify it
+				"status_information": "hostname01 status information"
+			},
+			"hostname02": {
+				"status": "DOWN",
+				"last_check": "<timestamp>",
+				"duration": "<nagios duration format>",
+				"status_information": "hostname01 status information"
+			},
+			.
+			.
+			.
+		}
 		"""
 		if self.provider == 'icinga':
-			return self._get_json_icinga()
+			return self._get_hosts_icinga()
 		elif provider == 'nagios':
-			#TODO: implement more providers for Monitoring.get_json()
+			#TODO: implement more providers for Monitoring.get_hosts()
+			pass
+
+
+	def get_services(self):
+		"""
+		Returned json format:
+
+		{
+			"hostname01": {
+				"Service01 name": {
+					"status": "OK",
+					"last_check": "<timestamp>",
+					"duration": "<nagios duration format>", #FIXME: figure out the way to unify it
+					"status_information": "Service01 status information"
+				},
+				"Service02 name": {
+					"status": "CRITICAL",
+					"last_check": "<timestamp>",
+					"duration": "<nagios duration format>",
+					"status_information": "Service02 status information"
+				},
+			},
+			"hostname02": {
+				.
+				.
+				.
+			},
+			.
+			.
+			.
+		}
+		"""
+		if self.provider == 'icinga':
+			return self._get_services_icinga()
+		elif provider == 'nagios':
+			#TODO: implement more providers for Monitoring.get_services()
 			pass
 
