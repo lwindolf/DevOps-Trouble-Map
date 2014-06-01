@@ -2,6 +2,7 @@
 
 import json
 import redis
+import datetime
 from bottle import route, run
 
 @route('/nodes')
@@ -14,10 +15,14 @@ def nodes():
 def node(name):
 	r = redis.Redis()
 	prefix = 'dotm::services::'+name+'::'
+	serviceDetails = {}
 	services = [s.replace(prefix, '') for s in r.keys(prefix+'*')]
+	for s in services:
+		serviceDetails[s] = r.hgetall(prefix+s)  
+		#print datetime.datetime.fromtimestamp(int(sd['last_seen'])).strftime("%F %T")
 	# FIXME: Add service details
 	# FIXME: Add connections for this node
 	# FIXME: Add node interconnections for this node (but missing in data model currently)
-	return json.dumps({'name': name, 'services': services})
+	return json.dumps({'name': name, 'services': serviceDetails})
 
 run(host='localhost', port=8080, debug=True)
