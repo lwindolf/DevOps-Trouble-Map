@@ -1,0 +1,38 @@
+<html>
+<head>
+<title>Devops Trouble Map</title>
+</head>
+<body>
+	<script src="jquery-2.1.1.min.js"></script>
+
+	<h1>Devops Trouble Map</h1>
+
+	<h3>List of known nodes:</h3>
+	<div class='nodes'>Loading...</div>
+
+	<h3>Services per node:</h3>
+	<div class='services'>Loading...</div>
+
+	<h3>List of known alerts:</h3>
+	<div class='alerts'>IMPLEMENT ME!</div>
+
+	<script>
+		(function() {
+		// Fetch nodes
+		$.getJSON("backend/nodes", {})
+		.done(function (data) {
+			var nodes = [];
+			$.each(data, function (index, node) {
+				nodes.push(node);
+			})
+			$(".nodes").replaceWith(nodes.join(", "));
+		})
+
+		// Fetch services
+		$.getJSON("backend/nodes", {})
+
+		// Fetch alerts: FIXME
+		})();
+	</script>
+</body>
+</html>
