@@ -19,20 +19,20 @@
 # functionality. As Bash is not the best choice for data transformations
 # it should be reimplemented in Python using a real Redis binding
 
-NETCAT="nc"
-REDIS_CLI="redis-cli -n 0 -h localhost -p 6379"
+readonly NETCAT="nc"
+readonly REDIS_CLI="redis-cli -n 0 -h localhost -p 6379"
 
 # egrep expressions, filtering common ports
-LISTEN_FILTER="53|22|5666|4949|4848|25|631"		
-ESTABLISHED_FILTER="${LISTEN_FILTER}"
+readonly LISTEN_FILTER="53|22|5666|4949|4848|25|631"		
+readonly ESTABLISHED_FILTER="${LISTEN_FILTER}"
 
 # Push a list of key values into a given Redis key
 #
 # $1		the key
 # $2...$n	key value pairs
 redis_push() {
-	key=$(shift)
-	output=$($REDIS_CLI hmset $key $@)
+	local key=$(shift)
+	local output=$($REDIS_CLI hmset $key $@)
 	if [ $? -ne 0 -o "$output" != "OK" ]; then 
 		echo "ERROR: Failed to run '$REDIS_CLI hmset $key $@'!"
 		echo "$output"
@@ -49,7 +49,7 @@ if ! $NETCAT -h 2>/dev/null; then
 	exit 1
 fi
 
-CLIENTS=$($REDIS_CLI lrange dotm::nodes 0 -1)
+readonly CLIENTS=$($REDIS_CLI lrange dotm::nodes 0 -1)
 if [ "$CLIENTS" == "" ]; then
 	echo "ERROR: Could not determine list of client nodes!" >&2
 	exit 1
