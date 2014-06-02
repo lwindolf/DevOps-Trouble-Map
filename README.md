@@ -25,6 +25,13 @@ Alternatively install the Python dependencies with PIP:
    
 FIXME: How and where to install all the stuff
 
+To install the frontend code along with the provided example Apache 2.4 config on a Debian like setup:
+
+    cp -r dotm-frontend/ /usr/local/share/dotm-frontend
+    ln -s /usr/local/share/dotm-frontend/apache-2.4.conf /etc/apache2/conf-enabled/dotm.conf
+    /etc/init.d/apache2 reload
+
+
 Client Installation
 -------------------
 
