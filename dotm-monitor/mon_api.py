@@ -1,4 +1,4 @@
-from bottle import route, run, response, auth_basic
+from bottle import route, run, response
 import redis
 import configparser
 import json
@@ -26,11 +26,11 @@ def resp_or_404(resp=None):
 	response.content_type = 'application/json'
 	if not resp:
 		response.status = 404
-		resp = '{ "error": { "message": "Not Found", "status_code": 404 } }'
+		resp = '{"error": {"message": "Not Found", "status_code": 404}}'
 	return resp
 
 def vars_to_json(key, val):
-	return '{{ "{}": {} }}'.format(key, val)
+	return '{{"{}": {}}}'.format(key, val)
 
 @route('/mon/hosts/<host>')
 def get_host(host):
