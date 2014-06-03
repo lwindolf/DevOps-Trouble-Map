@@ -27,7 +27,7 @@ def node(name):
 		tmp = c.split('::')
 		if len(tmp) == 2:
 			cHash = r.hgetall(prefix+c)
-			cHash['remotePort'] = tmp[0]
+			cHash['localPort'] = tmp[0]
 			cHash['remoteHost'] = tmp[1]
 			connectionDetails[c] = cHash
 
