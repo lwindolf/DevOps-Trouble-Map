@@ -1,9 +1,9 @@
-mon_collector.py
+mon_api.py
 ================
 
 Description
 -----------
-Script to collect monitoring data from monitoding provider and put it in to Redis.
+POC of DOTM Monitoring API
 
 Installing requirements
 -----------------------
@@ -19,23 +19,12 @@ user = monuser
 paswd = monpaswd
 hosts_key = dotm::mon::hosts
 services_key = dotm::mon::services
+config_key = dotm::mon::config
+config_key_prefix = %(config_key)s::
 
-Running
--------
-$ python3 mon_collector.py
-
-Testing
--------
-$ redis-cli hgetall dotm::mon::hosts
-$ redis-cli hget dotm::mon::services uk-www2
-
-
-mon_api.py
-==========
-
-Description
------------
-Protorype of monitoring API to expose data collected by mon_collector.py via HTTP as JSON object.
+[redis]
+host = 127.0.0.1
+port = 6379
 
 Running
 -------
@@ -43,7 +32,9 @@ $ python3 mon_api.py
 
 Testing
 -------
-$ curl -i http://localhost:8081/mon/get/uk-www2
-$ curl -i http://localhost:8081/mon/get/uk-www2/status
-$ curl -i http://localhost:8081/mon/get/uk-www2/service_status
+$ curl -i http://localhost:8081/mon/hosts/uk-www2
+$ curl -i http://localhost:8081/mon/hosts/uk-www2/status
+$ curl -i http://localhost:8081/mon/services/uk-www2
+$ curl -i http://localhost:8081/mon/hosts/404
+$ curl -X POST -i http://localhost:8081/mon/reload
 
