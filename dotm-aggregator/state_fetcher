@@ -114,20 +114,20 @@ do
 		if [[ "$localaddr" =~ ^127 && "$remoteaddr" =~ ^127 ]]; then
 			echo "  -> local connection $localaddr -> $remoteaddr"
 			conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
-			redis_push "dotm::connections::${c}::${localport}::${c}" process "'$program'" last_seen "$now" connections "$conn_count"
+			redis_push "dotm::connections::${c}::${localport}::${c}" process "$program" last_seen "$now" connections "$conn_count"
 			used_services[$localport]=1
 		elif [ "${listen_ports[${localaddr##*:}]}" == "" ]; then
 			# FIXME: Consolidate outgoing connections to 'Internet'
 			# according to list of configured known networks
 			echo "  -> outgoing connection to $remoteaddr (by $program)"
 			conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
-			redis_push "dotm::connections::${remoteip}::${remoteport}::${c}" process "'$program'" last_seen "$now" connections "$conn_count"
+			redis_push "dotm::connections::${remoteip}::${remoteport}::${c}" process "$program" last_seen "$now" connections "$conn_count"
 		else
 			# FIXME: Consolidate incoming connections based on frequency
 			# e.g. count per net and combine to network if too many appear
 			echo "  -> incoming from $remoteaddr (to $localport $program)"
 			conn_count=$(echo "$output" | grep "[[:space:]]$localaddr[[:space:]]*$remoteip:[0-9][0-9]*[[:space:]]" | wc -l)
-			redis_push "dotm::connections::${c}::${localport}::${remoteip}" process "'$program'" last_seen "$now" connections "$conn_count"
+			redis_push "dotm::connections::${c}::${localport}::${remoteip}" process "$program" last_seen "$now" connections "$conn_count"
 			used_services[$localport]=1
 		fi
 	done < <(echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER")
@@ -139,9 +139,9 @@ do
 		program=${program:-unknown}
 		if [[ ${used_services[$port]} -eq 0 ]]; then
 			echo "  -> found unused service $port (${listen_ports[$port]})"
-			redis_push "dotm::services::${c}::${port}" process "'$program'" last_seen "$now"
+			redis_push "dotm::services::${c}::${port}" process "$program" last_seen "$now"
 		else
-			redis_push "dotm::services::${c}::${port}" process "'$program'" last_seen "$now" last_connection "$now"
+			redis_push "dotm::services::${c}::${port}" process "$program" last_seen "$now" last_connection "$now"
 		fi
 	done
 
