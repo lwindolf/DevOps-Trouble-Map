@@ -78,6 +78,7 @@ Right now the following relation namespaces are used in Redis
   * 'connections' => &lt;int>
   * 'last_connection' =>  &lt;timestamp>
   * 'last_seen' => &lt;timestamp>
+  * 'direction' => &lt;in/out>
 - dotm::services::&lt;node name>::&lt;port> (hash with the following key values):
   * 'process' => &lt;string>
   * 'last_seen' => &lt;timestamp>
