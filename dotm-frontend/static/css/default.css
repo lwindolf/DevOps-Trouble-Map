@@ -1,0 +1,19 @@
+
+
+.blockTitle {
+	font-weight:bold;
+	margin-bottom:6px;
+}
+
+.block {
+	border: 1px solid gray;
+	background: #eee;
+	padding: 6px;
+	margin: 6px;
+	float:left;
+}
+
+a:hover {
+	background:blue;
+	color:white;
+}
