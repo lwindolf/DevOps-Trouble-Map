@@ -55,6 +55,8 @@ if [ "$CLIENTS" == "" ]; then
 	exit 1
 fi
 
+declare -A listen_ports
+declare -A used_services
 for c in $CLIENTS;
 do
 	echo "Fetching from '$c'..."
@@ -89,8 +91,8 @@ do
 	now=$(date +%s)
 	
 	echo "Services:"
-	declare -A listen_ports
-	declare -A used_services
+	unset listen_ports
+	unset used_services
 	while read proto recvq sendq localaddr remoteaddr state program rest; do
 		localport=${localaddr##*:}
 		program=${program##*/}
