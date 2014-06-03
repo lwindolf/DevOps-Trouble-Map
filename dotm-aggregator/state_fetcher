@@ -135,9 +135,9 @@ do
 	# Submit service list to indicate which ones are unused and which one are not
 	for port in ${!used_services[*]};
 	do
+		program="${listen_ports[$port]}"
+		program=${program:-unknown}
 		if [[ ${used_services[$port]} -eq 0 ]]; then
-			program="${listen_ports[$port]}"
-			program=${program:-unknown}
 			echo "  -> found unused service $port (${listen_ports[$port]})"
 			redis_push "dotm::services::${c}::${port}" process "'$program'" last_seen "$now"
 		else
