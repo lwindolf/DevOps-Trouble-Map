@@ -1,20 +1,58 @@
 <html>
 <head>
-<title>Devops Trouble Map</title>
+	<title>Devops Trouble Map</title>
+	<link rel='stylesheet' type='text/css' href='css/default.css'/>
+	<script type='text/javascript'>
+		function loadNode(node) {
+			$.getJSON("backend/node/"+node, {})
+			.done(function (data) {
+				// Fill in services
+				var services = [];
+				$.each(data.services, function(port, data) {
+					services.push('<div class="service">TCP port '+port+' ('+data.process+')</div>');
+				})
+				if(services.length > 0)
+					$(".services").html(services.join(''));
+				else
+					$(".services").html("No services found!");
+
+				// Fill in connections
+				var connections = [];
+				$.each(data.connections, function(service, data) {
+					connections.push('<div class="connection">'+data.remoteHost+':'+data.remotePort+' -> process '+data.process+'('+data.connections+')</div>');
+				})
+				if(connections.length > 0)
+					$(".connections").html(connections.join(''));
+				else
+					$(".connections").html("No connections.");
+			})
+		}
+	</script>
 </head>
 <body>
 	<script src="jquery-2.1.1.min.js"></script>
 
 	<h1>Devops Trouble Map</h1>
 
-	<h3>List of known nodes:</h3>
-	<div class='nodes'>Loading...</div>
+	<div class='block'>
+		<div class='blockTitle'>Nodes</div>
+		<div class='nodes'>Loading...</div>
+	</div>
 
-	<h3>Services per node:</h3>
-	<div class='services'>Loading...</div>
+	<div class='block'>
+		<div class='blockTitle'>Services</div>
+		<div class='services'>Please select a node!</div>
+	</div>
 
-	<h3>List of known alerts:</h3>
-	<div class='alerts'>IMPLEMENT ME!</div>
+	<div class='block'>
+		<div class='blockTitle'>Connections</div>
+		<div class='connections'>IMPLEMENT ME!</div>
+	</div>
+
+	<!--<div class='block'>
+		<div class='blockTitle'>Alerts</div>
+		<div class='alerts'>IMPLEMENT ME!</div>
+	</div>-->
 
 	<script>
 		(function() {
@@ -23,15 +61,10 @@
 		.done(function (data) {
 			var nodes = [];
 			$.each(data, function (index, node) {
-				nodes.push(node);
+				nodes.push('<a href="javascript:loadNode(\''+node+'\')">'+node+'</a>');
 			})
-			$(".nodes").replaceWith(nodes.join(", "));
+			$(".nodes").html(nodes.join("<br/>"));
 		})
-
-		// Fetch services
-		$.getJSON("backend/nodes", {})
-
-		// Fetch alerts: FIXME
 		})();
 	</script>
 </body>
