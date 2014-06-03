@@ -17,3 +17,19 @@ a:hover {
 	background:blue;
 	color:white;
 }
+
+.status {
+	padding: 6px;
+	margin: 6px;
+	border:6px;
+	border-radius: 6px;
+}
+
+.status.normal {
+	background:#cfc;
+}
+
+.status.error {
+	background:#faa;
+	color:white;
+}

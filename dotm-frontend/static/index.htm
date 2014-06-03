@@ -1,9 +1,25 @@
+<!DOCTYPE html> 
 <html>
 <head>
 	<title>Devops Trouble Map</title>
 	<link rel='stylesheet' type='text/css' href='css/default.css'/>
 	<script type='text/javascript'>
+		function setStatus(text) {
+			$('.status')
+			.addClass('normal')
+			.removeClass('error')
+			.html(text);
+		}
+
+		function setError(text) {
+			$('.status')
+			.removeClass('normal')
+			.addClass('error')
+			.html(text);
+		}
+
 		function loadNode(node) {
+			setStatus('Fetching details for '+node+'...');
 			$.getJSON("backend/node/"+node, {})
 			.done(function (data) {
 				// Fill in services
@@ -25,7 +41,13 @@
 					$(".connections").html(connections.join(''));
 				else
 					$(".connections").html("No connections.");
+
+				setStatus(node+' successfully loaded.');
 			})
+			.fail(function (jqxhr, textStatus, error) {
+				setError('Node fetch failed! ('+error+')');
+			})
+	
 		}
 	</script>
 </head>
@@ -34,19 +56,21 @@
 
 	<h1>Devops Trouble Map</h1>
 
+	<div class='status'></div>
+
 	<div class='block'>
 		<div class='blockTitle'>Nodes</div>
-		<div class='nodes'>Loading...</div>
+		<div class='nodes'></div>
 	</div>
 
 	<div class='block'>
 		<div class='blockTitle'>Services</div>
-		<div class='services'>Please select a node!</div>
+		<div class='services'></div>
 	</div>
 
 	<div class='block'>
 		<div class='blockTitle'>Connections</div>
-		<div class='connections'>IMPLEMENT ME!</div>
+		<div class='connections'></div>
 	</div>
 
 	<!--<div class='block'>
@@ -57,6 +81,7 @@
 	<script>
 		(function() {
 		// Fetch nodes
+		setStatus('Fetching nodes...');
 		$.getJSON("backend/nodes", {})
 		.done(function (data) {
 			var nodes = [];
@@ -64,6 +89,10 @@
 				nodes.push('<a href="javascript:loadNode(\''+node+'\')">'+node+'</a>');
 			})
 			$(".nodes").html(nodes.join("<br/>"));
+			setStatus('Please select a node.');
+		})
+		.fail(function (jqxhr, textStatus, error) {
+			setError('Node list fetch failed! ('+error+')');
 		})
 		})();
 	</script>
