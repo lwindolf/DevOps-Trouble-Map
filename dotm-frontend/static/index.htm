@@ -35,7 +35,7 @@
 				// Fill in connections
 				var connections = [];
 				$.each(data.connections, function(service, data) {
-					connections.push('<div class="connection">'+data.remoteHost+':'+data.remotePort+' -> process '+data.process+'('+data.connections+')</div>');
+					connections.push('<div class="connection">'+data.remoteHost+':'+data.remotePort+' -> process '+data.process+' ('+data.connections+')</div>');
 				})
 				if(connections.length > 0)
 					$(".connections").html(connections.join(''));
