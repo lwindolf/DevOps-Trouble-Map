@@ -22,20 +22,28 @@
 			setStatus('Fetching details for '+node+'...');
 			$.getJSON("backend/node/"+node, {})
 			.done(function (data) {
+				var now = (new Date).getTime();
+
 				// Fill in services
 				var services = [];
+				services.push('<tr><th>Port</th><th>Process</th><th>Last Seen</th><th>Last Used</th></tr>');
 				$.each(data.services, function(port, data) {
-					services.push('<div class="service">TCP port '+port+' ('+data.process+')</div>');
+					var lastConn = "<td>never</td>";
+					if(!isNaN(data.last_connection)) {
+						lastConn = "<td class='timeago' title='"+data.last_connection*1000+"'>"+data.last_connection*1000+"</td>";
+					}
+					services.push('<tr class="service"><td>'+port+'</td><td>'+data.process+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td>'+lastConn+'</tr>');
 				})
-				if(services.length > 0)
+				if(services.length > 1)
 					$(".services").html(services.join(''));
 				else
 					$(".services").html("No services found!");
 
 				// Fill in connections
 				var connections = [];
+				connections.push('<tr><th>Process</th><th>Remote</th><th>Count</th><th>Last Seen</th></tr>');
 				$.each(data.connections, function(service, data) {
-					connections.push('<div class="connection">'+data.remoteHost+':'+data.remotePort+' -> process '+data.process+' ('+data.connections+')</div>');
+					connections.push('<tr class="connection"><td>'+data.process+'</td><td>'+data.remoteHost+':'+data.remotePort+'</td><td>'+data.connections+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td></tr>');
 				})
 				if(connections.length > 0)
 					$(".connections").html(connections.join(''));
@@ -43,16 +51,19 @@
 					$(".connections").html("No connections.");
 
 				setStatus(node+' successfully loaded.');
+
+				// Apply relative times
+				$(".timeago").timeago();
 			})
 			.fail(function (jqxhr, textStatus, error) {
 				setError('Node fetch failed! ('+error+')');
 			})
-	
 		}
 	</script>
 </head>
 <body>
-	<script src="jquery-2.1.1.min.js"></script>
+	<script type="text/javascript" src="jquery-2.1.1.min.js"></script>
+	<script type="text/javascript" src="jquery.timeago.js"></script>
 
 	<h1>Devops Trouble Map</h1>
 
@@ -65,12 +76,12 @@
 
 	<div class='block'>
 		<div class='blockTitle'>Services</div>
-		<div class='services'></div>
+		<table class='services'></table>
 	</div>
 
 	<div class='block'>
 		<div class='blockTitle'>Connections</div>
-		<div class='connections'></div>
+		<table class='connections'></table>
 	</div>
 
 	<!--<div class='block'>
@@ -80,6 +91,8 @@
 
 	<script>
 		(function() {
+		jQuery.timeago.settings.strings.suffixAgo = null;
+
 		// Fetch nodes
 		setStatus('Fetching nodes...');
 		$.getJSON("backend/nodes", {})
