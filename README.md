@@ -32,24 +32,28 @@ And install the server with
 FIXME: Include frontend code in above autotools setup.
 To install the frontend code along with the provided example Apache 2.4 config on a Debian like setup:
 
-    cp -r dotm-frontend/ /usr/local/share/dotm-frontend
-    ln -s /usr/local/share/dotm-frontend/apache-2.4.conf /etc/apache2/conf-enabled/dotm.conf
+    cp -r dotm_frontend/ /usr/local/share/dotm_frontend
+    ln -s /usr/local/share/dotm_frontend/apache-2.4.conf /etc/apache2/conf-enabled/dotm.conf
     /etc/init.d/apache2 reload
 
 
-Client Installation
--------------------
+Agent Installation
+------------------
 
-The dotm-node client is to be installed on all monitored servers. It can be build as following
+The DOTM agent is to be installed on all monitored servers. It can be build as following
 
-    cd dotm-node/
+    cd dotm_node/
     autoreconf -i
     ./configure
     make && make install
 
-The client is comprised of only a single binary "dotm-node" that should be shipped by any automation tool you run.
+The client is comprised of only a single binary "dotm_node" that should be shipped by any automation tool you run.
 
-FIXME: Currently there is no init script provided.
+There is an Debian style init script provided which you can install on Debian as following:
+
+    cd dotm_node/
+    cp dotm_node.rc /etc/init.d/dotm_node
+    update-rc.d dotm_node defaults
 
 
 Software Stack
@@ -57,7 +61,7 @@ Software Stack
 
 DOTM will use the following technologies
 
-- Simple remote agent "dotm-node" (in C using libevent and glib)
+- Simple remote agent "dotm_node" (in C using libevent and glib)
 - Redis as backend store
 - Python bottle with Jinja templating
 - JSON backend data access

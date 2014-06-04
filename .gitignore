@@ -75,6 +75,7 @@ install-sh
 libtool
 missing
 py-compile
-dotm_python_wrapper
-dotm_backend
-dotm-node/dotm_node
+scripts/dotm_python_wrapper
+scripts/dotm_backend
+dotm_node/dotm_node
+dotm_node/dotm_node.rc

@@ -5,9 +5,10 @@ AM_PATH_PYTHON([2.7])
 
 AC_CONFIG_FILES([
 Makefile
-dotm-backend/Makefile
-dotm-frontend/Makefile
-dotm-aggregator/Makefile
+dotm_backend/Makefile
+dotm_frontend/Makefile
+dotm_aggregator/Makefile
+scripts/Makefile
 ])
 
 AC_OUTPUT

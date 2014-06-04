@@ -1,6 +1,6 @@
 AC_PREREQ(2.59)
-AC_INIT(dotm-node, 0.1, lars.lindner@gmail.com)
-AC_CONFIG_SRCDIR([dotm-node.c])
+AC_INIT(dotm_node, 0.1, lars.lindner@gmail.com)
+AC_CONFIG_SRCDIR([dotm_node.c])
 
 dnl AC_ENABLE_SHARED(yes)
 dnl AC_ENABLE_STATIC(no)
@@ -38,5 +38,6 @@ PKG_CHECK_MODULES(PACKAGE, [$pkg_modules])
 
 AC_CONFIG_FILES([
 Makefile
+dotm_node.rc
 ])
 AC_OUTPUT
