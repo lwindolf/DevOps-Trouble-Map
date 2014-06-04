@@ -1,0 +1,55 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          dotm_backend
+# Required-Start:    $local_fs $remote_fs $network $syslog $named
+# Required-Stop:     $local_fs $remote_fs $network $syslog $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# X-Interactive:     true
+# Short-Description: Start/stop dotm_backend
+# Description:       Start the Devops Trouble Map (DOTM) backend
+#  This script will start the DTOM backend.
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+DESC="DOTM backend"
+NAME=dotm_backend
+DAEMON=@prefix@/bin/$NAME
+PIDFILE=/var/run/$NAME.pid
+#CONF=/etc/$NAME.conf
+
+test -x $DAEMON || exit 0
+
+case "$1" in
+  start)
+	log_daemon_msg "Starting $DESC" "$NAME"
+	start-stop-daemon -c nobody --start --quiet --background --pidfile $PIDFILE --startas $DAEMON $CONF
+	log_end_msg $?
+	;;
+  stop)
+	log_daemon_msg "Stopping $DESC" "$NAME"
+	start-stop-daemon -c nobody --stop --quiet --pidfile $PIDFILE --oknodo --startas $DAEMON $CONF
+	rm -f $PIDFILE
+	log_end_msg $?
+	;;
+  restart)
+  	$0 stop
+	sleep 3
+	$0 start
+	;;
+  force-reload)
+	if start-stop-daemon -c nobody --stop --test --quiet --pidfile $PIDFILE --startas $DAEMON $CONF ; then
+		$0 restart
+	fi
+	;;
+  status)
+	status_of_proc $DAEMON $NAME $CONF && exit 0 || exit $?
+	;;
+  *)
+	log_success_msg "Usage: /etc/init.d/dotm_node {start|stop|restart|force-reload|status}"
+	exit 1
+	;;
+esac
+
+exit 0
