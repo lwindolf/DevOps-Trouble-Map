@@ -1,5 +1,4 @@
-git master status: 
-![build status git master](https://travis-ci.org/lwindolf/Devops-Trouble-Map.svg?branch=master)
+[![Build Status](https://travis-ci.org/lwindolf/DevOps-Trouble-Map.svg?branch=master)](https://travis-ci.org/lwindolf/DevOps-Trouble-Map)
 
 
 DevOps Trouble Map
