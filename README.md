@@ -20,7 +20,6 @@ Install dependencies on Debian/Ubuntu:
 
 Alternatively install the Python dependencies with PIP:
 
-     pip3 install bottle
      pip3 install -r dotm-monitor/requirements.txt
    
 And install the server with
@@ -99,3 +98,33 @@ Right now the following relation namespaces are used in Redis
 - dotm::services::&lt;node name>::&lt;port> (hash with the following key values):
   * 'process' => &lt;string>
   * 'last_seen' => &lt;timestamp>
+- dotm::checks::nodes (hash with the following key values):
+  * <node name> => <string> (JSON containing basic status information:
+      {
+          "status": "UP",
+          "last_check": <timestamp>,
+          "last_status_change": <timestamp>,
+          "status_information": "hostname01 status information"
+      })
+  * ...
+- dotm::checks::services (hash with the following key values):
+  * <node name> => <string> (JSON containing all associated checks:
+      {
+          "Service01 name": {
+              "status": "OK",
+              "last_check": <timestamp>,
+              "last_status_change": <timestamp>,
+              "status_information": "Service01 status information"
+          },
+          "Service02 name": {
+              "status": "CRITICAL",
+              "last_check": <timestamp>,
+              "last_status_change": <timestamp>,
+              "status_information": "Service02 status information"
+          },
+      })
+  * ...
+- dotm::checks::config (hash with the following key values):
+  * 'last_updated' => <timestamp>
+- dotm::checks::config::update_running (key with set expire flag used as a lock during monitoring data reload)
+
