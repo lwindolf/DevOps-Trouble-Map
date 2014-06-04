@@ -8,6 +8,7 @@ Makefile
 dotm_backend/Makefile
 dotm_backend/dotm_backend.rc
 dotm_frontend/Makefile
+dotm_frontend/apache-2.4.conf
 dotm_aggregator/Makefile
 scripts/Makefile
 ])

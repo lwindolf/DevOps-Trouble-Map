@@ -37,10 +37,9 @@ which you can install on Debian as following:
     update-rc.d dotm_backend defaults
     /etc/init.d/dotm_backend start
 
-FIXME: Include frontend code in above autotools setup.
-To install the frontend code along with the provided example Apache 2.4 config on a Debian like setup:
+To use the frontend with Apache you can use the provided example Apache 2.4 config.
+On a Debian like setup you need to run:
 
-    cp -r dotm_frontend/ /usr/local/share/dotm_frontend
     ln -s /usr/local/share/dotm_frontend/apache-2.4.conf /etc/apache2/conf-enabled/dotm.conf
     /etc/init.d/apache2 reload
 

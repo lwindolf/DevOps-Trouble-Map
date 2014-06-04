@@ -1,0 +1,11 @@
+dotm_frontend_staticdir = $(datadir)/dotm_frontend/static
+dotm_frontend_static_DATA = \
+	static/index.htm \
+	static/jquery-2.1.1.min.js \
+	static/jquery.timeago.js
+
+dotm_frontend_cssdir = $(datadir)/dotm_frontend/static/css
+dotm_frontend_css_DATA = static/css/default.css
+
+dotm_frontenddir = $(datadir)/dotm_frontend
+dotm_frontend_DATA = apache-2.4.conf

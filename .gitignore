@@ -80,3 +80,4 @@ scripts/dotm_backend
 dotm_node/dotm_node
 dotm_node/dotm_node.rc
 dotm_backend/dotm_backend.rc
+dotm_frontend/apache-2.4.conf.in
