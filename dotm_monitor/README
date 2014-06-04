@@ -17,9 +17,9 @@ Create file .mr.developer.cfg:
 url =  https://mon.example.com
 user = <monuser>
 paswd = <monpaswd>
-nodes_key = dotm::mon::nodes
-services_key = dotm::mon::services
-config_key = dotm::mon::config
+nodes_key = dotm::check::nodes
+services_key = dotm::check::services
+config_key = dotm::check::config
 config_key_prefix = %(config_key)s::
 
 [redis]

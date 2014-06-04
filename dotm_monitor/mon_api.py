@@ -12,10 +12,10 @@ config.read('.mr.developer.cfg')
 mon_url = config['monitoring']['url']
 mon_user = config['monitoring']['user']
 mon_paswd = config['monitoring']['paswd']
-mon_nodes_key = config['monitoring']['nodes_key'] # dotm::mon::nodes
-mon_services_key = config['monitoring']['services_key'] # dotm::mon::services
-mon_config_key = config['monitoring']['config_key'] # dotm::mon::config
-mon_config_key_prefix = config['monitoring']['config_key_prefix'] # dotm::mon::config::
+mon_nodes_key = config['monitoring']['nodes_key'] # dotm::checks::nodes
+mon_services_key = config['monitoring']['services_key'] # dotm::checks::services
+mon_config_key = config['monitoring']['config_key'] # dotm::checks::config
+mon_config_key_prefix = config['monitoring']['config_key_prefix'] # dotm::checks::config::
 
 redis_host = config['redis']['host']
 redis_port = config['redis']['port']

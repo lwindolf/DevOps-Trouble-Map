@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import requests
 import json
+import time
 
 class DOTMMonitor:
 
-	version = '0.1.4'
+	version = '0.1.5'
 
 	def __init__(self, mon_url, user=None, paswd=None, provider='icinga'):
 		self.user = user
@@ -27,16 +28,28 @@ class DOTMMonitor:
 	def get_data(self):
 		return self._get_req().text
 
+	def _nagios_last_check_converter(self, last_check):
+		return int(time.mktime(time.strptime(last_check, "%Y-%m-%d %H:%M:%S")))
+
+	def _nagios_duration_converter(self, last_check_epoch, duration):
+		m = ''.join(filter(lambda x: x.isdigit() or x.isspace(), duration)).split()
+		return last_check_epoch - (int(m[0]) * 86400 +
+				int(m[1]) * 3600 +
+				int(m[2]) * 60 +
+				int(m[3]))
+
 	def _get_nodes_icinga(self):
 		data = self.get_data()
 		jsonData = json.loads(data.replace('\t', ' '))
 		js = jsonData.get('status').get('host_status')
 		rjs = {}
 		for elem in js:
+			last_check = self._nagios_last_check_converter(elem['last_check'])
+			last_status_change = self._nagios_duration_converter(last_check, elem['duration'])
 			rjs[elem['host']] = {
 				'status': elem['status'],
-				'last_check': elem['last_check'],
-				'duration': elem['duration'],
+				'last_check': last_check,
+				'last_status_change': last_status_change,
 				'status_information': elem['status_information']
 			}
 		return rjs
@@ -51,10 +64,12 @@ class DOTMMonitor:
 			service = elem['service']
 			if hostname not in rjs:
 				rjs[hostname] = {}
+			last_check = self._nagios_last_check_converter(elem['last_check'])
+			last_status_change = self._nagios_duration_converter(last_check, elem['duration'])
 			rjs[hostname][service] = {
 				'status': elem['status'],
-				'last_check': elem['last_check'],
-				'duration': elem['duration'],
+				'last_check': last_check,
+				'last_status_change': last_status_change,
 				'status_information': elem['status_information']
 			}
 		return rjs
@@ -66,14 +81,14 @@ class DOTMMonitor:
 		{
 			"hostname01": {
 				"status": "UP",
-				"last_check": "<timestamp>",
-				"duration": "<nagios duration format>", #FIXME: figure out the way to unify it
+				"last_check": <timestamp>,
+				"last_status_change": <timestamp>,
 				"status_information": "hostname01 status information"
 			},
 			"hostname02": {
 				"status": "DOWN",
-				"last_check": "<timestamp>",
-				"duration": "<nagios duration format>",
+				"last_check": <timestamp>,
+				"last_status_change": <timestamp>,
 				"status_information": "hostname01 status information"
 			},
 			.
@@ -96,14 +111,14 @@ class DOTMMonitor:
 			"hostname01": {
 				"Service01 name": {
 					"status": "OK",
-					"last_check": "<timestamp>",
-					"duration": "<nagios duration format>", #FIXME: figure out the way to unify it
+					"last_check": <timestamp>,
+					"last_status_change": <timestamp>,
 					"status_information": "Service01 status information"
 				},
 				"Service02 name": {
 					"status": "CRITICAL",
-					"last_check": "<timestamp>",
-					"duration": "<nagios duration format>",
+					"last_check": <timestamp>,
+					"last_status_change": <timestamp>,
 					"status_information": "Service02 status information"
 				},
 			},

@@ -20,7 +20,7 @@ Install dependencies on Debian/Ubuntu:
 
 Alternatively install the Python dependencies with PIP:
 
-     pip3 install -r dotm-monitor/requirements.txt
+     pip3 install -r dotm_monitor/requirements.txt
    
 And install the server with
 
