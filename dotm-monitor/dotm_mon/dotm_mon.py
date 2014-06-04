@@ -4,7 +4,7 @@ import json
 
 class DOTMMonitor:
 
-	version = '0.1.3'
+	version = '0.1.4'
 
 	def __init__(self, mon_url, user=None, paswd=None, provider='icinga'):
 		self.user = user
@@ -27,7 +27,7 @@ class DOTMMonitor:
 	def get_data(self):
 		return self._get_req().text
 
-	def _get_hosts_icinga(self):
+	def _get_nodes_icinga(self):
 		data = self.get_data()
 		jsonData = json.loads(data.replace('\t', ' '))
 		js = jsonData.get('status').get('host_status')
@@ -59,7 +59,7 @@ class DOTMMonitor:
 			}
 		return rjs
 
-	def get_hosts(self):
+	def get_nodes(self):
 		"""
 		Return json format:
 
@@ -82,7 +82,7 @@ class DOTMMonitor:
 		}
 		"""
 		if self.provider == 'icinga':
-			return self._get_hosts_icinga()
+			return self._get_nodes_icinga()
 		elif provider == 'nagios':
 			#TODO: implement more providers for Monitoring.get_hosts()
 			pass
