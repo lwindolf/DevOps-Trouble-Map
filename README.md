@@ -11,57 +11,35 @@ When you care about above questions try "DevOps Trouble Map" (short DOTM) which
 
 Note that the project is pre-alpha right now.
 
+
 Server Installation
 --------------------
 
-Install dependencies on Debian/Ubuntu:
+The DOTM server has the following dependencies
 
-     apt-get install netcat redis-server python-redis python-bottle python-requests python-configparser
+- netcat
+- redis-server
+- Python modules
+  - redis
+  - bottle
+  - requests
+  - configparser
 
-Alternatively install the Python dependencies with PIP:
+To automatically install the server including its dependencies on Debian/Ubuntu 
+simply run
 
-     pip3 install bottle
-     pip3 install -r dotm-monitor/requirements.txt
+    scripts/install-server.sh
+
    
-And install the server with
-
-    autoreconf -i
-    ./configure
-    make && make install
-
-You then might want to add a start script. There is a LSB Debian start script provided 
-which you can install on Debian as following:
-
-    cp dotm_backend/dotm_backend.rc /etc/init.d/dotm_backend
-    chmod a+x /etc/init.d/dotm_backend
-    update-rc.d dotm_backend defaults
-    /etc/init.d/dotm_backend start
-
-To use the frontend with Apache you can use the provided example Apache 2.4 config.
-On a Debian like setup you need to run:
-
-    ln -s /usr/local/share/dotm_frontend/apache-2.4.conf /etc/apache2/conf-enabled/dotm.conf
-    /etc/init.d/apache2 reload
-
-
 Agent Installation
 ------------------
 
-The DOTM agent is to be installed on all monitored servers. It can be build as following
+To automatically install the dotm_node agent simply run
 
-    cd dotm_node/
-    autoreconf -i
-    ./configure
-    make && make install
+    scripts/install-agent.sh
 
-The client is comprised of only a single binary "dotm_node" that should be shipped by any automation tool you run.
-
-There is an LSB Debian style init script provided which you can install on Debian as following:
-
-    cp dotm_node/dotm_node.rc /etc/init.d/dotm_node
-    chmod a+x /etc/init.d/dotm_node
-    update-rc.d dotm_node defaults
-    /etc/init.d/dotm_node start
+Of course as the agent is to be run on all monitored systems its single binary
+should be distributed to all nodes using your favourite automation tool.
 
 
 Software Stack
