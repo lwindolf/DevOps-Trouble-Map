@@ -29,6 +29,14 @@ And install the server with
     ./configure
     make && make install
 
+You then might want to add a start script. There is a LSB Debian start script provided 
+which you can install on Debian as following:
+
+    cp dotm_backend/dotm_backend.rc /etc/init.d/dotm_backend
+    chmod a+x /etc/init.d/dotm_backend
+    update-rc.d dotm_backend defaults
+    /etc/init.d/dotm_backend start
+
 FIXME: Include frontend code in above autotools setup.
 To install the frontend code along with the provided example Apache 2.4 config on a Debian like setup:
 
@@ -49,11 +57,12 @@ The DOTM agent is to be installed on all monitored servers. It can be build as f
 
 The client is comprised of only a single binary "dotm_node" that should be shipped by any automation tool you run.
 
-There is an Debian style init script provided which you can install on Debian as following:
+There is an LSB Debian style init script provided which you can install on Debian as following:
 
-    cd dotm_node/
-    cp dotm_node.rc /etc/init.d/dotm_node
+    cp dotm_node/dotm_node.rc /etc/init.d/dotm_node
+    chmod a+x /etc/init.d/dotm_node
     update-rc.d dotm_node defaults
+    /etc/init.d/dotm_node start
 
 
 Software Stack
