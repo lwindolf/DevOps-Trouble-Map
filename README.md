@@ -14,7 +14,7 @@ Note that the project is pre-alpha right now.
 Server Installation
 --------------------
 
-On Debian/Ubuntu:
+Install dependencies on Debian/Ubuntu:
 
      apt-get install netcat redis-server python-redis python-bottle python-requests python-configparser
 
@@ -23,8 +23,13 @@ Alternatively install the Python dependencies with PIP:
      pip3 install bottle
      pip3 install -r dotm-monitor/requirements.txt
    
-FIXME: How and where to install all the stuff
+And install the server with
 
+    autoreconf -i
+    ./configure
+    make && make install
+
+FIXME: Include frontend code in above autotools setup.
 To install the frontend code along with the provided example Apache 2.4 config on a Debian like setup:
 
     cp -r dotm-frontend/ /usr/local/share/dotm-frontend
@@ -40,8 +45,7 @@ The dotm-node client is to be installed on all monitored servers. It can be buil
     cd dotm-node/
     autoreconf -i
     ./configure
-    make
-    make install
+    make && make install
 
 The client is comprised of only a single binary "dotm-node" that should be shipped by any automation tool you run.
 
