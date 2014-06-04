@@ -1,0 +1,12 @@
+language: c
+
+script:
+  - sudo scripts/install-server.sh
+  - sudo scripts/install-agent.sh
+
+compiler:
+  - gcc
+
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y apache2
