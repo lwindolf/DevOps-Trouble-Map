@@ -17,6 +17,7 @@ DESC="DOTM agent"
 NAME=dotm_node
 DAEMON=@prefix@/bin/$NAME
 PIDFILE=/var/run/dotm_node.pid
+LANG=C
 #CONF=/etc/dotm_node.conf
 
 test -x $DAEMON || exit 0
