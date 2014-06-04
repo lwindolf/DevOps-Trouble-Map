@@ -16,9 +16,9 @@
 DESC="DOTM agent"
 NAME=dotm_node
 DAEMON=@prefix@/bin/$NAME
-PIDFILE=/var/run/dotm_node.pid
+PIDFILE=/var/run/$NAME.pid
 LANG=C
-#CONF=/etc/dotm_node.conf
+#CONF=/etc/$NAME.conf
 
 test -x $DAEMON || exit 0
 
@@ -48,7 +48,7 @@ case "$1" in
 	status_of_proc $DAEMON $NAME $CONF && exit 0 || exit $?
 	;;
   *)
-	log_success_msg "Usage: /etc/init.d/dotm_node {start|stop|restart|force-reload|status}"
+	log_success_msg "Usage: /etc/init.d/$NAME {start|stop|restart|force-reload|status}"
 	exit 1
 	;;
 esac
