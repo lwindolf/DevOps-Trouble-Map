@@ -1,2 +1,2 @@
-*/5 * * * *	dotm /usr/local/lib/dotm/dotm-aggregator/state_fetcher >/dev/null
+*/5 * * * *	dotm /usr/local/bin/dotm_state_fetcher >/dev/null
 

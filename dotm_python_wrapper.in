@@ -1,0 +1,13 @@
+#! /bin/sh
+
+
+# Python autotools wrapper as suggested by
+# http://blog.couchbase.com/installing-python-scripts-automake
+
+if test -z "${PYTHONPATH}"; then
+   PYTHONPATH=@pythondir@/dotm
+else
+   PYTHONPATH=@pythondir@/dotm:${PYTHONPATH}
+fi
+export PYTHONPATH
+exec python @pythondir@/dotm/`basename $0`.py "$@"
