@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This is a simple DOTM installer for Debian/Ubuntu
+# This is a simple DOTM agent installer for Debian/Ubuntu
 
 readonly PREFIX=${1-/usr/local}
 
@@ -14,10 +14,9 @@ if ! lsb_release -i | egrep 'Debian|Ubuntu' >/dev/null; then
 	echo "Please contribute installation instructions for other distributions!"
 	exit 1
 fi
-	
-echo "### Installing dependencies..."
-apt-get install netcat redis-server python-redis python-bottle python-requests python-configparser apache2
 
+cd dotm_node || exit 1
+	
 echo "### Compiling and installing ($PREFIX)..."
 autoreconf -i
 ./configure --prefix=$PREFIX
@@ -27,12 +26,9 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
  
-echo "### Installing backend init script..."
-cp dotm_backend/dotm_backend.rc /etc/init.d/dotm_backend
-chmod a+x /etc/init.d/dotm_backend
-update-rc.d dotm_backend defaults
-/etc/init.d/dotm_backend restart
+echo "### Installing agent init script..."
+cp dotm_node.rc /etc/init.d/dotm_node
+chmod a+x /etc/init.d/dotm_node
+update-rc.d dotm_node defaults
+/etc/init.d/dotm_node restart
 
-echo "### Setting up Apache config..."
-ln -s /usr/local/share/dotm_frontend/apache-2.4.conf /etc/apache2/conf-enabled/dotm.conf
-/etc/init.d/apache2 reload
