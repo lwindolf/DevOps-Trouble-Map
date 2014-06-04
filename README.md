@@ -92,39 +92,39 @@ Right now the following relation namespaces are used in Redis
 - dotm::connections::&lt;node name>::&lt;port>::&lt;remote node/IP> (hash with the following key values):
   * 'process' => &lt;string>
   * 'connections' => &lt;int>
-  * 'last_connection' =>  &lt;timestamp>
+  * 'last_connection' => &lt;timestamp>
   * 'last_seen' => &lt;timestamp>
   * 'direction' => &lt;in/out>
 - dotm::services::&lt;node name>::&lt;port> (hash with the following key values):
   * 'process' => &lt;string>
   * 'last_seen' => &lt;timestamp>
 - dotm::checks::nodes (hash with the following key values):
-  * <node name> => <string> (JSON containing basic status information:
+  * &lt;node name> => &lt;string> (JSON containing basic status information:
       {
           "status": "UP",
-          "last_check": <timestamp>,
-          "last_status_change": <timestamp>,
+          "last_check": &lt;timestamp>,
+          "last_status_change": &lt;timestamp>,
           "status_information": "hostname01 status information"
       })
   * ...
 - dotm::checks::services (hash with the following key values):
-  * <node name> => <string> (JSON containing all associated checks:
+  * &lt;node name> => &lt;string> (JSON containing all associated checks:
       {
           "Service01 name": {
               "status": "OK",
-              "last_check": <timestamp>,
-              "last_status_change": <timestamp>,
+              "last_check": &lt;timestamp>,
+              "last_status_change": &lt;timestamp>,
               "status_information": "Service01 status information"
           },
           "Service02 name": {
               "status": "CRITICAL",
-              "last_check": <timestamp>,
-              "last_status_change": <timestamp>,
+              "last_check": &lt;timestamp>,
+              "last_status_change": &lt;timestamp>,
               "status_information": "Service02 status information"
           },
       })
   * ...
 - dotm::checks::config (hash with the following key values):
-  * 'last_updated' => <timestamp>
+  * 'last_updated' => &lt;timestamp>
 - dotm::checks::config::update_running (key with set expire flag used as a lock during monitoring data reload)
 
