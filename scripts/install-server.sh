@@ -36,3 +36,6 @@ update-rc.d dotm_backend defaults
 echo "### Setting up Apache config..."
 ln -s /usr/local/share/dotm_frontend/apache-2.4.conf /etc/apache2/conf-enabled/dotm.conf
 /etc/init.d/apache2 reload
+
+echo "### Installing state fetcher cron..."
+cp dotm_aggregator/cron_dotm_aggregator /etc/cron.d/

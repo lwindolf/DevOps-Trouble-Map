@@ -31,4 +31,3 @@ cp dotm_node.rc /etc/init.d/dotm_node
 chmod a+x /etc/init.d/dotm_node
 update-rc.d dotm_node defaults
 /etc/init.d/dotm_node restart
-
