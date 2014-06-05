@@ -37,6 +37,11 @@ simply run
 Agent Installation
 ------------------
 
+The DOTM agent has the following dependencies
+
+- glib 2.0
+- libevent2
+
 To automatically install the dotm_node agent simply run
 
     scripts/install-agent.sh
