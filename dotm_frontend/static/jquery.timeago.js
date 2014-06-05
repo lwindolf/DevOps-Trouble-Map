@@ -2,7 +2,7 @@
  * Timeago is a jQuery plugin that makes it easy to support automatically
  * updating fuzzy timestamps (e.g. "4 minutes ago" or "about 1 day ago").
  * 
- * (modified for SpurTracer)
+ * (modified for DOTM)
  *
  * @name timeago
  * @version 0.10.0
@@ -36,6 +36,7 @@
         prefixFromNow: null,
         suffixAgo: "ago",
         suffixFromNow: "from now",
+	now: "now",
         seconds: "%ds",
         minute: "%d min",
         minutes: "%d min",
@@ -73,8 +74,7 @@
         return string.replace(/%d/i, value);
       }
 
-      var words = seconds < 45 && substitute($l.seconds, Math.round(seconds)) ||
-        seconds < 90 && substitute($l.minute, 1) ||
+      var words = minutes < 6 && substitute($l.now) ||
         minutes < 45 && substitute($l.minutes, Math.round(minutes)) ||
         minutes < 90 && substitute($l.hour, 1) ||
         hours < 24 && substitute($l.hours, Math.round(hours)) ||
