@@ -33,6 +33,10 @@
 	font-weight:normal;
 }
 
+tr.service.old, tr.connection.old {
+	color:#ccc;
+}
+
 a:hover {
 	background:blue;
 	color:white;

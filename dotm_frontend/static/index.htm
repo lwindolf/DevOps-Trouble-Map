@@ -26,13 +26,19 @@
 
 				// Fill in services
 				var services = [];
-				services.push('<tr><th>Process</th><th>Port</th><th>Last Seen</th><th>Last Used</th></tr>');
+				services.push('<tr><th>Process</th><th>Port</th><th>Last Up</th><th>Last Used</th></tr>');
 				$.each(data.services, function(port, data) {
+					var recent = "";
 					var lastConn = "<td>never</td>";
 					if(!isNaN(data.last_connection)) {
 						lastConn = "<td class='timeago' title='"+data.last_connection*1000+"'>"+data.last_connection*1000+"</td>";
+					} else {
+						recent = "old";
 					}
-					services.push('<tr class="service"><td>'+data.process+'</td><td>'+port+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td>'+lastConn+'</tr>');
+					if(now/1000 - data.last_seen > 6*60) {
+						recent = "old";
+					}
+					services.push('<tr class="service '+recent+'"><td>'+data.process+'</td><td>'+port+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td>'+lastConn+'</tr>');
 				})
 				if(services.length > 1)
 					$(".services").html(services.join(''));
@@ -41,9 +47,13 @@
 
 				// Fill in connections
 				var connections = [];
-				connections.push('<tr><th>I/O</th><th>Process</th><th>Port</th><th>Remote</th><th>Count</th><th>Last Seen</th></tr>');
+				connections.push('<tr><th>I/O</th><th>Process</th><th>Port</th><th>Remote</th><th>Count</th><th>Seen</th></tr>');
 				$.each(data.connections, function(service, data) {
-					connections.push('<tr class="connection"><td>'+data.direction+'</td><td>'+data.process+'</td><td>'+data.localPort+'</td><td>'+data.remoteHost+'</td><td>'+data.connections+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td></tr>');
+					var recent = "";
+					if(now/1000 - data.last_seen > 6*60) {
+						recent = "old";
+					}
+					connections.push('<tr class="connection '+recent+'"><td>'+data.direction+'</td><td>'+data.process+'</td><td>'+data.localPort+'</td><td>'+data.remoteHost+'</td><td>'+data.connections+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td></tr>');
 				})
 				if(connections.length > 0)
 					$(".connections").html(connections.join(''));
