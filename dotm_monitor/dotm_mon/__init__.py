@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import requests
 import json
-from hashlib import md5
+import time
 
 from .dotm_mon import DOTMMonitor
 
