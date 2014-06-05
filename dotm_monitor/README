@@ -15,11 +15,11 @@ Configuring
 Create file .mr.developer.cfg:
 [monitoring]
 url =  https://mon.example.com
-user = monuser
-paswd = monpaswd
-hosts_key = dotm::mon::hosts
-services_key = dotm::mon::services
-config_key = dotm::mon::config
+user = <monuser>
+paswd = <monpaswd>
+nodes_key = dotm::check::nodes
+services_key = dotm::check::services
+config_key = dotm::check::config
 config_key_prefix = %(config_key)s::
 
 [redis]
@@ -32,9 +32,9 @@ $ python3 mon_api.py
 
 Testing
 -------
-$ curl -i http://localhost:8081/mon/hosts/uk-www2
-$ curl -i http://localhost:8081/mon/hosts/uk-www2/status
-$ curl -i http://localhost:8081/mon/services/uk-www2
-$ curl -i http://localhost:8081/mon/hosts/404
+$ curl -i http://localhost:8081/mon/nodes/<hostname>
+$ curl -i http://localhost:8081/mon/nodes/<hostname>/status
+$ curl -i http://localhost:8081/mon/services/<hostname>
+$ curl -i http://localhost:8081/mon/nodes/404
 $ curl -X POST -i http://localhost:8081/mon/reload
 

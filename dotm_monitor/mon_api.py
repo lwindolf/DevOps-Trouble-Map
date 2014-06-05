@@ -12,10 +12,10 @@ config.read('.mr.developer.cfg')
 mon_url = config['monitoring']['url']
 mon_user = config['monitoring']['user']
 mon_paswd = config['monitoring']['paswd']
-mon_hosts_key = config['monitoring']['hosts_key'] # dotm::mon::hosts
-mon_services_key = config['monitoring']['services_key'] # dotm::mon::services
-mon_config_key = config['monitoring']['config_key'] # dotm::mon::config
-mon_config_key_prefix = config['monitoring']['config_key_prefix'] # dotm::mon::config::
+mon_nodes_key = config['monitoring']['nodes_key'] # dotm::checks::nodes
+mon_services_key = config['monitoring']['services_key'] # dotm::checks::services
+mon_config_key = config['monitoring']['config_key'] # dotm::checks::config
+mon_config_key_prefix = config['monitoring']['config_key_prefix'] # dotm::checks::config::
 
 redis_host = config['redis']['host']
 redis_port = config['redis']['port']
@@ -32,30 +32,30 @@ def resp_or_404(resp=None):
 def vars_to_json(key, val):
 	return '{{"{}": {}}}'.format(key, val)
 
-@route('/mon/hosts/<host>')
-def get_host(host):
+@route('/mon/nodes/<node>')
+def get_node(node):
 	result = None
-	host_b = rdb.hget(mon_hosts_key, host)
-	if host_b:
-		result = vars_to_json(host, host_b.decode('utf-8'))
+	node_b = rdb.hget(mon_nodes_key, node)
+	if node_b:
+		result = vars_to_json(node, node_b.decode('utf-8'))
 	return resp_or_404(result)
 
-@route('/mon/services/<host>')
-def get_host_services(host):
+@route('/mon/services/<node>')
+def get_node_services(node):
 	result = None
-	services_b = rdb.hget(mon_services_key, host)
+	services_b = rdb.hget(mon_services_key, node)
 	if services_b:
-		result = vars_to_json(host, services_b.decode('utf-8'))
+		result = vars_to_json(node, services_b.decode('utf-8'))
 	return resp_or_404(result)
 
-@route('/mon/hosts/<host>/<key>')
-def get_host_key(host, key):
+@route('/mon/nodes/<node>/<key>')
+def get_node_key(node, key):
 	result = None
-	host_b = rdb.hget(mon_hosts_key, host)
-	if host_b:
-		host_obj = json.loads(host_b.decode('utf-8'))
-		if key in host_obj:
-			result = vars_to_json(key, '"{}"'.format(host_obj[key]))
+	node_b = rdb.hget(mon_nodes_key, node)
+	if node_b:
+		node_obj = json.loads(node_b.decode('utf-8'))
+		if key in node_obj:
+			result = vars_to_json(key, '"{}"'.format(node_obj[key]))
 	return resp_or_404(result)
 
 @route('/mon/reload', method='POST')
@@ -72,10 +72,10 @@ def reload():
 		if time_now - update_time >= update_interval:
 			rdb.setex(update_lock_key, update_lock_expire, 1)
 			mon = DOTMMonitor(mon_url, mon_user, mon_paswd)
-			for key,value in mon.get_hosts().items():
-				rdb.hset(mon_hosts_key, key, json.dumps(value))
-			for key,value in mon.get_services().items():
-				rdb.hset(mon_services_key, key, json.dumps(value))
+			for key,val in mon.get_nodes().items():
+				rdb.hset(mon_nodes_key, key, json.dumps(val))
+			for key,val in mon.get_services().items():
+				rdb.hset(mon_services_key, key, json.dumps(val))
 			time_now = int(time.time())
 			rdb.hset(mon_config_key, update_time_key, time_now)
 			update_time = time_now
