@@ -19,6 +19,7 @@
 # functionality. As Bash is not the best choice for data transformations
 # it should be reimplemented in Python using a real Redis binding
 
+readonly PIDFILE=/tmp/$(basename $0).pid
 readonly NETCAT="nc -w 3 "
 readonly REDIS_CLI="redis-cli -n 0 -h localhost -p 6379"
 
@@ -77,6 +78,15 @@ match_nets() {
 		echo $ip - $network, $netmask
 	done
 }
+
+PID=$(cat "$PIDFILE" 2>/dev/null)
+if [ "$PID" != "" ]; then
+	if kill -0 "$PID" >/dev/null; then
+		echo "WARNING: Terminating, another instance is still running ($PID)!"
+		exit 0
+	fi
+fi	
+echo $$ >"$PIDFILE"
 
 if ! $REDIS_CLI info >/dev/null; then
 	echo "ERROR: Cannot run '$REDIS_CLI'! Is it installed?" >&2
@@ -185,4 +195,5 @@ done
 
 #load_nets
 #match_nets 10.0.0.1
+rm "$PIDFILE"
 echo "Done."
