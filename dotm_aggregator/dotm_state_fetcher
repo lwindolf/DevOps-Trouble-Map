@@ -19,7 +19,7 @@
 # functionality. As Bash is not the best choice for data transformations
 # it should be reimplemented in Python using a real Redis binding
 
-readonly NETCAT="nc"
+readonly NETCAT="nc -w 3 "
 readonly REDIS_CLI="redis-cli -n 0 -h localhost -p 6379"
 
 # egrep expressions, filtering common ports
@@ -99,7 +99,7 @@ declare -A used_services
 for c in $CLIENTS;
 do
 	echo "Fetching from '$c'..."
-	output=$(nc "$c" 4848)
+	output=$($NETCAT "$c" 4848)
 	if [ $? -ne 0 ]; then
 		echo "ERROR: Fetching status from '$c' failed!" >&2
 		continue
