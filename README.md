@@ -75,6 +75,10 @@ So far the following relations are probably needed:
 Right now the following relation namespaces are used in Redis
 
 - dotm::nodes (list of node names, resovable via local resolver and to be identical with remote hostname)
+- dotm::nodes::&lt;node name>
+  * 'last_fetch' => &lt;timestamp>
+  * 'fetch_status' => &lt;'OK' or error message>
+  * 'ips' => &lt;comma separated list of IPs>
 - dotm::connections::&lt;node name>::&lt;port>::&lt;remote node/IP> (hash with the following key values):
   * 'process' => &lt;string>
   * 'connections' => &lt;int>
@@ -84,6 +88,7 @@ Right now the following relation namespaces are used in Redis
 - dotm::services::&lt;node name>::&lt;port> (hash with the following key values):
   * 'process' => &lt;string>
   * 'last_seen' => &lt;timestamp>
+- dotm::resolver::ip_to_node::&lt;IP> (string, &lt;node name>)
 - dotm::checks::nodes (hash with the following key values):
   * &lt;node name> => &lt;string> (JSON containing basic status information:
       {

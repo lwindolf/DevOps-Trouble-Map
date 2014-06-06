@@ -189,8 +189,18 @@ do
 		fi
 	done
 
-	echo "Interfaces:"
-	echo "$output" | grep "inet " | grep -v "host lo"
+	# Crude "ip addr" parsing...
+	ips=$(
+	while read inet ip brd broadcast scope global interface rest; do
+		echo ${ip%%/[0-9]*}
+	done < <(echo "$output" | grep "inet " | grep -v "host lo") | xargs
+	)
+	echo "IPs:" ${ips// /,}
+	for ip in $ips
+	do
+		$REDIS_CLI set dotm::resolver::ip_to_node::$ip $c >/dev/null
+	done
+	redis_push "dotm::nodes::${c} last_fetch '$now' fetch_status 'OK' ips '${ips// /,}'"
 done
 
 #load_nets
