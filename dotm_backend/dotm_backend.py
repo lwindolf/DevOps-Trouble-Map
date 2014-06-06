@@ -14,6 +14,10 @@ def nodes():
 @route('/node/<name>')
 def node(name):
 	r = redis.Redis()
+
+	prefix = 'dotm::nodes::'+name
+	nodeDetails = r.hgetall(prefix)
+
 	prefix = 'dotm::services::'+name+'::'
 	serviceDetails = {}
 	services = [s.replace(prefix, '') for s in r.keys(prefix+'*')]
@@ -33,6 +37,6 @@ def node(name):
 
 	# FIXME: Add node interconnections for this node (but missing in data model currently)
 
-	return json.dumps({'name': name, 'services': serviceDetails, 'connections': connectionDetails})
+	return json.dumps({'name': name, 'status': nodeDetails, 'services': serviceDetails, 'connections': connectionDetails})
 
 run(host='localhost', port=8080, debug=True)
