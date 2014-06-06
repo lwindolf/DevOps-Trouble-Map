@@ -45,11 +45,11 @@ declare -a netmasks
 load_nets() {
 	# Note: configuration contains CIDR netmasks that we need
 	# to convert to hex values for easy checking 
-	tmp="10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
+	tmp="127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
 	for cidr in $tmp
 	do
 		if [[ $cidr =~ ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/([0-9]+) ]]; then
-			netmasks+=($(printf 'network=%02x%02x%02x%02x netmask=%08x\n' ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[4]} $((2**32-2**(32-${BASH_REMATCH[5]})))))
+			netmasks+=($(printf 'network=0x%02x%02x%02x%02x;netmask=0x%08x\n' ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[4]} $((2**32-2**(32-${BASH_REMATCH[5]})))))
 		else
 			echo "ERROR: Invalid network address '$cidr'!"
 		fi
@@ -65,7 +65,7 @@ match_nets() {
 	local ip=$1
 
 	if [[ $ip =~ ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
-		ip=$(printf '%02x%02x%02x%02x' ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[4]})
+		ip=$(printf '0x%02x%02x%02x%02x' ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[4]})
 	else
 		echo "ERROR: Invalid IP '$ip'!"
 		return 0
@@ -73,10 +73,13 @@ match_nets() {
 
 	for entry in ${!netmasks[*]}
 	do	
-		echo "checking $entry"
 		eval "${netmasks[$entry]}"
-		echo $ip - $network, $netmask
+		if [[ $(($ip & $netmask)) -eq $network ]]; then
+			return 1
+		fi
 	done
+
+	return 0
 }
 
 # Node state fetch failed. Add info to Redis
@@ -114,6 +117,8 @@ if [ "$CLIENTS" == "" ]; then
 	echo "ERROR: Could not determine list of client nodes!" >&2
 	exit 1
 fi
+
+load_nets
 
 declare -A listen_ports
 declare -A used_services
@@ -172,14 +177,14 @@ do
 		program=${program:-unknown}
 
 		if [ "${listen_ports[${localaddr##*:}]}" == "" ]; then
-			# FIXME: Consolidate outgoing connections to 'Internet'
-			# according to list of configured known networks
+			match_nets $remoteip && remoteip="Internet"
 			echo "  -> outgoing connection to $remoteaddr (by $program)"
 			conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
 			redis_push "dotm::connections::${c}::${remoteport}::${remoteip}" process "$program" last_seen "$now" connections "$conn_count" direction "out"	
 		else
 			# FIXME: Consolidate incoming connections based on frequency
 			# e.g. count per net and combine to network if too many appear
+			match_nets $remoteip && remoteip="Internet"
 			echo "  -> incoming from $remoteaddr (to $localport $program)"
 			conn_count=$(echo "$output" | grep "[[:space:]]$localaddr[[:space:]]*$remoteip:[0-9][0-9]*[[:space:]]" | wc -l)
 			redis_push "dotm::connections::${c}::${localport}::${remoteip}" process "$program" last_seen "$now" connections "$conn_count" direction "in"
@@ -214,7 +219,5 @@ do
 	redis_push "dotm::nodes::${c} last_fetch '$now' fetch_status 'OK' ips '${ips// /,}'"
 done
 
-#load_nets
-#match_nets 10.0.0.1
 rm "$PIDFILE"
 echo "Done."
