@@ -83,11 +83,11 @@ match_nets() {
 #
 # $1	Error message
 node_fetch_error() {
-	local errmsg="$1"
+	local errmsg="'$1'"
 	local now=$(date +%s)
 
 	echo "ERROR: $errmsg! Ignoring it." >&1
-	redis_push "dotm::nodes::${c}" last_fetch '$now' fetch_status '$errmsg'
+	redis_push "dotm::nodes::${c}" last_fetch "$now" fetch_status "$errmsg"
 }
 
 PID=$(cat "$PIDFILE" 2>/dev/null)
