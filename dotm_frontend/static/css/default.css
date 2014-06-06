@@ -36,6 +36,9 @@
 tr.service.old, tr.connection.old {
 	color:#ccc;
 }
+tr.service.old:hover, tr.connection.old:hover {
+	color:black;
+}
 
 a:hover {
 	background:blue;
