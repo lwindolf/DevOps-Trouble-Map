@@ -176,7 +176,7 @@ do
 			# according to list of configured known networks
 			echo "  -> outgoing connection to $remoteaddr (by $program)"
 			conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
-			redis_push "dotm::connections::${remoteip}::${remoteport}::${c}" process "$program" last_seen "$now" connections "$conn_count" direction "out"	
+			redis_push "dotm::connections::${c}::${remoteport}::${remoteip}" process "$program" last_seen "$now" connections "$conn_count" direction "out"	
 		else
 			# FIXME: Consolidate incoming connections based on frequency
 			# e.g. count per net and combine to network if too many appear
