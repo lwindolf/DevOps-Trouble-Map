@@ -35,7 +35,7 @@ redis_push() {
 	local key=$(shift)
 	local output=$($REDIS_CLI hmset $key $@)
 	if [ $? -ne 0 -o "$output" != "OK" ]; then 
-		echo "ERROR: Failed to run '$REDIS_CLI hmset $key $@'!"
+		echo "ERROR: Failed to run >>>$REDIS_CLI hmset $key $@<<<!"
 		echo "$output"
 	fi
 }
@@ -79,6 +79,17 @@ match_nets() {
 	done
 }
 
+# Node state fetch failed. Add info to Redis
+#
+# $1	Error message
+node_fetch_error() {
+	local errmsg="$1"
+	local now=$(date +%s)
+
+	echo "ERROR: $errmsg! Ignoring it." >&1
+	redis_push "dotm::nodes::${c}" last_fetch '$now' fetch_status '$errmsg'
+}
+
 PID=$(cat "$PIDFILE" 2>/dev/null)
 if [ "$PID" != "" ]; then
 	if kill -0 "$PID" >/dev/null; then
@@ -111,7 +122,7 @@ do
 	echo "Fetching from '$c'..."
 	output=$($NETCAT "$c" 4848)
 	if [ $? -ne 0 ]; then
-		echo "ERROR: Fetching status from '$c' failed!" >&2
+		node_fetch_error "Connection to $c failed"
 		continue
 	fi
 
@@ -120,19 +131,19 @@ do
 	# - check for connection list
 	# - check for IP list
 	if [[ ! "$output" =~ ^hostname= ]]; then
-		echo "ERROR: Result from '$c' missing hostname! Ignoring it." >&1
+		node_fetch_error "Result from $c missing hostname"
 		continue
 	fi
 
 	# There should be at least one established connection (that's us!)
 	if [[ ! "$output" =~ ESTABLISHED ]]; then
-		echo "ERROR: Result from '$c' missing connection listing! Ignoring it." >&1
+		node_fetch_error "Result from $c missing connection listing"
 		continue
 	fi
 	
 	# There should be at least one interface listed
 	if [[ ! "$output" =~ inet\  ]]; then
-		echo "ERROR: Result from '$c' missing interface listing! Ignoring it." >&1
+		node_fetch_error "Result from $c missing interface listing"
 		continue
 	fi
 	
