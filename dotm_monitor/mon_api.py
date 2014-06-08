@@ -26,6 +26,7 @@ rdb = redis.Redis(redis_host, redis_port)
 
 def resp_or_404(resp=None):
     response.content_type = 'application/json'
+    response.set_header('Cache-Control', 'private, max-age=0, no-cache')
     if not resp:
         response.status = 404
         resp = '{"error": {"message": "Not Found", "status_code": 404}}'
@@ -38,8 +39,9 @@ def vars_to_json(key, val):
 
 @route('/mon/nodes')
 def get_nodes():
-    retult = json.dumps([n.decode('utf-8').split('::')[-1]]
-                        for n in rdb.keys(mon_nodes_key_pfx + '*')])
+    nodes_b = rdb.keys(mon_nodes_key_pfx + '*')
+    result = json.dumps([n.decode('utf-8').split('::')[-1]
+                        for n in nodes_b]) if nodes_b else None
     return resp_or_404(result)
 
 
