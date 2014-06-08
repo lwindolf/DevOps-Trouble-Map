@@ -40,4 +40,4 @@ $ curl -i http://localhost:8081/mon/services/<hostname>
 $ curl -i http://localhost:8081/mon/nodes/404
 $ curl -X POST -i http://localhost:8081/mon/reload
 
-$ curl -i -H "Accept: application/javascript" http://localhost:8081/mon/nodes/<hostname>
+$ curl -i -H "Accept: application/javascript" http://localhost:8081/mon/nodes/<hostname>?callback=foo
