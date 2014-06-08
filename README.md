@@ -89,32 +89,35 @@ Right now the following relation namespaces are used in Redis
   * 'process' => &lt;string>
   * 'last_seen' => &lt;timestamp>
 - dotm::resolver::ip_to_node::&lt;IP> (string, &lt;node name>)
-- dotm::checks::nodes (hash with the following key values):
-  * &lt;node name> => &lt;string> (JSON containing basic status information:
-      {
-          "status": "UP",
-          "last_check": &lt;timestamp>,
-          "last_status_change": &lt;timestamp>,
-          "status_information": "hostname01 status information"
-      })
-  * ...
-- dotm::checks::services (hash with the following key values):
-  * &lt;node name> => &lt;string> (JSON containing all associated checks:
-      {
-          "Service01 name": {
-              "status": "OK",
-              "last_check": &lt;timestamp>,
-              "last_status_change": &lt;timestamp>,
-              "status_information": "Service01 status information"
-          },
-          "Service02 name": {
-              "status": "CRITICAL",
-              "last_check": &lt;timestamp>,
-              "last_status_change": &lt;timestamp>,
-              "status_information": "Service02 status information"
-          },
-      })
-  * ...
+- dotm::checks::nodes::&lt;node name> (key with set expire):
+  * JSON containing basic status information:
+    {
+        "node": "hostname01"
+        "status": "UP",
+        "last_check": &lt;timestamp>,
+        "last_status_change": &lt;timestamp>,
+        "status_information": "hostname01 status information"
+    }
+- dotm::checks::services::&lt;node name> (key with set expire):
+  * JSON containing all associated checks:
+    [
+        {
+            "node": "hostname01",
+            "service": "Service01 name"
+            "status": "OK",
+            "last_check": &lt;timestamp>,
+            "last_status_change": &lt;timestamp>,
+            "status_information": "Service01 status information"
+        },
+        {
+            "node": "hostname01",
+            "service": "Service02 name"
+            "status": "CRITICAL",
+            "last_check": &lt;timestamp>,
+            "last_status_change": &lt;timestamp>,
+            "status_information": "Service02 status information"
+        }
+    ]
 - dotm::checks::config (hash with the following key values):
   * 'last_updated' => &lt;timestamp>
 - dotm::checks::config::update_running (key with set expire flag used as a lock during monitoring data reload)
