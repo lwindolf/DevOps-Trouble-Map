@@ -1,4 +1,4 @@
-from bottle import route, run, response
+from bottle import route, run, response, request
 import redis
 import configparser
 import json
@@ -24,13 +24,39 @@ redis_port = config['redis']['port']
 rdb = redis.Redis(redis_host, redis_port)
 
 
-def resp_or_404(resp=None):
+def resp_json(resp=None):
     response.content_type = 'application/json'
-    response.set_header('Cache-Control', 'private, max-age=0, no-cache')
     if not resp:
         response.status = 404
         resp = '{"error": {"message": "Not Found", "status_code": 404}}'
     return resp
+
+
+def resp_jsonp(resp=None):
+    callback = request.query.get('callback')
+    if resp and callback:
+        response.content_type = 'application/javascript'
+        resp = '{}({})'.format(callback, resp)
+    elif resp:
+        response.status = 400
+        resp = '{"error": {"message": "No callback funcrion provided", "status_code": 400}}'
+    else:
+        resp = '{"error": {"message": "Not Found", "status_code": 404}}'
+    return resp
+
+
+def resp_or_404(resp=None, resp_type='apptilacion/json'):
+    response.set_header('Cache-Control', 'private, max-age=0, no-cache')
+    accepted_resp = ['apptilacion/json', 'application/javascript']
+    resp_types = request.headers.get('Accept').split(',')
+    if resp_types:
+        for rt in resp_types:
+            if rt in accepted_resp:
+                resp_type = rt
+                break
+    if resp_type == 'application/javascript':
+        return resp_jsonp(resp)
+    return resp_json(resp)
 
 
 def vars_to_json(key, val):
