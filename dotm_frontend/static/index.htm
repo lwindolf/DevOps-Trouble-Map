@@ -23,6 +23,7 @@
 			$.getJSON("backend/node/"+node, {})
 			.done(function (data) {
 				var now = (new Date).getTime();
+				// 1.) Setup tables
 
 				// Fill in services
 				var services = [];
@@ -64,6 +65,29 @@
 
 				// Apply relative times
 				$(".timeago").timeago();
+
+				// 2.) Setup node chart
+
+				var nodeDetails = "<table><tr><th>In</th><th>"+node+"</th><th>Out</th></tr>";
+				$.each(data.services, function(service, serviceData) {
+					nodeDetails += "<tr class='service'><td>";
+					$.each(data.connections, function(connection, connectionData) {
+						if(connectionData.localPort == service &&
+						   connectionData.direction == "in") {
+							nodeDetails += "<div class='node'>"+connectionData.remoteHost + "</div>";
+						}
+					})
+					nodeDetails += "</td><td class='service'>"+serviceData.process+"</td><td>";
+					$.each(data.connections, function(connection, connectionData) {
+						if(connectionData.process == serviceData.process &&
+						   connectionData.direction == "out") {
+							nodeDetails += "<div class='node'>"+connectionData.remoteHost + "</div>";
+						}
+					})
+					nodeDetails += "</td></tr>";
+				})
+				nodeDetails += "</table>";
+				$(".nodeChart").html(nodeDetails);
 			})
 			.fail(function (jqxhr, textStatus, error) {
 				setError('Node fetch failed! ('+error+')');
@@ -79,19 +103,27 @@
 
 	<div class='status'></div>
 
+	<!-- Chart representation -->
+
+	<div class='nodeChart'>
+	</div>
+
 	<div class='block'>
 		<div class='blockTitle'>Nodes</div>
 		<div class='nodes'></div>
 	</div>
 
-	<div class='block'>
-		<div class='blockTitle'>Services</div>
-		<table class='services'></table>
-	</div>
+	<!-- Table representation -->
+	<div class='nodeTables'>
+		<div class='block'>
+			<div class='blockTitle'>Services</div>
+			<table class='services'></table>
+		</div>
 
-	<div class='block'>
-		<div class='blockTitle'>Connections</div>
-		<table class='connections'></table>
+		<div class='block'>
+			<div class='blockTitle'>Connections</div>
+			<table class='connections'></table>
+		</div>
 	</div>
 
 	<!--<div class='block'>

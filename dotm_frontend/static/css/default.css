@@ -22,21 +22,21 @@
 	border-collapse:collapse;
 }
 
-.block table td {
+table.services td, table.connections td {
 	padding:3px;
 	border:1px solid #ccc;
 }
 
-.block th {
+table.services th, table.connections th {
 	background: #777;
 	color:white;
 	font-weight:normal;
 }
 
-tr.service.old, tr.connection.old {
+table.services tr.service.old, table.services tr.connection.old {
 	color:#ccc;
 }
-tr.service.old:hover, tr.connection.old:hover {
+table.services tr.service.old:hover, table.services tr.connection.old:hover {
 	color:black;
 }
 
@@ -60,3 +60,20 @@ a:hover {
 	background:#faa;
 	color:white;
 }
+
+.nodeChart {
+	background:white;
+	padding:6px;
+	border:2px solid black;
+}
+
+.nodeChart .node {
+	border:1px solid gray;
+	padding:6px;
+}
+
+.nodeChart td.service {
+	border:1px solid gray;
+	padding:3px 12px;
+}
+
