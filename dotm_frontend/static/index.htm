@@ -2,6 +2,7 @@
 <html>
 <head>
 	<title>Devops Trouble Map</title>
+	<meta charset="utf-8"/>
 	<link rel='stylesheet' type='text/css' href='css/default.css'/>
 	<script type='text/javascript'>
 		function setStatus(text) {
@@ -68,23 +69,36 @@
 
 				// 2.) Setup node chart
 
-				var nodeDetails = "<table><tr><th>In</th><th>"+node+"</th><th>Out</th></tr>";
+				var arrow;
+				var tmp;
+				var nodeDetails = "<table><tr><th>In</th><th></th><th>"+node+"</th><th></th><th>Out</th></tr>";
 				$.each(data.services, function(service, serviceData) {
+					arrow = false;
+					tmp = "";
 					nodeDetails += "<tr class='service'><td>";
 					$.each(data.connections, function(connection, connectionData) {
 						if(connectionData.localPort == service &&
 						   connectionData.direction == "in") {
-							nodeDetails += "<div class='node'>"+connectionData.remoteHost + "</div>";
+							tmp += "<div class='node'>"+connectionData.remoteHost + "</div>";
+							arrow = true;
 						}
 					})
-					nodeDetails += "</td><td class='service'>"+serviceData.process+"</td><td>";
+					nodeDetails += tmp + "<td>";
+					if(arrow)
+						nodeDetails += "<img src='arrow-right.svg'/>";
+					arrow = false;
+					tmp = "";
 					$.each(data.connections, function(connection, connectionData) {
 						if(connectionData.process == serviceData.process &&
 						   connectionData.direction == "out") {
-							nodeDetails += "<div class='node'>"+connectionData.remoteHost + "</div>";
+							tmp += "<div class='node'>"+connectionData.remoteHost + "</div>";
+							arrow = true;
 						}
 					})
-					nodeDetails += "</td></tr>";
+					nodeDetails += "</td></td><td class='service'>"+serviceData.process+"</td><td>";
+					if(arrow)
+						nodeDetails += "<img src='arrow-right.svg'/>";
+					nodeDetails += "</td><td>" + tmp + "</td></tr>";
 				})
 				nodeDetails += "</table>";
 				$(".nodeChart").html(nodeDetails);
