@@ -26,21 +26,21 @@
 	display:none;
 }
 
-table.services td, table.connections td {
+#nodeTables td {
 	padding:3px;
 	border:1px solid #ccc;
 }
 
-table.services th, table.connections th {
+#nodeTables th {
 	background: #777;
 	color:white;
 	font-weight:normal;
 }
 
-table.services tr.service.old, table.services tr.connection.old {
+#nodeTables .old {
 	color:#ccc;
 }
-table.services tr.service.old:hover, table.services tr.connection.old:hover {
+#nodeTables .old:hover {
 	color:black;
 }
 
