@@ -102,6 +102,7 @@
 				})
 				nodeDetails += "</table>";
 				$(".nodeChart").html(nodeDetails);
+				$("#nodeTables").show();
 			})
 			.fail(function (jqxhr, textStatus, error) {
 				setError('Node fetch failed! ('+error+')');
@@ -130,7 +131,7 @@
 	</div>
 
 	<!-- Table representation -->
-	<div class='nodeTables'>
+	<div id='nodeTables'>
 		<div class='block'>
 			<div class='blockTitle'>Services</div>
 			<table class='services'></table>

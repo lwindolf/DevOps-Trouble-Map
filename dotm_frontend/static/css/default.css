@@ -22,6 +22,10 @@
 	border-collapse:collapse;
 }
 
+#nodeTables {
+	display:none;
+}
+
 table.services td, table.connections td {
 	padding:3px;
 	border:1px solid #ccc;
