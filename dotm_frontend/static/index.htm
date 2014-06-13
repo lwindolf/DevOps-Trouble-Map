@@ -78,7 +78,8 @@
 					nodeDetails += "<tr class='service'><td>";
 					$.each(data.connections, function(connection, connectionData) {
 						if(connectionData.localPort == service &&
-						   connectionData.direction == "in") {
+						   connectionData.direction == "in" &&
+						   tmp.indexOf(">"+connectionData.remoteHost+"<") == -1) {
 							tmp += "<div class='node'>"+connectionData.remoteHost + "</div>";
 							arrow = true;
 						}
@@ -90,8 +91,9 @@
 					tmp = "";
 					$.each(data.connections, function(connection, connectionData) {
 						if(connectionData.process == serviceData.process &&
-						   connectionData.direction == "out") {
-							tmp += "<div class='node'>"+connectionData.remoteHost + "</div>";
+						   connectionData.direction == "out" &&
+						   tmp.indexOf(">"+connectionData.remoteHost+"<") == -1) {
+							tmp += "<div class='node'>"+connectionData.remoteHost+"</div>";
 							arrow = true;
 						}
 					})
