@@ -142,114 +142,118 @@ if [ "$CLIENTS" == "" ]; then
 	exit 1
 fi
 
-load_nets
+main()
+{
+	load_nets
 
-declare -A listen_ports
-declare -A used_services
-for c in $CLIENTS;
-do
-	echo "Fetching from '$c'..."
-	output=$($NETCAT "$c" 4848)
-	if [ $? -ne 0 ]; then
-		node_fetch_error "Connection to $c failed"
-		continue
-	fi
-
-	# Validate output
-	# - check for node name
-	# - check for connection list
-	# - check for IP list
-	if [[ ! "$output" =~ ^hostname= ]]; then
-		node_fetch_error "Result from $c missing hostname"
-		continue
-	fi
-
-	# There should be at least one established connection (that's us!)
-	if [[ ! "$output" =~ ESTABLISHED ]]; then
-		node_fetch_error "Result from $c missing connection listing"
-		continue
-	fi
-	
-	# There should be at least one interface listed
-	if [[ ! "$output" =~ inet\  ]]; then
-		node_fetch_error "Result from $c missing interface listing"
-		continue
-	fi
-	
-	# Parse output and store into Redis
-	now=$(date +%s)
-	
-	echo "Services:"
-	unset listen_ports
-	unset used_services
-	while read proto recvq sendq localaddr remoteaddr state program rest; do
-		localport=${localaddr##*:}
-		program=${program##*/}
-		program=${program:-unknown}
-
-		if [[ ! $localport =~ $LISTEN_FILTER ]]; then
-			echo "  -> listening on port $localport	(${program})"
-			listen_ports[$localport]=${program}
-			used_services[$localport]=0
-		fi
-	done < <(echo "$output" | grep "^tcp.*LISTEN")
-
-	echo "Connections:"
-	while read proto recvq sendq localaddr remoteaddr state program rest; do
-		localip=${localaddr%%:*}
-		localport=${localaddr##*:}
-		remoteip=${remoteaddr%%:*}
-		remoteport=${remoteaddr##*:}
-		program=${program##*/}
-		program=${program:-unknown}
-
-		if [ "$program" == "dotm_node" ]; then 
+	declare -A listen_ports
+	declare -A used_services
+	for c in $CLIENTS;
+	do
+		echo "Fetching from '$c'..."
+		output=$($NETCAT "$c" 4848)
+		if [ $? -ne 0 ]; then
+			node_fetch_error "Connection to $c failed"
 			continue
 		fi
 
-		# FIXME: local connections currently are described as outgoing
-		if [ "${listen_ports[${localport}]}" == "" ]; then
-			remoteip=$(ip_to_name $remoteip)
-			echo "  -> outgoing connection to $remoteaddr (to $remoteip by $program)"
-			conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
-			redis_push "dotm::connections::${c}::${remoteport}::${remoteip}" process "$program" last_seen "$now" connections "$conn_count" direction "out"	
-		else
-			# FIXME: Consolidate incoming connections based on frequency
-			# e.g. count per net and combine to network if too many appear
-			remoteip=$(ip_to_name $remoteip)
-			echo "  -> incoming from $remoteaddr ($remoteip to $localport $program)"
-			conn_count=$(echo "$output" | grep "[[:space:]]$localaddr[[:space:]]*$remoteip:[0-9][0-9]*[[:space:]]" | wc -l)
-			redis_push "dotm::connections::${c}::${localport}::${remoteip}" process "$program" last_seen "$now" connections "$conn_count" direction "in"
-			used_services[$localport]=1
+		# Validate output
+		# - check for node name
+		# - check for connection list
+		# - check for IP list
+		if [[ ! "$output" =~ ^hostname= ]]; then
+			node_fetch_error "Result from $c missing hostname"
+			continue
 		fi
-	done < <(echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER")
 
-	# Submit service list to indicate which ones are unused and which one are not
-	for port in ${!used_services[*]};
-	do
-		program="${listen_ports[$port]}"
-		program=${program:-unknown}
-		if [[ ${used_services[$port]} -eq 0 ]]; then
-			echo "  -> found unused service $port (${listen_ports[$port]})"
-			redis_push "dotm::services::${c}::${port}" process "$program" last_seen "$now"
-		else
-			redis_push "dotm::services::${c}::${port}" process "$program" last_seen "$now" last_connection "$now"
+		# There should be at least one established connection (that's us!)
+		if [[ ! "$output" =~ ESTABLISHED ]]; then
+			node_fetch_error "Result from $c missing connection listing"
+			continue
 		fi
-	done
+	
+		# There should be at least one interface listed
+		if [[ ! "$output" =~ inet\  ]]; then
+			node_fetch_error "Result from $c missing interface listing"
+			continue
+		fi
+	
+		# Parse output and store into Redis
+		now=$(date +%s)
+	
+		echo "Services:"
+		unset listen_ports
+		unset used_services
+		while read proto recvq sendq localaddr remoteaddr state program rest; do
+			localport=${localaddr##*:}
+			program=${program##*/}
+			program=${program:-unknown}
 
-	# Crude "ip addr" parsing...
-	ips=$(
-	while read inet ip brd broadcast scope global interface rest; do
-		echo ${ip%%/[0-9]*}
-	done < <(echo "$output" | grep "inet " | grep -v "host lo") | xargs
-	)
-	echo "IPs:" ${ips// /,}
-	for ip in $ips
-	do
-		$REDIS_CLI set dotm::resolver::ip_to_node::$ip $c >/dev/null
-	done
-	redis_push "dotm::nodes::${c} last_fetch '$now' fetch_status 'OK' ips '${ips// /,}'"
-done
+			if [[ ! $localport =~ $LISTEN_FILTER ]]; then
+				echo "  -> listening on port $localport	(${program})"
+				listen_ports[$localport]=${program}
+				used_services[$localport]=0
+			fi
+		done < <(echo "$output" | grep "^tcp.*LISTEN")
 
+		echo "Connections:"
+		while read proto recvq sendq localaddr remoteaddr state program rest; do
+			localip=${localaddr%%:*}
+			localport=${localaddr##*:}
+			remoteip=${remoteaddr%%:*}
+			remoteport=${remoteaddr##*:}
+			program=${program##*/}
+			program=${program:-unknown}
+
+			if [ "$program" == "dotm_node" ]; then 
+				continue
+			fi
+
+			# FIXME: local connections currently are described as outgoing
+			if [ "${listen_ports[${localport}]}" == "" ]; then
+				remoteip=$(ip_to_name $remoteip)
+				echo "  -> outgoing connection to $remoteaddr (to $remoteip by $program)"
+				conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
+				redis_push "dotm::connections::${c}::${remoteport}::${remoteip}" process "$program" last_seen "$now" connections "$conn_count" direction "out"	
+			else
+				# FIXME: Consolidate incoming connections based on frequency
+				# e.g. count per net and combine to network if too many appear
+				remoteip=$(ip_to_name $remoteip)
+				echo "  -> incoming from $remoteaddr ($remoteip to $localport $program)"
+				conn_count=$(echo "$output" | grep "[[:space:]]$localaddr[[:space:]]*$remoteip:[0-9][0-9]*[[:space:]]" | wc -l)
+				redis_push "dotm::connections::${c}::${localport}::${remoteip}" process "$program" last_seen "$now" connections "$conn_count" direction "in"
+				used_services[$localport]=1
+			fi
+		done < <(echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER")
+
+		# Submit service list to indicate which ones are unused and which one are not
+		for port in ${!used_services[*]};
+		do
+			program="${listen_ports[$port]}"
+			program=${program:-unknown}
+			if [[ ${used_services[$port]} -eq 0 ]]; then
+				echo "  -> found unused service $port (${listen_ports[$port]})"
+				redis_push "dotm::services::${c}::${port}" process "$program" last_seen "$now"
+			else
+				redis_push "dotm::services::${c}::${port}" process "$program" last_seen "$now" last_connection "$now"
+			fi
+		done
+
+		# Crude "ip addr" parsing...
+		ips=$(
+		while read inet ip brd broadcast scope global interface rest; do
+			echo ${ip%%/[0-9]*}
+		done < <(echo "$output" | grep "inet " | grep -v "host lo") | xargs
+		)
+		echo "IPs:" ${ips// /,}
+		for ip in $ips
+		do
+			$REDIS_CLI set dotm::resolver::ip_to_node::$ip $c >/dev/null
+		done
+		redis_push "dotm::nodes::${c} last_fetch '$now' fetch_status 'OK' ips '${ips// /,}'"
+	done
+}
+
+main
 rm "$PIDFILE"
 echo "Done."
