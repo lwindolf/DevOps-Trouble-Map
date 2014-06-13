@@ -33,9 +33,10 @@ readonly ESTABLISHED_FILTER="${LISTEN_FILTER}"
 # $2...$n	key value pairs
 redis_push() {
 	local key=$(shift)
-	local output=$($REDIS_CLI hmset $key $@)
+	local params=("$@")
+	local output=$($REDIS_CLI hmset $key "${params[@]}")
 	if [ $? -ne 0 -o "$output" != "OK" ]; then 
-		echo "ERROR: Failed to run >>>$REDIS_CLI hmset $key $@<<<!" >&2
+		echo "ERROR: Failed to run >>>$REDIS_CLI hmset $key ${params[@]}<<<!" >&2
 		echo "$output"
 	fi
 }
@@ -254,7 +255,7 @@ main()
 		do
 			$REDIS_CLI set dotm::resolver::ip_to_node::$ip $c >/dev/null
 		done
-		redis_push "dotm::nodes::${c} last_fetch '$now' fetch_status 'OK' ips '${ips// /,}'"
+		redis_push "dotm::nodes::${c}" last_fetch "$now" fetch_status 'OK' ips "${ips// /,}"
 	done
 }
 
