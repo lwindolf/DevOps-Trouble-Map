@@ -24,7 +24,7 @@ test -x $DAEMON || exit 0
 case "$1" in
   start)
 	log_daemon_msg "Starting $DESC" "$NAME"
-	start-stop-daemon -c nobody --start --quiet --background --pidfile $PIDFILE --startas $DAEMON $CONF
+	start-stop-daemon -c nobody --start --quiet --background --make-pidfile --pidfile $PIDFILE --startas $DAEMON $CONF
 	log_end_msg $?
 	;;
   stop)
