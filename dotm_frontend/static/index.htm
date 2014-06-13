@@ -18,11 +18,20 @@
 			.addClass('error')
 			.html(text);
 		}
+	
+		// Print a node name with optional link
+		function nodeLink(node) {
+			var re = /^[0-9.]+$/;
+			if(node != "Internet" && !re.test(node)) {
+				return "<a href='javascript:loadNode(\""+node+"\");'>"+node+"</a>";
+			}
+ 			return node;
+		}
 
 		function loadNode(node) {
 			// Clean everything
 			setStatus('Fetching details for '+node+'...');
-			$(".nodeChart").hide();
+			$(".nodeChart").html("");
 			$("#nodeTables").hide();
 
 			$.getJSON("backend/node/"+node, {})
@@ -66,7 +75,7 @@
 						if(now/1000 - data.last_seen > 6*60) {
 							recent = "old";
 						}
-						connections.push('<tr class="connection '+recent+'"><td>'+data.direction+'</td><td>'+data.process+'</td><td>'+data.localPort+'</td><td>'+data.remoteHost+'</td><td>'+data.connections+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td></tr>');
+						connections.push('<tr class="connection '+recent+'"><td>'+data.direction+'</td><td>'+data.process+'</td><td>'+data.localPort+'</td><td>'+nodeLink(data.remoteHost)+'</td><td>'+data.connections+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td></tr>');
 					})
 					if(connections.length > 0)
 						$(".connections").html(connections.join(''));
@@ -90,7 +99,7 @@
 							if(connectionData.localPort == service &&
 							   connectionData.direction == "in" &&
 							   tmp.indexOf(">"+connectionData.remoteHost+"<") == -1) {
-								tmp += "<div class='node'>"+connectionData.remoteHost + "</div>";
+								tmp += "<div class='node'>"+nodeLink(connectionData.remoteHost)+"</div>";
 							}
 						})
 						nodeDetails += tmp + "<td>";
@@ -102,7 +111,7 @@
 							if(connectionData.process == serviceData.process &&
 							   connectionData.direction == "out" &&
 							   tmp.indexOf(">"+connectionData.remoteHost+"<") == -1) {
-								tmp += "<div class='node'>"+connectionData.remoteHost+"</div>";
+								tmp += "<div class='node'>"+nodeLink(connectionData.remoteHost)+"</div>";
 							}
 						})
 						nodeDetails += "</td></td><td class='service'>"+serviceData.process+"</td><td>";
@@ -112,7 +121,6 @@
 					})
 					nodeDetails += "</table>";
 					$(".nodeChart").html(nodeDetails);
-					$(".nodeChart").show();
 					$("#nodeTables").show();
 				} catch(err) {
 					setError(err);
@@ -128,9 +136,11 @@
 	<script type="text/javascript" src="jquery-2.1.1.min.js"></script>
 	<script type="text/javascript" src="jquery.timeago.js"></script>
 
-	<h1>Devops Trouble Map</h1>
+	<h1 class='title'>Devops Trouble Map</h1>
 
+	<div class='statusBox'>
 	<div class='status'></div>
+	</div>
 
 	<div class='blockrow1'>
 	<div class='block'>

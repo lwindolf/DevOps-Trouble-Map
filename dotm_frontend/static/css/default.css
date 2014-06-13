@@ -1,4 +1,15 @@
+body {
+	background:#eee;
+	margin:0;
+	padding:0;
+}
 
+h1.title {
+	font-family: Verdana;
+	font-size: 18pt;
+	color: #444;
+	margin:6px;
+}
 
 .blockTitle {
 	font-weight:bold;
@@ -24,11 +35,17 @@
 
 #nodeTables {
 	display:none;
+	background:white;
+}
+
+#nodeTables a {
+	text-decoration:none;
 }
 
 #nodeTables td {
 	padding:3px;
 	border:1px solid #ccc;
+	background: white;
 }
 
 #nodeTables th {
@@ -49,9 +66,15 @@ a:hover {
 	color:white;
 }
 
+.statusBox {
+	background: white;
+	padding: 3px 6px;
+	border-top:1px solid #ccc;
+}
+
 .status {
 	padding: 6px;
-	margin: 6px;
+	margin: 6px 0;
 	border:6px;
 	border-radius: 6px;
 }
@@ -65,10 +88,14 @@ a:hover {
 	color:white;
 }
 
-.nodeChart table {
+.nodeChart {
 	background:white;
+	min-height:400px;
+	border-bottom:1px solid #ccc;
+}
+
+.nodeChart table {
 	padding:24px;
-	border:2px solid black;
 }
 
 .nodeChart .node {
@@ -79,5 +106,6 @@ a:hover {
 .nodeChart td.service {
 	border:1px solid gray;
 	padding:3px 12px;
+	text-align:center;
 }
 
