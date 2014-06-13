@@ -119,7 +119,7 @@ node_fetch_error() {
 
 PID=$(cat "$PIDFILE" 2>/dev/null)
 if [ "$PID" != "" ]; then
-	if kill -0 "$PID" >/dev/null; then
+	if kill -0 "$PID" >/dev/null 2>&1; then
 		echo "WARNING: Terminating, another instance is still running ($PID)!"
 		exit 0
 	fi
@@ -137,7 +137,7 @@ if ! $NETCAT -h 2>/dev/null; then
 fi
 
 readonly CLIENTS=$($REDIS_CLI lrange dotm::nodes 0 -1)
-if [ "$CLIENTS" == "" ] || [[ ! "$CLIENTS" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+if [ "$CLIENTS" == "" ]; then
 	echo "ERROR: Could not determine list of client nodes!" >&2
 	exit 1
 fi
@@ -212,6 +212,10 @@ main()
 			# FIXME: local connections currently are described as outgoing
 			if [ "${listen_ports[${localport}]}" == "" ]; then
 				remoteip=$(ip_to_name $remoteip)
+				# Reduce listings of random ports
+				if [ "$remoteport" -gt 1023 ]; then
+					remoteport="high"
+				fi
 				echo "  -> outgoing connection to $remoteaddr (to $remoteip by $program)"
 				conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
 				redis_push "dotm::connections::${c}::${remoteport}::${remoteip}" process "$program" last_seen "$now" connections "$conn_count" direction "out"	
