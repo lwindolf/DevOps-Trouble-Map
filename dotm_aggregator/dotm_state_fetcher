@@ -256,7 +256,7 @@ main()
 		do
 			$REDIS_CLI set dotm::resolver::ip_to_node::$ip $c >/dev/null
 		done
-		redis_push "dotm::nodes::${c}" last_fetch "$now" fetch_status 'OK' ips "${ips// /,}"
+		redis_push "dotm::nodes::${c}" last_fetch "$now" fetch_status "OK" ips "${ips// /,}"
 	done
 }
 
