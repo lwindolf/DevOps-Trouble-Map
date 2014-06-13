@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with DOTM.  If not, see <http://www.gnu.org/licenses/>.
 
-# This is a temporary hack to provide the "period state fetcher2
+# This is a temporary hack to provide the "periodic state fetcher"
 # functionality. As Bash is not the best choice for data transformations
 # it should be reimplemented in Python using a real Redis binding
 
