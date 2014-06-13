@@ -21,14 +21,14 @@ mon_config_key_pfx = config['monitoring']['config_key_prefix']  # dotm::checks::
 redis_host = config['redis']['host']
 redis_port = config['redis']['port']
 
-rdb = redis.Redis(redis_host, redis_port)
+rdb = redis.Redis(redis_host, redis_port, decode_responses=True)
 
 
 def resp_json(resp=None):
     response.content_type = 'application/json'
     if not resp:
         response.status = 404
-        resp = '{"error": {"message": "Not Found", "status_code": 404}}'
+        return '{"error": {"message": "Not Found", "status_code": 404}}'
     return resp
 
 
@@ -36,23 +36,20 @@ def resp_jsonp(resp=None):
     callback = request.query.get('callback')
     if resp and callback:
         response.content_type = 'application/javascript'
-        resp = '{}({})'.format(callback, resp)
+        return '{}({})'.format(callback, resp)
     elif resp:
         response.status = 400
-        resp = '{"error": {"message": "No callback funcrion provided", "status_code": 400}}'
-    else:
-        resp = '{"error": {"message": "Not Found", "status_code": 404}}'
-    return resp
+        return '{"error": {"message": "No callback funcrion provided", "status_code": 400}}'
+    return '{"error": {"message": "Not Found", "status_code": 404}}'
 
 
 def resp_or_404(resp=None, resp_type='apptilacion/json'):
     response.set_header('Cache-Control', 'private, max-age=0, no-cache')
-    accepted_resp = ['apptilacion/json', 'application/javascript']
-    resp_types = request.headers.get('Accept').split(',')
-    if resp_types:
-        for rt in resp_types:
-            if rt in accepted_resp:
-                resp_type = rt
+    accepted_resp = ('apptilacion/json', 'application/javascript')
+    resp_type_arr = request.headers.get('Accept').split(',')
+    if resp_type_arr:
+        for resp_type in resp_type_arr:
+            if resp_type in accepted_resp:
                 break
     if resp_type == 'application/javascript':
         return resp_jsonp(resp)
@@ -65,35 +62,30 @@ def vars_to_json(key, val):
 
 @route('/mon/nodes')
 def get_nodes():
-    nodes_b = rdb.keys(mon_nodes_key_pfx + '*')
-    result = json.dumps([n.decode('utf-8').split('::')[-1]
-                        for n in nodes_b]) if nodes_b else None
-    return resp_or_404(result)
+    node_arr = rdb.keys(mon_nodes_key_pfx + '*')
+    return resp_or_404(json.dumps([n.split('::')[-1]for n in node_arr])
+                       if node_arr else None)
 
 
 @route('/mon/nodes/<node>')
 def get_node(node):
-    node_b = rdb.get(mon_nodes_key_pfx + node)
-    result = node_b.decode('utf-8') if node_b else None
-    return resp_or_404(result)
+    return resp_or_404(rdb.get(mon_nodes_key_pfx + node))
 
 
 @route('/mon/services/<node>')
 def get_node_services(node):
-    services_b = rdb.get(mon_services_key_pfx + node)
-    result = services_b.decode('utf-8') if services_b else None
-    return resp_or_404(result)
+    return resp_or_404(rdb.get(mon_services_key_pfx + node))
 
 
 @route('/mon/nodes/<node>/<key>')
 def get_node_key(node, key):
     result = None
-    node_b = rdb.get(mon_nodes_key_pfx + node)
-    if node_b:
-        node_obj = json.loads(node_b.decode('utf-8'))
+    node_str = rdb.get(mon_nodes_key_pfx + node)
+    if node_str:
+        node_obj = json.loads(node_str)
         if key in node_obj:
             result = vars_to_json(key, node_obj[key])
-    return resp_or_404(result)
+    return resp_or_404(result or None)
 
 
 @route('/mon/reload', method='POST')
