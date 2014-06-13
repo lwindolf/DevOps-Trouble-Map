@@ -49,8 +49,6 @@ def node(name):
 			cHash['remoteHost'] = tmp[1]
 			connectionDetails[c] = cHash
 
-	# FIXME: Add node interconnections for this node (but missing in data model currently)
-
 	return json.dumps({'name': name, 'status': nodeDetails, 'services': serviceDetails, 'connections': connectionDetails})
 
 run(host='localhost', port=8080, debug=True)
