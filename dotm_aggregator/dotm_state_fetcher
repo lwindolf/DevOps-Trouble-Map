@@ -35,7 +35,7 @@ redis_push() {
 	local key=$(shift)
 	local output=$($REDIS_CLI hmset $key $@)
 	if [ $? -ne 0 -o "$output" != "OK" ]; then 
-		echo "ERROR: Failed to run >>>$REDIS_CLI hmset $key $@<<<!"
+		echo "ERROR: Failed to run >>>$REDIS_CLI hmset $key $@<<<!" >&2
 		echo "$output"
 	fi
 }
@@ -51,7 +51,7 @@ load_nets() {
 		if [[ $cidr =~ ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/([0-9]+) ]]; then
 			netmasks+=($(printf 'network=0x%02x%02x%02x%02x;netmask=0x%08x\n' ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[4]} $((2**32-2**(32-${BASH_REMATCH[5]})))))
 		else
-			echo "ERROR: Invalid network address '$cidr'!"
+			echo "ERROR: Invalid network address '$cidr'!" >&2
 		fi
 	done
 }
@@ -67,7 +67,7 @@ match_nets() {
 	if [[ $ip =~ ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
 		ip=$(printf '0x%02x%02x%02x%02x' ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[4]})
 	else
-		echo "ERROR: Invalid IP '$ip'!"
+		echo "ERROR: Invalid IP '$ip'!" >&2
 		return 0
 	fi
 
