@@ -157,7 +157,7 @@
 		$.getJSON("backend/nodes", {})
 		.done(function (data) {
 			var nodes = [];
-			$.each(data, function (index, node) {
+			$.each(data.nodes, function (index, node) {
 				nodes.push('<a href="javascript:loadNode(\''+node+'\')">'+node+'</a>');
 			})
 			$(".nodes").html(nodes.join("<br/>"));

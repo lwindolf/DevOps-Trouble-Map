@@ -1,18 +1,32 @@
 #!/usr/bin/python
 
+import re
 import json
 import redis
 import datetime
-from bottle import route, run
+from bottle import route, run, response
+
+def get_connections(r):
+	prefix = 'dotm::connections::'
+	tmp = [re.sub('::[0-9]+::', '::', k.replace(prefix, '')) for k in r.keys(prefix+'*')]
+	keys = []
+	for t in sorted(set(tmp)):
+		fields = t.split('::')
+		if len(fields) == 2:
+			# Filter out local host addresses
+			if not (fields[0].startswith('127') or fields[1].startswith('127')):
+				keys.append({'source': fields[0], 'destination': fields[1]})
+	return keys
 
 @route('/nodes')
 def nodes():
+	response.set_header('Cache-Control', 'max-age=30,must-revalidate')
 	r = redis.Redis()
-	# FIXME: Add node interconnections to JSON (but missing in data model currently)
-	return json.dumps(r.lrange("dotm::nodes", 0, -1))
+	return json.dumps({'nodes':r.lrange("dotm::nodes", 0, -1), 'connections': get_connections(r)})
 
 @route('/node/<name>')
 def node(name):
+	response.set_header('Cache-Control', 'max-age=30,must-revalidate')
 	r = redis.Redis()
 
 	prefix = 'dotm::nodes::'+name
