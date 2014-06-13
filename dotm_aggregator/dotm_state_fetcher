@@ -137,7 +137,7 @@ if ! $NETCAT -h 2>/dev/null; then
 fi
 
 readonly CLIENTS=$($REDIS_CLI lrange dotm::nodes 0 -1)
-if [ "$CLIENTS" == "" ]; then
+if [ "$CLIENTS" == "" ] || [[ ! "$CLIENTS" =~ ^[a-zA-Z0-9._-]+$ ]]; then
 	echo "ERROR: Could not determine list of client nodes!" >&2
 	exit 1
 fi
