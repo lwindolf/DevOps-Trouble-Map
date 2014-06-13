@@ -46,8 +46,9 @@ declare -a netmasks
 load_nets() {
 	# Note: configuration contains CIDR netmasks that we need
 	# to convert to hex values for easy checking 
-	tmp="127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
-	for cidr in $tmp
+	private_networks="127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
+	extra_networks=$($REDIS_CLI lrange dotm::config::other_internal_networks 0 -1 2>/dev/null)
+	for cidr in $private_networks $extra_networks
 	do
 		if [[ $cidr =~ ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/([0-9]+) ]]; then
 			netmasks+=($(printf 'network=0x%02x%02x%02x%02x;netmask=0x%08x\n' ${BASH_REMATCH[1]} ${BASH_REMATCH[2]} ${BASH_REMATCH[3]} ${BASH_REMATCH[4]} $((2**32-2**(32-${BASH_REMATCH[5]})))))
