@@ -84,7 +84,6 @@
 					var tmp;
 					var nodeDetails = "<table><tr><th>In</th><th></th><th>"+node+"</th><th></th><th>Out</th></tr>";
 					$.each(data.services, function(service, serviceData) {
-						arrow = false;
 						tmp = "";
 						nodeDetails += "<tr class='service'><td>";
 						$.each(data.connections, function(connection, connectionData) {
@@ -92,24 +91,22 @@
 							   connectionData.direction == "in" &&
 							   tmp.indexOf(">"+connectionData.remoteHost+"<") == -1) {
 								tmp += "<div class='node'>"+connectionData.remoteHost + "</div>";
-								arrow = true;
 							}
 						})
 						nodeDetails += tmp + "<td>";
-						if(arrow)
+						if(tmp)
 							nodeDetails += "<img src='arrow-right.svg'/>";
-						arrow = false;
+
 						tmp = "";
 						$.each(data.connections, function(connection, connectionData) {
 							if(connectionData.process == serviceData.process &&
 							   connectionData.direction == "out" &&
 							   tmp.indexOf(">"+connectionData.remoteHost+"<") == -1) {
 								tmp += "<div class='node'>"+connectionData.remoteHost+"</div>";
-								arrow = true;
 							}
 						})
 						nodeDetails += "</td></td><td class='service'>"+serviceData.process+"</td><td>";
-						if(arrow)
+						if(tmp)
 							nodeDetails += "<img src='arrow-right.svg'/>";
 						nodeDetails += "</td><td>" + tmp + "</td></tr>";
 					})
