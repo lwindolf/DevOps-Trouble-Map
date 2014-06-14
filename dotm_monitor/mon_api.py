@@ -85,7 +85,7 @@ def get_node_key(node, key):
         node_obj = json.loads(node_str)
         if key in node_obj:
             result = vars_to_json(key, node_obj[key])
-    return resp_or_404(result or None)
+    return resp_or_404(result)
 
 
 @route('/mon/reload', method='POST')
@@ -105,6 +105,7 @@ def reload():
             for key, val in mon.get_nodes().items():
                 rdb.setex(mon_nodes_key_pfx + key, json.dumps(val), mon_expire)
             for key, val in mon.get_services().items():
+                # TODO: move services to lists, will be needed for pagination
                 rdb.setex(mon_services_key_pfx + key, json.dumps(val), mon_expire)
             time_now = int(time.time())
             rdb.hset(mon_config_key, update_time_key, time_now)
