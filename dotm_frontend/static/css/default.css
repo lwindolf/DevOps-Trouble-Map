@@ -17,6 +17,10 @@ h1.title {
 	color:white;
 	padding:3px 6px;
 }
+.blockTitle a {
+	color:white;
+	text-decoration:none;
+}
 
 .block {
 	border: 1px solid gray;
@@ -90,7 +94,7 @@ a:hover {
 
 .nodeChart {
 	background:white;
-	min-height:400px;
+	min-height:600px;
 	border-bottom:1px solid #ccc;
 }
 
@@ -110,3 +114,31 @@ a:hover {
 	text-align:center;
 }
 
+
+// nodesChart definition
+svg .node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+    cursor: move;
+}
+
+svg .group {
+  stroke: #fff;
+  stroke-width: 1.5px;
+  cursor: move;
+  opacity: 0.7;
+}
+
+svg .link {
+  stroke: #7a4e4e;
+  stroke-width: 1px;
+  stroke-opacity: 1;
+}
+
+svg .label {
+    fill: white;
+    font-family: Monospace;
+    font-size: 10px;
+    text-anchor: middle;
+    cursor: move;
+}
