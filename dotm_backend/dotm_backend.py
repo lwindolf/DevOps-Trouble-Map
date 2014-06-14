@@ -26,7 +26,7 @@ def nodes():
                        'connections': get_connections()})
 
 
-@route('/node/<name>')
+@route('/nodes/<name>')
 def node(name):
     response.set_header('Cache-Control', 'max-age=30,must-revalidate')
     response.content_type = 'application/json'
