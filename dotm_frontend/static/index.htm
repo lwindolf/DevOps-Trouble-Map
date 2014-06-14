@@ -148,7 +148,7 @@
 			$(".nodeChart").html("");
 			$("#nodeTables").hide();
 
-			$.getJSON("backend/node/"+node, {})
+			$.getJSON("backend/nodes/"+node, {})
 			.done(function (data) {
 				var now = (new Date).getTime();
 
