@@ -28,6 +28,15 @@
  			return node;
 		}
 
+		function addNodeToColaNodeList(nodeList, nodeIndex, node) {
+			var n = {};
+			n['name'] = node;
+			n['width'] = 60;
+			n['height'] = 40;
+			nodeList.push(n);
+			nodeIndex[node] = Object.keys(nodeIndex).length;
+		}
+
 		function loadNodesGraph(nodes, connections) {
 			var width = 800,
     			    height = 600,
@@ -61,17 +70,16 @@
 			graph["nodes"] = new Array();
 			graph["links"] = new Array();
 			graph["groups"] = new Array();
-			nodes.push('Internet');
 			$.each(nodes, function(index, data) {
-				var n = {};
-				n['name'] = data;
-				n['width'] = 60;
-				n['height'] = 40;
-				graph['nodes'].push(n);
-				console.log("node "+data+" has index "+i);
-				nodeIndex[data] = i++;
+				addNodeToColaNodeList(graph['nodes'], nodeIndex, data);
 			});
 			$.each(connections, function(index, data) {
+				// Node sources and target might not exist
+				// in case of non-managed nodes we connect to/from
+				if(nodeIndex[data.source] == undefined)
+					addNodeToColaNodeList(graph['nodes'], nodeIndex, data.source);
+				if(nodeIndex[data.destination] == undefined)
+					addNodeToColaNodeList(graph['nodes'], nodeIndex, data.destination);
 				var l = {};
 				l['source'] = nodeIndex[data.source];
 				l['target'] = nodeIndex[data.destination];
