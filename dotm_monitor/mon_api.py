@@ -74,7 +74,7 @@ def get_node(node):
 
 @route('/mon/services/<node>')
 def get_node_services(node):
-    return resp_or_404(rdb.get(mon_services_key_pfx + node))
+    return resp_or_404(rdb.lrange(mon_services_key_pfx + node, 0, -1))
 
 
 @route('/mon/nodes/<node>/<key>')
@@ -90,34 +90,35 @@ def get_node_key(node, key):
 
 @route('/mon/reload', method='POST')
 def reload():
-    result = None
     time_now = int(time.time())
     update_time_key = 'last_updated'
     update_interval = 60
     update_lock_key = mon_config_key_pfx + 'update_running'
     update_lock_expire = 300
-    update_time_b = rdb.hget(mon_config_key, update_time_key)
-    if update_time_b and not rdb.get(update_lock_key):
-        update_time = int(update_time_b)
+    update_time_str = rdb.hget(mon_config_key, update_time_key)
+    if update_time_str and not rdb.get(update_lock_key):
+        update_time = int(update_time_str)
         if time_now - update_time >= update_interval:
             rdb.setex(update_lock_key, update_lock_expire, 1)
             mon = DOTMMonitor(mon_url, mon_user, mon_paswd)
             for key, val in mon.get_nodes().items():
                 rdb.setex(mon_nodes_key_pfx + key, json.dumps(val), mon_expire)
             for key, val in mon.get_services().items():
-                # TODO: move services to lists, will be needed for pagination
-                rdb.setex(mon_services_key_pfx + key, json.dumps(val), mon_expire)
+                with rdb.pipeline() as pipe:
+                    pipe.lpush(mon_services_key_pfx + key, json.dumps(val))
+                    pipe.expire(mon_services_key_pfx + key, mon_expire)
+                    pipe.execute()
             time_now = int(time.time())
             rdb.hset(mon_config_key, update_time_key, time_now)
             update_time = time_now
             rdb.delete(update_lock_key)
-        result = vars_to_json(update_time_key, update_time)
-    elif update_time_b:
-        update_time = int(update_time_b)
-        result = vars_to_json(update_time_key, update_time)
+        return resp_or_404(vars_to_json(update_time_key, update_time))
+    elif update_time_str:
+        update_time = int(update_time_str)
+        return resp_or_404(vars_to_json(update_time_key, update_time))
     else:
         rdb.hset(mon_config_key, update_time_key, 0)
-    return resp_or_404(result)
+    return resp_or_404(None)
 
 
 if __name__ == '__main__':
