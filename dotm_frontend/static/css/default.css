@@ -101,6 +101,7 @@ a:hover {
 .nodeChart .node {
 	border:1px solid gray;
 	padding:6px;
+	margin:3px;
 }
 
 .nodeChart td.service {
