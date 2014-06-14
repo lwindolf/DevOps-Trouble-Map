@@ -115,6 +115,10 @@
 			            .attr("height", function (d) { return d.height - 2 * pad; })
 			            .attr("rx", r - 3).attr("ry", r - 3)
 			            .style("fill", function (d) { return color(0); })//color(graph.groups.length); })
+			            .on("click", function (d) {
+			                if (d3.event.defaultPrevented) return; // click suppressed
+					if($.inArray(d.name, nodes) != -1) loadNode(d.name); 
+			            })
 			            .call(d3cola.drag);
 			
 			var label = svg.selectAll(".label")
@@ -122,6 +126,10 @@
 				    .enter().append("text")
 			            .attr("class", "label")
 			            .text(function (d) { return d.name; })
+			            .on("click", function (d) {
+					if (d3.event.defaultPrevented) return; // click suppressed
+					if($.inArray(d.name, nodes) != -1) loadNode(d.name);
+			            })
 			            .call(d3cola.drag);
 			
 			node.append("title")
