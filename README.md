@@ -98,8 +98,8 @@ Right now the following relation namespaces are used in Redis
         "last_status_change": &lt;timestamp>,
         "status_information": "hostname01 status information"
     }
-- dotm::checks::services::&lt;node name> (key with set expire):
-  * JSON containing all associated checks:
+- dotm::checks::services::&lt;node name> (list of service JSONs with set expire):
+  * List containing all associated node checks:
     [
         {
             "node": "hostname01",
