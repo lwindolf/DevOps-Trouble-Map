@@ -1,31 +1,31 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import configparser
+import ConfigParser
 import json
 import redis
 import time
-from bottle import route, run, response, request
+from bottle import route, run, response, request, debug
 
 from dotm_monitor import DOTMMonitor
 
 # Configuration
-config = configparser.ConfigParser()
+config = ConfigParser.ConfigParser()
 config.read('.mr.developer.cfg')
 
-mon_url = config['monitoring']['url']
-mon_user = config['monitoring']['user']
-mon_paswd = config['monitoring']['paswd']
-mon_expire = config['monitoring']['expire']  # 86400sec = 1day
-mon_nodes_key_pfx = config['monitoring']['nodes_key_prefix']  # dotm::checks::nodes::
-mon_services_key_pfx = config['monitoring']['services_key_prefix']  # dotm::checks::services::
-mon_config_key = config['monitoring']['config_key']  # dotm::checks::config
-mon_config_key_pfx = config['monitoring']['config_key_prefix']  # dotm::checks::config::
+mon_url = config.get('monitoring', 'url')
+mon_user = config.get('monitoring', 'user')
+mon_paswd = config.get('monitoring', 'paswd')
+mon_expire = config.getint('monitoring', 'expire')  # 86400sec = 1day
+mon_nodes_key_pfx = config.get('monitoring', 'nodes_key_prefix')  # dotm::checks::nodes::
+mon_services_key_pfx = config.get('monitoring', 'services_key_prefix')  # dotm::checks::services::
+mon_config_key = config.get('monitoring', 'config_key')  # dotm::checks::config
+mon_config_key_pfx = config.get('monitoring', 'config_key_prefix')  # dotm::checks::config::
 
-redis_host = config['redis']['host']
-redis_port = config['redis']['port']
+redis_host = config.get('redis', 'host')
+redis_port = config.getint('redis', 'port')
 
-rdb = redis.Redis(redis_host, redis_port, decode_responses=True)
+rdb = redis.Redis(redis_host, redis_port)
 
 
 def resp_json(resp=None):
@@ -169,4 +169,5 @@ def mon_reload():
     return resp_or_404(None)
 
 if __name__ == '__main__':
-    run(host='localhost', port=8080, reloader=True, debug=True)
+    debug(mode=True)
+    run(host='localhost', port=8080, reloader=True)

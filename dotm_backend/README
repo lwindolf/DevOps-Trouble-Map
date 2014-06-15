@@ -7,8 +7,7 @@ POC of DOTM Backend API
 
 Installing requirements
 -----------------------
-$ pip3 install -r requirements.txt
-Or install packages with modules listed in requirements.txt provided by your OS package manager.
+apt-get install python-requests python-redis python-bottle
 
 Configuring
 -----------

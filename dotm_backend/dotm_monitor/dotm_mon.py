@@ -4,9 +4,9 @@ import json
 import time
 
 
-class DOTMMonitor:
+class DOTMMonitor(object):
 
-    version = '0.1.6'
+    version = '0.1.7'
 
     def __init__(self, mon_url, user=None, paswd=None, provider='icinga'):
         self.user = user
@@ -23,8 +23,7 @@ class DOTMMonitor:
     def _get_req(self):
         if self.user and self.paswd:
             return requests.get(self.mon_url, auth=(self.user, self.paswd), verify=False)
-        else:
-            return requests.get(self.mon_url, verify=False)
+        return requests.get(self.mon_url, verify=False)
 
     def get_data(self):
         return self._get_req().text
@@ -39,7 +38,7 @@ class DOTMMonitor:
     def _get_nodes_icinga(self):
         data = self.get_data()
         jsonData = json.loads(data.replace('\t', ' '))
-        js = jsonData.get('status').get('host_status')
+        js = jsonData['status']['host_status']
         rjs = {}
         for elem in js:
             last_check = self._nagios_last_check_converter(elem['last_check'])
@@ -56,7 +55,7 @@ class DOTMMonitor:
     def _get_services_icinga(self):
         data = self.get_data()
         jsonData = json.loads(data.replace('\t', ' '))
-        js = jsonData.get('status').get('service_status')
+        js = jsonData['status']['service_status']
         rjs = {}
         for elem in js:
             hostname = elem['host']
