@@ -105,7 +105,8 @@ def get_node(name):
     return resp_or_404(json.dumps({'name': name,
                                    'status': nodeDetails,
                                    'services': serviceDetails,
-                                   'connections': connectionDetails}))
+                                   'connections': connectionDetails,
+                                   'monitoring':rdb.get(mon_nodes_key_pfx + name)}))
 
 
 @route('/mon/nodes')
