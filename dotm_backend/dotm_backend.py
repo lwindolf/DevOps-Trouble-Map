@@ -116,6 +116,8 @@ def get_settings():
                                      'values': rdb.lrange('dotm::config::other_internal_networks', 0, -1) }
     settings['user_node_aliases'] = {'description': 'Node aliases to map node names of your monitoring to a node name in DOTM', 
                                      'values': rdb.hgetall('dotm::config::user_node_aliases')};
+    settings['nagios_use_aliases'] = {'description': 'Set to "1" if Nagios/Icinga/... aliases are to be used instead of host names. You want to set this if for example you have FQDNs as Nagios host names and use short names in the Nagios alias. Default is "0".', 
+                                     'values': rdb.get('dotm::config::nagios_use_aliases')};
     return resp_or_404(json.dumps(settings))
 
 @route('/mon/nodes')

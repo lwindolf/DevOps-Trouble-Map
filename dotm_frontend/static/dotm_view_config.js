@@ -6,8 +6,28 @@ function printConfigForm(title, setting, type, addAllowed, keyTitle, valueTitle)
 	result += "<div class='description'>"+setting.description+"</div>";
 	result += "<form action='FIXME' method='POST'>";
 	if(type == 'single_value') {
-		result += "<input type='text' value='"+setting.values+"'/>";
+		result += "<input type='text' value='"+(setting.values?setting.value:"")+"'/>";
 		result += "<input type='submit' value='Save'/>";
+	}
+	if(type == 'array') {
+		result += "<table>";
+		result += "<tr><th>"+keyTitle+"</th></tr>";
+		$.each(setting.values, function(index, value) {
+			result += "<tr><td>";
+			result += "<input type='text' name='key' value='"+value+"' readonly/>";
+			result += "<input type='button' value='Remove'/>";
+			result += "</td></tr>";
+		});
+		result += "</table>";
+		if(addAllowed) {
+			result += "<table>";
+			result += "<tr><th>"+keyTitle+"</th></tr>";
+			result += "<tr><td>";
+			result += "<input type='text' name='key' value=''/>";
+			result += "<input type='button' value='Add'/>";
+			result += "</td></tr>";
+			result += "</table>";
+		}
 	}
 	if(type == 'hash') {
 		result += "<table>";
@@ -49,7 +69,8 @@ function loadConfig() {
 	.done(function (data) {
 		var forms = "";
 
-		forms += printConfigForm('Internal Networks', data.other_internal_networks, 'single_value', false);
+		forms += printConfigForm('Internal Networks', data.other_internal_networks, 'array', true, 'Network');
+		forms += printConfigForm('Use Nagios Aliases', data.nagios_use_aliases, 'single_value');
 		forms += printConfigForm('Node Aliases', data.user_node_aliases, 'hash', true, 'Alias', 'Node Name');
 		$(".nodeChart").html(forms);
 
