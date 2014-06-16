@@ -22,11 +22,11 @@ The DOTM server has the following dependencies
 
 - netcat
 - redis-server
-- Python modules
+- Python2 modules
   - redis
   - bottle
   - requests
-  - configparser
+  - ConfigParser
 
 To automatically install the server including its dependencies on Debian/Ubuntu 
 simply run
@@ -39,7 +39,7 @@ Agent Installation
 
 The DOTM agent has the following dependencies
 
-- glib 2.0
+- glib-2.0
 - libevent2
 
 To automatically install the dotm_node agent simply run
@@ -57,7 +57,7 @@ DOTM will use the following technologies
 
 - Simple remote agent "dotm_node" (in C using libevent and glib)
 - Redis as backend store
-- Python bottle with Jinja templating
+- Python2 bottle with Jinja templating
 - JSON backend data access
 - any jQuery library for rendering
 
