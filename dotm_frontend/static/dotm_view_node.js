@@ -92,6 +92,11 @@ function loadNode(node) {
 			nodeDetails += "</table>";
 			$(".nodeChart").html(nodeDetails);
 			$("#nodeTables").show();
+
+			// Finally if there we no other exceptions check for monitoring
+			// and complain if it is not there
+			if(data.monitoring == null) 
+				throw("No monitoring found! Ensure that your Nagios setup monitors this host with name '"+node+"' or add a node mapping! (FIXME: Link to config)");
 		} catch(err) {
 			setError(err);
 		}
