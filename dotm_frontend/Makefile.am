@@ -5,7 +5,10 @@ dotm_frontend_static_DATA = \
 	static/jquery-2.1.1.min.js \
 	static/jquery.timeago.js \
 	static/d3.v3.js \
-	static/cola.v3.min.js
+	static/cola.v3.min.js \
+	static/dotm_common.js \
+	static/dotm_view_node.js \
+	static/dotm_view_all_nodes.js
 
 dotm_frontend_cssdir = $(datadir)/dotm_frontend/static/css
 dotm_frontend_css_DATA = static/css/default.css
