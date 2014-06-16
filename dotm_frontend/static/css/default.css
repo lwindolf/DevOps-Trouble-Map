@@ -4,11 +4,25 @@ body {
 	padding:0;
 }
 
+td.title {
+	width:100%;
+}
 h1.title {
 	font-family: Verdana;
 	font-size: 18pt;
 	color: #444;
 	margin:6px;
+}
+
+td.menu a {
+	color:#777;
+	text-decoration:none;
+	display:block;
+	padding:6px;
+}
+td.menu a:hover {
+	color:#444;
+	background:#ddd;
 }
 
 .blockTitle {

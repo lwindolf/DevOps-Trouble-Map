@@ -8,7 +8,8 @@ dotm_frontend_static_DATA = \
 	static/cola.v3.min.js \
 	static/dotm_common.js \
 	static/dotm_view_node.js \
-	static/dotm_view_all_nodes.js
+	static/dotm_view_all_nodes.js \
+	static/dotm_view_config.js
 
 dotm_frontend_cssdir = $(datadir)/dotm_frontend/static/css
 dotm_frontend_css_DATA = static/css/default.css
