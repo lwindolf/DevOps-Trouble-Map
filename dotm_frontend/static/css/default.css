@@ -156,3 +156,36 @@ svg .label {
     text-anchor: middle;
     cursor: move;
 }
+
+.settingsForm {
+	clear:both;
+	background:#f0f0f0;
+	border:1px solid #ccc;
+	margin:6px;
+	padding:6px 12px;
+	font-family:Helvetica;
+}
+
+.settingsForm .title {
+	font-weight:bold;
+	font-size:120%;
+	margin:12px 0;
+}
+.settingsForm .description {
+	margin-bottom:12px 0;
+	font-size:11pt;
+	color:#444;
+}
+.settingsForm table {
+	margin:6px 0;
+	border-collapse:collapse;
+	border:1px solid #444;
+}
+.settingsForm table th {
+	background:#777;
+	color:white;
+	font-weight:normal;
+}
+.settingsForm table td {
+	padding:6px;
+}

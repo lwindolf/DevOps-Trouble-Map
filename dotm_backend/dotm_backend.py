@@ -109,6 +109,15 @@ def get_node(name):
                                    'monitoring':rdb.get(mon_nodes_key_pfx + name)}))
 
 
+@route('/settings')
+def get_settings():
+    settings = {}
+    settings['other_internal_networks'] = {'description': 'Networks that DOTM should consider internal. Note that private networks (127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16) are always considered internal.', 
+                                     'values': rdb.lrange('dotm::config::other_internal_networks', 0, -1) }
+    settings['user_node_aliases'] = {'description': 'Node aliases to make node names of your monitoring to a node as seen by DOTM', 
+                                     'values': rdb.hgetall('dotm::config::user_node_aliases')};
+    return resp_or_404(json.dumps(settings))
+
 @route('/mon/nodes')
 def get_mon_nodes():
     node_arr = rdb.keys(mon_nodes_key_pfx + '*')
