@@ -10,6 +10,7 @@ from bottle import route, run, response, request, debug
 from dotm_monitor import DOTMMonitor
 
 # Configuration
+# TODO: Move configuration to Redis
 config = ConfigParser.ConfigParser()
 config.read('.mr.developer.cfg')
 
@@ -167,6 +168,44 @@ def mon_reload():
     else:
         rdb.hset(mon_config_key, update_time_key, 0)
     return resp_or_404(None)
+
+
+@route('/config', method='GET')
+def get_config():
+    return resp_or_404(json.dumps(rdb.hgetall('dotm::config')))
+
+
+@route('/config/<variable>', method='GET')
+def get_config_variable(variable):
+    value = rdb.hget('dotm::config', variable)
+    if value:
+        return resp_or_404(vars_to_json(variable, value))
+    return resp_or_404()
+
+
+@route('/config', method='POST')
+def set_config():
+    config_pfx = 'dotm::config'
+    response.content_type = 'application/json'
+    data_str = request.body.readlines()[0]
+    try:
+        if not data_str:
+            raise ValueError
+        data_obj = json.loads(data_str)
+        if not isinstance(data_obj, dict):
+            raise ValueError
+        if not data_obj.viewkeys():
+            raise ValueError
+    except ValueError:
+        response.status = 400
+        return '{"error": {"message": "Wrong POST data format", "status_code": 400}}'
+
+    for key, val in data_obj.items():
+        # TODO: allow only defined variable names with defined value type and
+        # maximum length
+        rdb.hset(config_pfx, key, val)
+    return resp_or_404(json.dumps(data_obj))
+
 
 if __name__ == '__main__':
     debug(mode=True)

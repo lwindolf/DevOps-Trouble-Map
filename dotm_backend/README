@@ -42,6 +42,10 @@ $ curl -i http://localhost:8080/mon/services/<hostname>
 $ curl -i http://localhost:8080/mon/nodes/404
 $ curl -X POST -i http://localhost:8080/mon/reload
 
+$ curl -i http://localhost:8080/config
+$ curl -i http://localhost:8080/config/<variable>
+$ curl -X POST -d '{"var1": 1, "var2": "two"}' -i http://localhost:8080/config
+
 Testing JSONP API
 -----------------
 $ curl -i -H "Accept: application/javascript" http://localhost:8080/nodes/<hostname>?callback=foo
