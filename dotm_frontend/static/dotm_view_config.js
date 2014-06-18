@@ -1,15 +1,15 @@
 /* Simle view that generates HTML forms and fills values from JSON */
 
-function printConfigForm(title, setting, type, addAllowed, keyTitle, valueTitle) {
+function printConfigForm(title, setting, addAllowed, keyTitle, valueTitle) {
 	var result = "<div class='settingsForm'>";
 	result += "<div class='title'>"+title+"</div>";
 	result += "<div class='description'>"+setting.description+"</div>";
 	result += "<form action='FIXME' method='POST'>";
-	if(type == 'single_value') {
-		result += "<input type='text' value='"+(setting.values?setting.value:"")+"'/>";
+	if(setting.type == 'single_value') {
+		result += "<input type='text' value='"+(setting.values?setting.values:"")+"'/>";
 		result += "<input type='submit' value='Save'/>";
 	}
-	if(type == 'array') {
+	if(setting.type == 'array') {
 		result += "<table>";
 		result += "<tr><th>"+keyTitle+"</th></tr>";
 		$.each(setting.values, function(index, value) {
@@ -29,7 +29,7 @@ function printConfigForm(title, setting, type, addAllowed, keyTitle, valueTitle)
 			result += "</table>";
 		}
 	}
-	if(type == 'hash') {
+	if(setting.type == 'hash') {
 		result += "<table>";
 		result += "<tr><th>"+keyTitle+"</th><th>"+valueTitle+"</th></tr>";
 		$.each(setting.values, function(key, value) {
@@ -69,9 +69,11 @@ function loadConfig() {
 	.done(function (data) {
 		var forms = "";
 
-		forms += printConfigForm('Internal Networks', data.other_internal_networks, 'array', true, 'Network');
-		forms += printConfigForm('Use Nagios Aliases', data.nagios_use_aliases, 'single_value');
-		forms += printConfigForm('Node Aliases', data.user_node_aliases, 'hash', true, 'Alias', 'Node Name');
+		forms += printConfigForm('Internal Networks', data.other_internal_networks, true, 'Network');
+		forms += printConfigForm('Use Nagios Aliases', data.nagios_use_aliases);
+		forms += printConfigForm('Node Aliases', data.user_node_aliases, true, 'Alias', 'Node Name');
+		forms += printConfigForm('Service Aging', data.service_aging);
+		forms += printConfigForm('Connection Aging', data.connection_aging);
 		$(".nodeChart").html(forms);
 
 		setStatus("Settings loaded.");

@@ -109,18 +109,33 @@ def get_node(name):
                                    'status': nodeDetails,
                                    'services': serviceDetails,
                                    'connections': connectionDetails,
-                                   'monitoring':rdb.get(mon_nodes_key_pfx + name)}))
+                                   'monitoring':rdb.get(mon_nodes_key_pfx + name),
+                                   'settings':{
+                                       'service_aging':rdb.get(config_key_pfx + '::service_aging'),
+                                       'connection_aging':rdb.get(config_key_pfx + '::connection_aging'),
+                                   }}))
 
 
 @route('/settings')
 def get_settings():
     settings = {}
     settings['other_internal_networks'] = {'description': 'Networks that DOTM should consider internal. Note that private networks (127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16) are always considered internal. Separate different networks in CIDR syntax by spaces.', 
-                                     'values': rdb.lrange('dotm::config::other_internal_networks', 0, -1) }
+                                     'type': 'array',
+                                     'values': rdb.lrange(config_key_pfx + '::other_internal_networks', 0, -1) }
     settings['user_node_aliases'] = {'description': 'Node aliases to map node names of your monitoring to a node name in DOTM', 
-                                     'values': rdb.hgetall('dotm::config::user_node_aliases')};
+                                     'type': 'hash',
+                                     'values': rdb.hgetall(config_key_pfx + '::user_node_aliases')};
     settings['nagios_use_aliases'] = {'description': 'Set to "1" if Nagios/Icinga/... aliases are to be used instead of host names. You want to set this if for example you have FQDNs as Nagios host names and use short names in the Nagios alias. Default is "0".', 
-                                     'values': rdb.get('dotm::config::nagios_use_aliases')};
+                                     'type': 'single_value',
+                                     'values': rdb.get(config_key_pfx + '::nagios_use_aliases')};
+    value = rdb.get(config_key_pfx + '::service_aging')
+    settings['service_aging'] = {'description': 'Number of seconds after which a service without connections is considered unused. Default is "300"s.',
+                                 'type': 'single_value',
+                                 'values': value if value!=None else 5*60};
+    value = rdb.get(config_key_pfx + '::connection_aging')
+    settings['connection_aging'] = {'description': 'Number of seconds after which a connection type is considered unused. Default is "300"s.',
+                                    'type': 'single_value',
+                                    'values': value if value!=None else 5*60};
     return resp_or_404(json.dumps(settings))
 
 @route('/mon/nodes')
