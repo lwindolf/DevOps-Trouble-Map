@@ -76,7 +76,7 @@ function loadNode(node) {
 				})
 				nodeDetails += tmp + "<td>";
 				if(tmp)
-					nodeDetails += "<img src='arrow-right.svg'/>";
+					nodeDetails += "<img src='arrow-right"+((serviceData.age=="fresh")?'':'-dashed')+".svg'/>";
 
 				tmp = "";
 				$.each(data.connections, function(connection, connectionData) {
@@ -88,7 +88,7 @@ function loadNode(node) {
 				})
 				nodeDetails += "</td></td><td class='service'>"+serviceData.process+"</td><td>";
 				if(tmp)
-					nodeDetails += "<img src='arrow-right.svg'/>";
+					nodeDetails += "<img src='arrow-right"+((serviceData.age=="fresh")?'':'-dashed')+".svg'/>";
 				nodeDetails += "</td><td>" + tmp + "</td></tr>";
 			})
 			nodeDetails += "</table>";

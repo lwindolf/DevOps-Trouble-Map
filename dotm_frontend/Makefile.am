@@ -2,6 +2,7 @@ dotm_frontend_staticdir = $(datadir)/dotm_frontend/static
 dotm_frontend_static_DATA = \
 	static/index.htm \
 	static/arrow-right.svg \
+	static/arrow-right-dashed.svg \
 	static/jquery-2.1.1.min.js \
 	static/jquery.timeago.js \
 	static/d3.v3.js \
