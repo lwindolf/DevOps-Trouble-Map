@@ -72,11 +72,18 @@ td.menu a:hover {
 	font-weight:normal;
 }
 
-#nodeTables .old {
+.service.old, .connection.old {
 	color:#ccc;
 }
-#nodeTables .old:hover {
+.service.old:hover, .connection.old:hover {
 	color:black;
+}
+
+tr.service.old td, tr.service.old * div {
+	border-color:#ccc;
+}
+tr.service.old * svg {
+	color:#ccc;
 }
 
 a:hover {

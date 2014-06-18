@@ -20,17 +20,18 @@ function loadNode(node) {
 			var services = [];
 			services.push('<tr><th>Process</th><th>Port</th><th>Last Up</th><th>Last Used</th></tr>');
 			$.each(data.services, function(port, data) {
-				var recent = "";
+				var age = "fresh";
 				var lastConn = "<td>never</td>";
 				if(!isNaN(data.last_connection)) {
 					lastConn = "<td class='timeago' title='"+data.last_connection*1000+"'>"+data.last_connection*1000+"</td>";
 				} else {
-					recent = "old";
+					age = "old";
 				}
 				if(now/1000 - data.last_seen > 6*60) {
-					recent = "old";
+					age = "old";
 				}
-				services.push('<tr class="service '+recent+'"><td>'+data.process+'</td><td>'+port+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td>'+lastConn+'</tr>');
+				services.push('<tr class="service '+age+'"><td>'+data.process+'</td><td>'+port+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td>'+lastConn+'</tr>');
+				data['age'] = age;	/* Add age to be reused in nodeGraph */
 			})
 			if(services.length > 1)
 				$(".services").html(services.join(''));
@@ -41,11 +42,12 @@ function loadNode(node) {
 			var connections = [];
 			connections.push('<tr><th>I/O</th><th>Process</th><th>Port</th><th>Remote</th><th>Count</th><th>Seen</th></tr>');
 			$.each(data.connections, function(service, data) {
-				var recent = "";
+				var age = "fresh";
 				if(now/1000 - data.last_seen > 6*60) {
-					recent = "old";
+					age = "old";
 				}
-				connections.push('<tr class="connection '+recent+'"><td>'+data.direction+'</td><td>'+data.process+'</td><td>'+data.localPort+'</td><td>'+nodeLink(data.remoteHost)+'</td><td>'+data.connections+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td></tr>');
+				connections.push('<tr class="connection '+age+'"><td>'+data.direction+'</td><td>'+data.process+'</td><td>'+data.localPort+'</td><td>'+nodeLink(data.remoteHost)+'</td><td>'+data.connections+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td></tr>');
+				data['age'] = age;	/* Add age to be reused in nodeGraph */
 			})
 			if(connections.length > 0)
 				$(".connections").html(connections.join(''));
@@ -64,12 +66,12 @@ function loadNode(node) {
 			var nodeDetails = "<table><tr><th></th><th></th><th>"+node+"</th><th></th><th></th></tr>";
 			$.each(data.services, function(service, serviceData) {
 				tmp = "";
-				nodeDetails += "<tr class='service'><td>";
+				nodeDetails += "<tr class='service "+serviceData.age+"'><td>";
 				$.each(data.connections, function(connection, connectionData) {
 					if(connectionData.localPort == service &&
 					   connectionData.direction == "in" &&
 					   tmp.indexOf(">"+connectionData.remoteHost+"<") == -1) {
-						tmp += "<div class='node'>"+nodeLink(connectionData.remoteHost)+"</div>";
+						tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remoteHost)+"</div>";
 					}
 				})
 				nodeDetails += tmp + "<td>";
@@ -81,7 +83,7 @@ function loadNode(node) {
 					if(connectionData.process == serviceData.process &&
 					   connectionData.direction == "out" &&
 					   tmp.indexOf(">"+connectionData.remoteHost+"<") == -1) {
-						tmp += "<div class='node'>"+nodeLink(connectionData.remoteHost)+"</div>";
+						tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remoteHost)+"</div>";
 					}
 				})
 				nodeDetails += "</td></td><td class='service'>"+serviceData.process+"</td><td>";
