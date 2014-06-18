@@ -6,7 +6,7 @@ function loadNode(node) {
 
 	$.getJSON("backend/nodes/"+node, {})
 	.done(function (data) {
-		var now = (new Date).getTime();
+		var now = (new Date).getTime() / 1000;
 
 		// Check fetch status
 		try {
@@ -19,19 +19,19 @@ function loadNode(node) {
 			// Fill in services
 			var services = [];
 			services.push('<tr><th>Process</th><th>Port</th><th>Last Up</th><th>Last Used</th></tr>');
-			$.each(data.services, function(port, data) {
+			$.each(data.services, function(port, s) {
 				var age = "fresh";
 				var lastConn = "<td>never</td>";
-				if(!isNaN(data.last_connection)) {
-					lastConn = "<td class='timeago' title='"+data.last_connection*1000+"'>"+data.last_connection*1000+"</td>";
+				if(!isNaN(s.last_connection)) {
+					lastConn = "<td class='timeago' title='"+s.last_connection*1000+"'>"+s.last_connection*1000+"</td>";
 				} else {
 					age = "old";
 				}
-				if(now/1000 - data.last_seen > 6*60) {
+				if(now - s.last_seen > data.settings.service_aging) {
 					age = "old";
 				}
-				services.push('<tr class="service '+age+'"><td>'+data.process+'</td><td>'+port+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td>'+lastConn+'</tr>');
-				data['age'] = age;	/* Add age to be reused in nodeGraph */
+				services.push('<tr class="service '+age+'"><td>'+s.process+'</td><td>'+port+'</td><td class="timeago" title="'+s.last_seen*1000+'">'+s.last_seen*1000+'</td>'+lastConn+'</tr>');
+				s['age'] = age;	/* Add age to be reused in nodeGraph */
 			})
 			if(services.length > 1)
 				$(".services").html(services.join(''));
@@ -41,13 +41,13 @@ function loadNode(node) {
 			// Fill in connections
 			var connections = [];
 			connections.push('<tr><th>I/O</th><th>Process</th><th>Port</th><th>Remote</th><th>Count</th><th>Seen</th></tr>');
-			$.each(data.connections, function(service, data) {
+			$.each(data.connections, function(service, c) {
 				var age = "fresh";
-				if(now/1000 - data.last_seen > 6*60) {
+				if(now - c.last_seen > data.settings.connection_aging) {
 					age = "old";
 				}
-				connections.push('<tr class="connection '+age+'"><td>'+data.direction+'</td><td>'+data.process+'</td><td>'+data.localPort+'</td><td>'+nodeLink(data.remoteHost)+'</td><td>'+data.connections+'</td><td class="timeago" title="'+data.last_seen*1000+'">'+data.last_seen*1000+'</td></tr>');
-				data['age'] = age;	/* Add age to be reused in nodeGraph */
+				connections.push('<tr class="connection '+age+'"><td>'+c.direction+'</td><td>'+c.process+'</td><td>'+c.localPort+'</td><td>'+nodeLink(c.remoteHost)+'</td><td>'+c.connections+'</td><td class="timeago" title="'+c.last_seen*1000+'">'+c.last_seen*1000+'</td></tr>');
+				c['age'] = age;	/* Add age to be reused in nodeGraph */
 			})
 			if(connections.length > 0)
 				$(".connections").html(connections.join(''));

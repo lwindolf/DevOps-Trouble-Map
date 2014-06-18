@@ -83,6 +83,12 @@ def get_nodes():
     return resp_or_404(json.dumps({'nodes': rdb.lrange("dotm::nodes", 0, -1),
                                    'connections': get_connections()}))
 
+# FIXME: Resolve duplication of default definitions!
+def get_scalar_or_default(name, default):
+    value = rdb.get(name)
+    if value != None:
+        return value
+    return default
 
 @route('/nodes/<name>')
 def get_node(name):
@@ -111,10 +117,9 @@ def get_node(name):
                                    'connections': connectionDetails,
                                    'monitoring':rdb.get(mon_nodes_key_pfx + name),
                                    'settings':{
-                                       'service_aging':rdb.get(config_key_pfx + '::service_aging'),
-                                       'connection_aging':rdb.get(config_key_pfx + '::connection_aging'),
+                                       'service_aging':get_scalar_or_default(config_key_pfx + '::service_aging', 5*60),
+                                       'connection_aging':get_scalar_or_default(config_key_pfx + '::service_aging', 5*60),
                                    }}))
-
 
 @route('/settings')
 def get_settings():
@@ -128,14 +133,12 @@ def get_settings():
     settings['nagios_use_aliases'] = {'description': 'Set to "1" if Nagios/Icinga/... aliases are to be used instead of host names. You want to set this if for example you have FQDNs as Nagios host names and use short names in the Nagios alias. Default is "0".', 
                                      'type': 'single_value',
                                      'values': rdb.get(config_key_pfx + '::nagios_use_aliases')};
-    value = rdb.get(config_key_pfx + '::service_aging')
     settings['service_aging'] = {'description': 'Number of seconds after which a service without connections is considered unused. Default is "300"s.',
                                  'type': 'single_value',
-                                 'values': value if value!=None else 5*60};
-    value = rdb.get(config_key_pfx + '::connection_aging')
+                                 'values': get_scalar_or_default(config_key_pfx + '::service_aging', 5*60)};
     settings['connection_aging'] = {'description': 'Number of seconds after which a connection type is considered unused. Default is "300"s.',
                                     'type': 'single_value',
-                                    'values': value if value!=None else 5*60};
+                                    'values': get_scalar_or_default(config_key_pfx + '::service_aging', 5*60)};
     return resp_or_404(json.dumps(settings))
 
 @route('/mon/nodes')
