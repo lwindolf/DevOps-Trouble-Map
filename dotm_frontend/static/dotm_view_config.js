@@ -74,6 +74,11 @@ function loadConfig() {
 		forms += printConfigForm('Node Aliases', data.user_node_aliases, true, 'Alias', 'Node Name');
 		forms += printConfigForm('Service Aging', data.service_aging);
 		forms += printConfigForm('Connection Aging', data.connection_aging);
+		forms += printConfigForm('Service Data Retention', data.service_expire);
+		forms += printConfigForm('Connection Data Retention', data.connection_expire);
+		forms += printConfigForm('Old Service Hiding', data.service_hiding);
+		forms += printConfigForm('Old Connection Hiding', data.connection_hiding);
+
 		$(".nodeChart").html(forms);
 
 		setStatus("Settings loaded.");

@@ -139,6 +139,18 @@ def get_settings():
     settings['connection_aging'] = {'description': 'Number of seconds after which a connection type is considered unused. Default is "300"s.',
                                     'type': 'single_value',
                                     'values': get_scalar_or_default(config_key_pfx + '::service_aging', 5*60)};
+    settings['service_expire'] = {'description': 'Number of days after which old service data should be forgotten. Default is "0" (never).',
+                                    'type': 'single_value',
+                                    'values': get_scalar_or_default(config_key_pfx + '::service_expire', 0)};
+    settings['connection_expire'] = {'description': 'Number of days after which old connection data should be forgotten. Default is "0" (never).',
+                                    'type': 'single_value',
+                                    'values': get_scalar_or_default(config_key_pfx + '::connection_expire', 0)};
+    settings['service_hiding'] = {'description': 'Number of days after which old service data should not be displayed in node graph anymore. Default is "7" days.',
+                                    'type': 'single_value',
+                                    'values': get_scalar_or_default(config_key_pfx + '::service_hiding', 7)};
+    settings['connection_hiding'] = {'description': 'Number of days after which old connection data should not be displayed in node graph anymore. Default is "7" days.',
+                                    'type': 'single_value',
+                                    'values': get_scalar_or_default(config_key_pfx + '::connection_hiding', 7)};
     return resp_or_404(json.dumps(settings))
 
 @route('/mon/nodes')
