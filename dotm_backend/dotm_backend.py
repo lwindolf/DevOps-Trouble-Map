@@ -130,6 +130,14 @@ def get_settings():
     settings['user_node_aliases'] = {'description': 'Node aliases to map node names of your monitoring to a node name in DOTM', 
                                      'type': 'hash',
                                      'values': rdb.hgetall(config_key_pfx + '::user_node_aliases')};
+    settings['nagios_instance'] = {'description': 'Nagios/Icinga instance configuration. Currently only one instance is supported. The "url" field should point to your cgi-bin/ location (e.g. "http://my.domain.com/icinga/cgi-bin/"). The "expire" field should contain the number of seconds after which to discard old check results.',
+                                   'type': 'hash',
+                                   'values':{
+                                       'url': rdb.hget(config_key_pfx + '::nagios_instance', 'url'),
+                                       'user': rdb.hget(config_key_pfx + '::nagios_instance', 'user'),
+                                       'password': rdb.hget(config_key_pfx + '::nagios_instance', 'password'),
+                                       'expire': rdb.hget(config_key_pfx + '::nagios_instance', 'expire'),
+                                   }};
     settings['nagios_use_aliases'] = {'description': 'Set to "1" if Nagios/Icinga/... aliases are to be used instead of host names. You want to set this if for example you have FQDNs as Nagios host names and use short names in the Nagios alias. Default is "0".', 
                                      'type': 'single_value',
                                      'values': rdb.get(config_key_pfx + '::nagios_use_aliases')};

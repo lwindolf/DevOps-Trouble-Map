@@ -37,7 +37,8 @@ function printConfigForm(title, setting, addAllowed, keyTitle, valueTitle) {
 			result += "<input type='text' name='key' value='"+key+"' readonly/>";
 			result += "</td><td>";
 			result += "<input type='text' name='value' value='"+value+"'/>";
-			result += "<input type='button' value='Remove'/>";
+			if(addAllowed)
+				result += "<input type='button' value='Remove'/>";
 			result += "</td></tr>";
 		});
 		result += "</table>";
@@ -70,6 +71,7 @@ function loadConfig() {
 		var forms = "";
 
 		forms += printConfigForm('Internal Networks', data.other_internal_networks, true, 'Network');
+		forms += printConfigForm('Nagios Instance', data.nagios_instance, false, 'Parameter', 'Value');
 		forms += printConfigForm('Use Nagios Aliases', data.nagios_use_aliases);
 		forms += printConfigForm('Node Aliases', data.user_node_aliases, true, 'Alias', 'Node Name');
 		forms += printConfigForm('Service Aging', data.service_aging);
