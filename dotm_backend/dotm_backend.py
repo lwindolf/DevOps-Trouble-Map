@@ -190,8 +190,8 @@ def get_node(name):
                                        'connection_aging':get_setting('connection_aging'),
                                    }}))
 
-@route('/settings/<key>', method='POST')
-def change_settings():
+@route('/settings/<action>/<key>', method='POST')
+def change_settings(action, key):
     if key in settings:
         return "OK"
     else:
