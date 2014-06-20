@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: ts=4 sw=4
 # -*- coding: utf-8 -*-
 
 import ConfigParser
@@ -191,10 +192,24 @@ def get_node(name):
 
 @route('/settings/<action>/<key>', method='POST')
 def change_settings(action, key):
-    if key in settings:
-        return "OK"
-    else:
-        return '{"error": {"message": "This is not a valid settings key", "status_code": 400}}'
+	if key in settings:
+		if action == 'set' and settings[key]['type'] == 'simple_value':
+				rdb.set(config_key_pfx + '::' + key, request.forms.get('value'))
+		elif action == 'add' and settings[key]['type'] == 'array':
+				rdb.lpush(config_key_pfx + '::' + key, request.forms.get('value'))
+		elif action == 'remove' and settings[key]['type'] == 'array':
+				rdb.lrem(config_key_pfx + '::' + key, request.forms.get('value'), 1)
+		elif action == 'setHash' and settings[key]['type'] == 'hash':
+				# FIXME: Support multiple keys
+				rdb.hset(config_key_pfx + '::' + key, request.forms.get('key'), request.forms.get('value'))
+		elif action == 'delHash' and settings[key]['type'] == 'hash':
+				# FIXME: Support multiple keys
+				rdb.hdel(config_key_pfx + '::' + key, request.forms.get('key'))
+		else:
+			return '{"error": {"message": "This is not a valid command and settings type combination", "status_code": 400}}'			
+		return "OK"
+	else:
+		return '{"error": {"message": "This is not a valid settings key or settings command", "status_code": 400}}'
 
 @route('/settings', method='GET')
 def get_settings():
