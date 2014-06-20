@@ -27,37 +27,58 @@ mon_config_key_pfx = config.get('monitoring', 'config_key_prefix')  # dotm::chec
 
 settings = {
     'other_internal_networks': {'description': 'Networks that DOTM should consider internal. Note that private networks (127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16) are always considered internal. Separate different networks in CIDR syntax by spaces.', 
-                                'type': 'array'},
-    'user_node_aliases':       {'description': 'Node aliases to map node names of your monitoring to a node name in DOTM', 
-                                'type': 'hash'},
-    'nagios_instance':         {'description': 'Nagios/Icinga instance configuration. Currently only one instance is supported. The "url" field should point to your cgi-bin/ location (e.g. "http://my.domain.com/icinga/cgi-bin/"). The "expire" field should contain the number of seconds after which to discard old check results.',
+								'title': 'Internal Networks',
+                                'type': 'array',
+								'add': True,
+								'fields' : ['Network'],
+								'position': 1},
+    'user_node_aliases':       {'description': 'Node aliases to map node names of your monitoring to a node in DOTM',
+								'title': 'Additional Node Aliases',
+                                'type': 'hash',
+								'add': True,
+								'fields': ['Alias', 'Node Name'],
+								'position': 2},
+    'nagios_instance':         {'description': 'Nagios/Icinga instance configuration. Currently only one instance is supported. The "url" field should point to your cgi-bin/ location (e.g. "http://my.domain.com/icinga/cgi-bin/"). The "expire" field should contain the number of seconds after which to discard old check results. "Use Aliases" specifies wether the nagios host name or alias should be used.',
+								'title': 'Nagios Instance',
                                 'type': 'hash',
                                 'default':{
-                                   'url': 'http://localhost/nagios/cgi-bin/',
-                                   'user': 'dotm',
-                                   'password': 'changeme',
-                                   'expire': 0
-                               }},
-    'nagios_use_aliases':      {'description': 'Set to "1" if Nagios/Icinga/... aliases are to be used instead of host names. You want to set this if for example you have FQDNs as Nagios host names and use short names in the Nagios alias. Default is "0".', 
-                                'type': 'single_value'},
-    'service_aging':           {'description': 'Number of seconds after which a service without connections is considered unused. Default is "300"s.',
-                                'type': 'single_value',
-                                'default': 5*60},
-    'connection_aging':        {'description': 'Number of seconds after which a connection type is considered unused. Default is "300"s.',
-                                'type': 'single_value',
-                                'default': 5*60},
-    'service_expire':          {'description': 'Number of days after which old service data should be forgotten. Default is "0" (never).',
-                                'type': 'single_value',
-                                'default': 0},
-    'connection_expire':       {'description': 'Number of days after which old connection data should be forgotten. Default is "0" (never).',
-                                'type': 'single_value',
-                                'default': 0},
-    'service_hiding':          {'description': 'Number of days after which old service data should not be displayed in node graph anymore. Default is "7" days.',
-                                'type': 'single_value',
-                                'default': 7},
-    'connection_hiding':       {'description': 'Number of days after which old connection data should not be displayed in node graph anymore. Default is "7" days.',
-                                'type': 'single_value',
-                                'default': 7}
+                                    'url': 'http://localhost/nagios/cgi-bin/',
+                                    'user': 'dotm',
+                                    'password': 'changeme',
+                                    'expire': 0,
+									'use_aliases': 0
+								},
+								'fields': ['Parameter', 'Value'],
+								'position': 3,
+                               },
+    'aging':                   {'description': 'Number of seconds after which a services/connections are considered unused. Default is "300"s.',
+								'title': 'Service Aging',
+                                'type': 'hash',
+                                'default': {
+									'Services': 5*60,
+									'Connections': 5*60
+								},
+								'fields': ['Parameter', 'Value'],
+								'position':4},
+    'expire':                  {'description': 'Number of days after which old data should be forgotten. Default is "0" (never).',
+								'title': 'Data Retention',
+                                'type': 'hash',
+                                'default': {
+									'Services': 0,
+									'Connections': 0,
+									'Nagios Alerts': 0
+								},
+								'fields': ['Parameter', 'Value'],
+								'position':5},
+    'hiding':                  {'description': 'Number of days after which old service/connection data should not be displayed in node graph anymore. Default is "7" days.',
+								'title': 'Hiding Old Objects',
+                                'type': 'hash',
+                                'default': {
+									'Services': 7,
+									'Connections': 7
+								},
+								'fields': ['Parameter', 'Value'],
+                                'position': 6}
 }
 
 
@@ -171,7 +192,10 @@ def get_node(name):
 
 @route('/settings/<key>', method='POST')
 def change_settings():
-    return "Ok"
+    if key in settings:
+        return "OK"
+    else:
+        return '{"error": {"message": "This is not a valid settings key", "status_code": 400}}'
 
 @route('/settings', method='GET')
 def get_settings():
