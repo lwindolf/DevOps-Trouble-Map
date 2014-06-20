@@ -68,13 +68,14 @@ function loadConfig() {
 
 	$.getJSON("backend/settings", {})
 	.done(function (data) {
-		var forms = "";
+		var forms = new Array();;
 
 		$.each(data, function(key, setting) {
-			forms += printConfigForm(key, setting);
+			forms[setting.position] = printConfigForm(key, setting);
 		});
-
-		$(".nodeChart").html(forms);
+		$.each(forms, function(position, html) {
+			$(".nodeChart").append(html);
+		});
 
 		setStatus("Settings loaded.");
 	})
