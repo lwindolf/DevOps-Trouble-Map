@@ -26,7 +26,7 @@ function printConfigForm(key, setting) {
 		result += "<tr><th>"+setting.fields[0]+"</th></tr>";
 		result += "<tr><td>";
 		result += "<form action='backend/settings/add/"+key+"' method='POST'>";
-		result += "<input type='text' name='key' value=''/>";
+		result += "<input type='text' name='value' value=''/>";
 		result += "<input type='submit' value='Add'/>";
 		result += "</form>";
 		result += "</td></tr>";
@@ -42,9 +42,9 @@ function printConfigForm(key, setting) {
 			/* Variant 1: tuple list */
 			result += "<table>";
 			result += "<tr><th>"+setting.fields[0]+"</th><th>"+setting.fields[1]+"</th></tr>";
-			$.each(setting.values, function(key, value) {
+			$.each(setting.values, function(k, value) {
 				result += "<tr><td>";
-				result += "<input type='text' name='key' value='"+key+"' readonly/>";
+				result += "<input type='text' name='key' value='"+k+"' readonly/>";
 				result += "</td><td>";
 				result += "<form action='backend/settings/remove/"+key+"' method='POST'>";
 				result += "<input type='text' name='value' value='"+value+"' readonly/>";
@@ -73,6 +73,7 @@ function printConfigForm(key, setting) {
 			result += "<tr><th>"+setting.fields[0]+"</th><th>"+setting.fields[1]+"</th></tr>";
 			$.each(setting.values, function(key, value) {
 				result += "<tr><td>";
+// FIXME enumerate keys
 				result += "<input type='text' name='key' value='"+key+"' readonly/>";
 				result += "</td><td>";
 				result += "<input type='text' name='value' value='"+value+"'/>";
