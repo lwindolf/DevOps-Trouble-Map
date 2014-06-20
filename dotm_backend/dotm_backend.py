@@ -25,6 +25,42 @@ mon_services_key_pfx = config.get('monitoring', 'services_key_prefix')  # dotm::
 mon_config_key = config.get('monitoring', 'config_key')  # dotm::checks::config
 mon_config_key_pfx = config.get('monitoring', 'config_key_prefix')  # dotm::checks::config::
 
+settings = {
+    'other_internal_networks': {'description': 'Networks that DOTM should consider internal. Note that private networks (127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16) are always considered internal. Separate different networks in CIDR syntax by spaces.', 
+                                'type': 'array'},
+    'user_node_aliases':       {'description': 'Node aliases to map node names of your monitoring to a node name in DOTM', 
+                                'type': 'hash'},
+    'nagios_instance':         {'description': 'Nagios/Icinga instance configuration. Currently only one instance is supported. The "url" field should point to your cgi-bin/ location (e.g. "http://my.domain.com/icinga/cgi-bin/"). The "expire" field should contain the number of seconds after which to discard old check results.',
+                                'type': 'hash',
+                                'default':{
+                                   'url': 'http://localhost/nagios/cgi-bin/',
+                                   'user': 'dotm',
+                                   'password': 'changeme',
+                                   'expire': 0
+                               }},
+    'nagios_use_aliases':      {'description': 'Set to "1" if Nagios/Icinga/... aliases are to be used instead of host names. You want to set this if for example you have FQDNs as Nagios host names and use short names in the Nagios alias. Default is "0".', 
+                                'type': 'single_value'},
+    'service_aging':           {'description': 'Number of seconds after which a service without connections is considered unused. Default is "300"s.',
+                                'type': 'single_value',
+                                'default': 5*60},
+    'connection_aging':        {'description': 'Number of seconds after which a connection type is considered unused. Default is "300"s.',
+                                'type': 'single_value',
+                                'default': 5*60},
+    'service_expire':          {'description': 'Number of days after which old service data should be forgotten. Default is "0" (never).',
+                                'type': 'single_value',
+                                'default': 0},
+    'connection_expire':       {'description': 'Number of days after which old connection data should be forgotten. Default is "0" (never).',
+                                'type': 'single_value',
+                                'default': 0},
+    'service_hiding':          {'description': 'Number of days after which old service data should not be displayed in node graph anymore. Default is "7" days.',
+                                'type': 'single_value',
+                                'default': 7},
+    'connection_hiding':       {'description': 'Number of days after which old connection data should not be displayed in node graph anymore. Default is "7" days.',
+                                'type': 'single_value',
+                                'default': 7}
+}
+
+
 redis_host = config.get('redis', 'host')
 redis_port = config.getint('redis', 'port')
 
@@ -77,18 +113,30 @@ def get_connections():
             key_arr.append({'source': field_arr[2], 'destination': field_arr[4]})
     return key_arr
 
+# Return value(s) or defaults(s) of a settings key 
+#
+# s 	key name
+def get_setting(s):
+    if settings[s]['type'] == 'single_value':
+        values = rdb.get(config_key_pfx + '::' + s)
+    elif settings[s]['type'] == 'array':
+        values = rdb.lrange(config_key_pfx + '::' + s, 0, -1)
+    elif settings[s]['type'] == 'hash':
+        values = rdb.hgetall(config_key_pfx + '::' + s)
+        # Make empty hash None to match default below
+        if not values:
+			values = None
+
+    # Apply default if one is defined and key was not yet set
+    if 'default' in settings[s] and values == None:
+        values = settings[s]['default']
+
+    return values
 
 @route('/nodes')
 def get_nodes():
     return resp_or_404(json.dumps({'nodes': rdb.lrange("dotm::nodes", 0, -1),
                                    'connections': get_connections()}))
-
-# FIXME: Resolve duplication of default definitions!
-def get_scalar_or_default(name, default):
-    value = rdb.get(name)
-    if value != None:
-        return value
-    return default
 
 @route('/nodes/<name>')
 def get_node(name):
@@ -117,48 +165,19 @@ def get_node(name):
                                    'connections': connectionDetails,
                                    'monitoring':rdb.get(mon_nodes_key_pfx + name),
                                    'settings':{
-                                       'service_aging':get_scalar_or_default(config_key_pfx + '::service_aging', 5*60),
-                                       'connection_aging':get_scalar_or_default(config_key_pfx + '::service_aging', 5*60),
+                                       'service_aging':get_setting('service_aging'),
+                                       'connection_aging':get_setting('connection_aging'),
                                    }}))
 
-@route('/settings')
+@route('/settings/<key>', method='POST')
+def change_settings():
+    return "Ok"
+
+@route('/settings', method='GET')
 def get_settings():
-    settings = {}
-    settings['other_internal_networks'] = {'description': 'Networks that DOTM should consider internal. Note that private networks (127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16) are always considered internal. Separate different networks in CIDR syntax by spaces.', 
-                                     'type': 'array',
-                                     'values': rdb.lrange(config_key_pfx + '::other_internal_networks', 0, -1) }
-    settings['user_node_aliases'] = {'description': 'Node aliases to map node names of your monitoring to a node name in DOTM', 
-                                     'type': 'hash',
-                                     'values': rdb.hgetall(config_key_pfx + '::user_node_aliases')};
-    settings['nagios_instance'] = {'description': 'Nagios/Icinga instance configuration. Currently only one instance is supported. The "url" field should point to your cgi-bin/ location (e.g. "http://my.domain.com/icinga/cgi-bin/"). The "expire" field should contain the number of seconds after which to discard old check results.',
-                                   'type': 'hash',
-                                   'values':{
-                                       'url': rdb.hget(config_key_pfx + '::nagios_instance', 'url'),
-                                       'user': rdb.hget(config_key_pfx + '::nagios_instance', 'user'),
-                                       'password': rdb.hget(config_key_pfx + '::nagios_instance', 'password'),
-                                       'expire': rdb.hget(config_key_pfx + '::nagios_instance', 'expire'),
-                                   }};
-    settings['nagios_use_aliases'] = {'description': 'Set to "1" if Nagios/Icinga/... aliases are to be used instead of host names. You want to set this if for example you have FQDNs as Nagios host names and use short names in the Nagios alias. Default is "0".', 
-                                     'type': 'single_value',
-                                     'values': rdb.get(config_key_pfx + '::nagios_use_aliases')};
-    settings['service_aging'] = {'description': 'Number of seconds after which a service without connections is considered unused. Default is "300"s.',
-                                 'type': 'single_value',
-                                 'values': get_scalar_or_default(config_key_pfx + '::service_aging', 5*60)};
-    settings['connection_aging'] = {'description': 'Number of seconds after which a connection type is considered unused. Default is "300"s.',
-                                    'type': 'single_value',
-                                    'values': get_scalar_or_default(config_key_pfx + '::service_aging', 5*60)};
-    settings['service_expire'] = {'description': 'Number of days after which old service data should be forgotten. Default is "0" (never).',
-                                    'type': 'single_value',
-                                    'values': get_scalar_or_default(config_key_pfx + '::service_expire', 0)};
-    settings['connection_expire'] = {'description': 'Number of days after which old connection data should be forgotten. Default is "0" (never).',
-                                    'type': 'single_value',
-                                    'values': get_scalar_or_default(config_key_pfx + '::connection_expire', 0)};
-    settings['service_hiding'] = {'description': 'Number of days after which old service data should not be displayed in node graph anymore. Default is "7" days.',
-                                    'type': 'single_value',
-                                    'values': get_scalar_or_default(config_key_pfx + '::service_hiding', 7)};
-    settings['connection_hiding'] = {'description': 'Number of days after which old connection data should not be displayed in node graph anymore. Default is "7" days.',
-                                    'type': 'single_value',
-                                    'values': get_scalar_or_default(config_key_pfx + '::connection_hiding', 7)};
+    for s in settings:
+        settings[s]['values'] = get_setting(s)
+
     return resp_or_404(json.dumps(settings))
 
 @route('/mon/nodes')
