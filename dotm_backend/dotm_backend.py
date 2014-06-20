@@ -186,8 +186,7 @@ def get_node(name):
                                    'connections': connectionDetails,
                                    'monitoring':rdb.get(mon_nodes_key_pfx + name),
                                    'settings':{
-                                       'service_aging':get_setting('service_aging'),
-                                       'connection_aging':get_setting('connection_aging'),
+                                       'aging':get_setting('aging'),
                                    }}))
 
 @route('/settings/<action>/<key>', method='POST')
