@@ -271,6 +271,7 @@ def mon_reload():
 
 				# And store...
                 with rdb.pipeline() as pipe:
+                    pipe.delete(mon_services_key_pfx + node)
                     pipe.lpush(mon_services_key_pfx + node, json.dumps(val))
                     pipe.expire(mon_services_key_pfx + node, config['expire'])
                     pipe.execute()
