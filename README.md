@@ -26,7 +26,6 @@ The DOTM server has the following dependencies
   - redis
   - bottle
   - requests
-  - ConfigParser
 
 To automatically install the server including its dependencies on Debian/Ubuntu 
 simply run
