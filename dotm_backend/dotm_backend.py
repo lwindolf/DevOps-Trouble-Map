@@ -262,10 +262,15 @@ def mon_reload():
 				# And store...
 				rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
             for key, val in mon.get_services().items():
-				# FIXME: services need node mapping too
+                # Apply user defined node mapping
+                node = rdb.hget(config_key_pfx + "::user_node_aliases", key)
+                if node == None:
+                    node = key  # Overwrite hostname given by Nagios
+
+				# And store...
                 with rdb.pipeline() as pipe:
-                    pipe.lpush(mon_services_key_pfx + key, json.dumps(val))
-                    pipe.expire(mon_services_key_pfx + key, config['expire'])
+                    pipe.lpush(mon_services_key_pfx + node, json.dumps(val))
+                    pipe.expire(mon_services_key_pfx + node, config['expire'])
                     pipe.execute()
             time_now = int(time.time())
             rdb.hset(mon_config_key, update_time_key, time_now)
