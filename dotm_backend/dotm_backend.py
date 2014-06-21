@@ -76,12 +76,14 @@ settings = {
 
 rdb = redis.Redis() # FIXME: provide command line switches and feed them from init script
 
+def json_error(message="Not Found", status_code=404):
+	return '{"error": {"message": "' + message + '", "status_code": ' + str(status_code) + '}}'
 
 def resp_json(resp=None):
     response.content_type = 'application/json'
     if not resp:
         response.status = 404
-        return '{"error": {"message": "Not Found", "status_code": 404}}'
+        return json_error()
     return resp
 
 
@@ -90,10 +92,10 @@ def resp_jsonp(resp=None, resp_type='apptilacion/javascript'):
     if resp and callback:
         return '{}({})'.format(callback, resp)
     elif callback:
-        return '{}({})'.format(callback, '{"error": {"message": "Not Found", "status_code": 404}}')
+        return '{}({})'.format(callback, json_error())
     response.content_type = 'application/json'
     response.status = 400
-    return '{"error": {"message": "No callback funcrion provided", "status_code": 400}}'
+    return json_error("No callback function provided")
 
 
 def resp_or_404(resp=None, resp_type='apptilacion/json', cache_control='max-age=30, must-revalidate'):
@@ -200,10 +202,10 @@ def change_settings(action, key):
 		elif action == 'delHash' and settings[key]['type'] == 'hash':
 				rdb.hdel(config_key_pfx + '::' + key, request.forms.get('key'))
 		else:
-			return '{"error": {"message": "This is not a valid command and settings type combination", "status_code": 400}}'			
+			return json_error("This is not a valid command and settings type combination", 400)
 		return "OK"
 	else:
-		return '{"error": {"message": "This is not a valid settings key or settings command", "status_code": 400}}'
+		return json_error("This is not a valid settings key or settings command", 400)
 
 @route('/settings', method='GET')
 def get_settings():
@@ -308,7 +310,7 @@ def set_config():
             raise ValueError
     except (ValueError, IndexError):
         response.status = 400
-        return '{"error": {"message": "Wrong POST data format", "status_code": 400}}'
+        return json_error("Wrong POST data format", 400)
 
     for key, val in data_obj.items():
         # TODO: allow only defined variable names with defined value type and
