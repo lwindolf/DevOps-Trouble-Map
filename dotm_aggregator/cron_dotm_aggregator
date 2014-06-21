@@ -1,2 +1,7 @@
+# FIXME: 5min is hard-coded currently. Should be a config value!
 */5 * * * *	nobody /usr/local/bin/dotm_state_fetcher >/dev/null
+
+# Trigger monitoring reload every minute (will still follow 
+# the user defined update interval)
+*/1 * * * *	nobody curl -X POST -i http://localhost:8080/mon/reload >/dev/null
 
