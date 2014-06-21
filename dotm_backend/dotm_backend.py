@@ -262,6 +262,7 @@ def mon_reload():
 				# And store...
 				rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
             for key, val in mon.get_services().items():
+				# FIXME: services need node mapping too
                 with rdb.pipeline() as pipe:
                     pipe.lpush(mon_services_key_pfx + key, json.dumps(val))
                     pipe.expire(mon_services_key_pfx + key, config['expire'])
