@@ -14,14 +14,15 @@ Configuring
 Create file .mr.developer.cfg:
 
 [monitoring]
-url =  https://mon.example.com
-user = <monuser>
-paswd = <monpaswd>
+# Commented values have been moved to Redis
+#url =  https://mon.example.com
+#user = <monuser>
+#paswd = <monpaswd>
+#expire = 86400
 nodes_key_prefix = dotm::check::nodes::
 services_key_prefix = dotm::check::services::
 config_key = dotm::check::config
 config_key_prefix = %(config_key)s::
-expire = 86400
 
 [redis]
 host = 127.0.0.1
