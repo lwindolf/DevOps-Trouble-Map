@@ -2,7 +2,6 @@
 # vim: ts=4 sw=4
 # -*- coding: utf-8 -*-
 
-import ConfigParser
 import json
 import redis
 import time
@@ -10,17 +9,13 @@ from bottle import route, run, response, request, debug
 
 from dotm_monitor import DOTMMonitor
 
-# Configuration
-config_key_pfx = 'dotm::config'
-
-# TODO: Move configuration to Redis
-config = ConfigParser.ConfigParser()
-config.read('.mr.developer.cfg')
-
-mon_nodes_key_pfx = config.get('monitoring', 'nodes_key_prefix')  # dotm::checks::nodes::
-mon_services_key_pfx = config.get('monitoring', 'services_key_prefix')  # dotm::checks::services::
-mon_config_key = config.get('monitoring', 'config_key')  # dotm::checks::config
-mon_config_key_pfx = config.get('monitoring', 'config_key_prefix')  # dotm::checks::config::
+# Namespace configuration
+general_prefix			= 'dotm'
+config_key_pfx			= general_prefix + '::config'
+mon_nodes_key_pfx		= general_prefix + '::checks::nodes::'
+mon_services_key_pfx	= general_prefix + '::checks::services::'
+mon_config_key			= general_prefix + '::checks::config'
+mon_config_key_pfx		= general_prefix + '::checks::config::'
 
 settings = {
     'other_internal_networks': {'description': 'Networks that DOTM should consider internal. Note that private networks (127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16) are always considered internal. Separate different networks in CIDR syntax by spaces.', 
@@ -79,11 +74,7 @@ settings = {
                                 'position': 6}
 }
 
-
-redis_host = config.get('redis', 'host')
-redis_port = config.getint('redis', 'port')
-
-rdb = redis.Redis(redis_host, redis_port)
+rdb = redis.Redis() # FIXME: provide command line switches and feed them from init script
 
 
 def resp_json(resp=None):
@@ -264,7 +255,13 @@ def mon_reload():
             rdb.setex(update_lock_key, update_lock_expire, 1)
             mon = DOTMMonitor(config['url'], config['user'], config['password'])
             for key, val in mon.get_nodes().items():
-                rdb.setex(mon_nodes_key_pfx + key, json.dumps(val), config['expire'])
+				# Apply user defined node mapping
+				tmp = rdb.hget(config_key_pfx + "::user_node_aliases", key)
+				if tmp != None:
+					val['node'] = tmp   # Overwrite hostname given by Nagios
+
+				# And store...
+				rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
             for key, val in mon.get_services().items():
                 with rdb.pipeline() as pipe:
                     pipe.lpush(mon_services_key_pfx + key, json.dumps(val))
