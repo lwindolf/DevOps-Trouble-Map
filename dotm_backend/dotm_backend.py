@@ -200,10 +200,13 @@ def change_settings(action, key):
 		elif action == 'remove' and settings[key]['type'] == 'array':
 				rdb.lrem(config_key_pfx + '::' + key, request.forms.get('key'), 1)
 		elif action == 'setHash' and settings[key]['type'] == 'hash':
-				# FIXME: Support multiple keys
-				rdb.hset(config_key_pfx + '::' + key, request.forms.get('key'), request.forms.get('value'))
+				# setHash might set multiple enumerated keys, e.g. to set all
+				# Nagios instance settings, therefore we need to loop here
+				i=1
+				while request.forms.get('key'+str(i)) != None:
+					rdb.hset(config_key_pfx + '::' + key, request.forms.get('key'+str(i)), request.forms.get('value'+str(i)))
+					i+=1
 		elif action == 'delHash' and settings[key]['type'] == 'hash':
-				# FIXME: Support multiple keys
 				rdb.hdel(config_key_pfx + '::' + key, request.forms.get('key'))
 		else:
 			return '{"error": {"message": "This is not a valid command and settings type combination", "status_code": 400}}'			

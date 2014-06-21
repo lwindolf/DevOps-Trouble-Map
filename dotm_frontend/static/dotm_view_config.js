@@ -60,9 +60,9 @@ function printConfigForm(key, setting) {
 			result += "<table>";
 			result += "<tr><th>"+setting.fields[0]+"</th><th>"+setting.fields[1]+"</th></tr>";
 			result += "<tr><td>";
-			result += "<input type='text' name='key' value=''/>";
+			result += "<input type='text' name='key1' value=''/>";
 			result += "</td><td>";
-			result += "<input type='text' name='value' value=''/>";
+			result += "<input type='text' name='value1' value=''/>";
 			result += "<input type='submit' value='Add'/>";
 			result += "</td></tr>";
 			result += "</table>";
@@ -72,13 +72,17 @@ function printConfigForm(key, setting) {
 			result += "<form action='backend/settings/setHash/"+key+"' method='POST'>";
 			result += "<table>";
 			result += "<tr><th>"+setting.fields[0]+"</th><th>"+setting.fields[1]+"</th></tr>";
+			var i = 1;
 			$.each(setting.values, function(key, value) {
 				result += "<tr><td>";
-// FIXME enumerate keys
-				result += "<input type='text' name='key' value='"+key+"' readonly/>";
+				result += "<input type='text' name='key"+i+"' value='"+key+"' readonly/>";
 				result += "</td><td>";
-				result += "<input type='text' name='value' value='"+value+"'/>";
+				var type='text';
+				if(key == 'password')
+					type='password';
+				result += "<input type='"+type+"' name='value"+i+"' value='"+value+"'/>";
 				result += "</td></tr>";
+				i++;
 			});
 			result += "</table>";
 			result += "<input type='submit' value='Save'/>";
