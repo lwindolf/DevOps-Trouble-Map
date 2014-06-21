@@ -35,7 +35,7 @@ settings = {
 								'add': True,
 								'fields': ['Alias', 'Node Name'],
 								'position': 2},
-    'nagios_instance':         {'description': 'Nagios/Icinga instance configuration. Currently only one instance is supported. The "url" field should point to your cgi-bin/ location (e.g. "http://my.domain.com/icinga/cgi-bin/"). The "expire" field should contain the number of seconds after which to discard old check results. "Use Aliases" specifies wether the nagios host name or alias should be used.',
+    'nagios_instance':         {'description': 'Nagios/Icinga instance configuration. Currently only one instance is supported. The "url" field should point to your cgi-bin/ location (e.g. "http://my.domain.com/icinga/cgi-bin/"). The "expire" field should contain the number of seconds after which to discard old check results. "Use Aliases" specifies wether the nagios host name or alias should be used. "Refresh" specifices the update interval in seconds.',
 								'title': 'Nagios Instance',
                                 'type': 'hash',
                                 'default':{
@@ -43,7 +43,8 @@ settings = {
                                     'user': 'dotm',
                                     'password': 'changeme',
                                     'expire': 86400,
-									'use_aliases': 0
+									'use_aliases': 0,
+									'refresh': 60
 								},
 								'fields': ['Parameter', 'Value'],
 								'position': 3,
@@ -141,9 +142,12 @@ def get_setting(s):
         values = rdb.lrange(config_key_pfx + '::' + s, 0, -1)
     elif settings[s]['type'] == 'hash':
         values = rdb.hgetall(config_key_pfx + '::' + s)
-        # Make empty hash None to match default below
-        if not values:
-			values = None
+        # We always get a hash back from hgetall() but it might be incomplete
+        # or empty. So we fill in the defaults where needed.
+        if 'default' in settings[s]:
+            for key in settings[s]['default']:
+				if not key in values:
+					values[key] = settings[s]['default'][key]
 
     # Apply default if one is defined and key was not yet set
     if 'default' in settings[s] and values == None:
