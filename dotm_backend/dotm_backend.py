@@ -17,10 +17,6 @@ config_key_pfx = 'dotm::config'
 config = ConfigParser.ConfigParser()
 config.read('.mr.developer.cfg')
 
-mon_url = config.get('monitoring', 'url')
-mon_user = config.get('monitoring', 'user')
-mon_paswd = config.get('monitoring', 'paswd')
-mon_expire = config.getint('monitoring', 'expire')  # 86400sec = 1day
 mon_nodes_key_pfx = config.get('monitoring', 'nodes_key_prefix')  # dotm::checks::nodes::
 mon_services_key_pfx = config.get('monitoring', 'services_key_prefix')  # dotm::checks::services::
 mon_config_key = config.get('monitoring', 'config_key')  # dotm::checks::config
@@ -46,7 +42,7 @@ settings = {
                                     'url': 'http://localhost/nagios/cgi-bin/',
                                     'user': 'dotm',
                                     'password': 'changeme',
-                                    'expire': 0,
+                                    'expire': 86400,
 									'use_aliases': 0
 								},
 								'fields': ['Parameter', 'Value'],
@@ -251,6 +247,7 @@ def get_mon_node_key(node, key):
 
 @route('/mon/reload', method='POST')
 def mon_reload():
+    config = get_setting('nagios_instance')
     time_now = int(time.time())
     update_time_key = 'last_updated'
     update_interval = 60
@@ -261,13 +258,13 @@ def mon_reload():
         update_time = int(update_time_str)
         if time_now - update_time >= update_interval:
             rdb.setex(update_lock_key, update_lock_expire, 1)
-            mon = DOTMMonitor(mon_url, mon_user, mon_paswd)
+            mon = DOTMMonitor(config['url'], config['user'], config['password'])
             for key, val in mon.get_nodes().items():
-                rdb.setex(mon_nodes_key_pfx + key, json.dumps(val), mon_expire)
+                rdb.setex(mon_nodes_key_pfx + key, json.dumps(val), config['expire'])
             for key, val in mon.get_services().items():
                 with rdb.pipeline() as pipe:
                     pipe.lpush(mon_services_key_pfx + key, json.dumps(val))
-                    pipe.expire(mon_services_key_pfx + key, mon_expire)
+                    pipe.expire(mon_services_key_pfx + key, config['expire'])
                     pipe.execute()
             time_now = int(time.time())
             rdb.hset(mon_config_key, update_time_key, time_now)

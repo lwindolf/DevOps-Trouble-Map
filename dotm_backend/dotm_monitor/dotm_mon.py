@@ -13,7 +13,7 @@ class DOTMMonitor(object):
         self.paswd = paswd
         self.provider = provider
         if provider == 'icinga':
-            self.mon_url = mon_url.rstrip('/') + '/cgi-bin/icinga/status.cgi?style=hostservicedetail&jsonoutput'
+            self.mon_url = mon_url.rstrip('/') + '/status.cgi?style=hostservicedetail&jsonoutput'
         elif provider == 'nagios':
             # TODO: implement more providers for Monitoring.mon_url
             pass
