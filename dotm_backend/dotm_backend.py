@@ -245,13 +245,12 @@ def mon_reload():
     config = get_setting('nagios_instance')
     time_now = int(time.time())
     update_time_key = 'last_updated'
-    update_interval = 60
     update_lock_key = mon_config_key_pfx + 'update_running'
-    update_lock_expire = 300
+    update_lock_expire = config['refresh'] * 5
     update_time_str = rdb.hget(mon_config_key, update_time_key)
     if update_time_str and not rdb.get(update_lock_key):
         update_time = int(update_time_str)
-        if time_now - update_time >= update_interval:
+        if time_now - update_time >= config['refresh']:
             rdb.setex(update_lock_key, update_lock_expire, 1)
             mon = DOTMMonitor(config['url'], config['user'], config['password'])
             for key, val in mon.get_nodes().items():
