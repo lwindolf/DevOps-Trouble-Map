@@ -47,6 +47,7 @@ function printConfigForm(key, setting) {
 				result += "<input type='text' name='key' value='"+k+"' readonly/>";
 				result += "</td><td>";
 				result += "<form action='backend/settings/delHash/"+key+"' method='POST'>";
+				result += "<input type='hidden' name='key' value='"+k+"' readonly/>";
 				result += "<input type='text' name='value' value='"+value+"' readonly/>";
 				if(setting.add)
 					result += "<input type='submit' value='Remove'/>";
@@ -55,17 +56,17 @@ function printConfigForm(key, setting) {
 			});
 			result += "</table>";
 
+			result += "<form action='backend/settings/setHash/"+key+"' method='POST'>";
 			result += "<table>";
 			result += "<tr><th>"+setting.fields[0]+"</th><th>"+setting.fields[1]+"</th></tr>";
 			result += "<tr><td>";
 			result += "<input type='text' name='key' value=''/>";
 			result += "</td><td>";
-			result += "<form action='backend/settings/setHash/"+key+"' method='POST'>";
 			result += "<input type='text' name='value' value=''/>";
 			result += "<input type='submit' value='Add'/>";
-			result += "</form>";
 			result += "</td></tr>";
 			result += "</table>";
+			result += "</form>";
 		} else {
 			/* Variant 2: key-values */
 			result += "<form action='backend/settings/setHash/"+key+"' method='POST'>";

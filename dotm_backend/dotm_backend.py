@@ -108,8 +108,8 @@ def resp_jsonp(resp=None, resp_type='apptilacion/javascript'):
     return '{"error": {"message": "No callback funcrion provided", "status_code": 400}}'
 
 
-def resp_or_404(resp=None, resp_type='apptilacion/json'):
-    response.set_header('Cache-Control', 'max-age=30, must-revalidate')
+def resp_or_404(resp=None, resp_type='apptilacion/json', cache_control='max-age=30, must-revalidate'):
+    response.set_header('Cache-Control', cache_control)
     accepted_resp = ('apptilacion/json', 'application/javascript')
     resp_type_arr = request.headers.get('Accept').split(',')
     if resp_type_arr:
@@ -198,7 +198,7 @@ def change_settings(action, key):
 		elif action == 'add' and settings[key]['type'] == 'array':
 				rdb.lpush(config_key_pfx + '::' + key, request.forms.get('value'))
 		elif action == 'remove' and settings[key]['type'] == 'array':
-				rdb.lrem(config_key_pfx + '::' + key, request.forms.get('value'), 1)
+				rdb.lrem(config_key_pfx + '::' + key, request.forms.get('key'), 1)
 		elif action == 'setHash' and settings[key]['type'] == 'hash':
 				# FIXME: Support multiple keys
 				rdb.hset(config_key_pfx + '::' + key, request.forms.get('key'), request.forms.get('value'))
@@ -216,7 +216,7 @@ def get_settings():
     for s in settings:
         settings[s]['values'] = get_setting(s)
 
-    return resp_or_404(json.dumps(settings))
+    return resp_or_404(json.dumps(settings), 'application/javascript', 'no-cache, no-store, must-revalidate')
 
 @route('/mon/nodes')
 def get_mon_nodes():
