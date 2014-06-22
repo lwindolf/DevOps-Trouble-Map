@@ -23,10 +23,6 @@ readonly PIDFILE=/tmp/$(basename $0).pid
 readonly NETCAT="nc -w 3 "
 readonly REDIS_CLI="redis-cli -n 0 -h localhost -p 6379"
 
-# egrep expressions, filtering common ports
-readonly LISTEN_FILTER='^(53|22|5666|4949|4848|25|631)$'
-readonly ESTABLISHED_FILTER="${LISTEN_FILTER}"
-
 # Push a list of key values into a given Redis key
 #
 # $1		the key
@@ -56,6 +52,21 @@ load_nets() {
 			echo "ERROR: Invalid network address '$cidr'!" >&2
 		fi
 	done
+}
+
+# Loads all user provided config values from Redis
+load_settings() {
+
+	load_nets
+
+	# Create port egrep expressions, filtering common ports
+	ports=$($REDIS_CLI get dotm::config::service_port_whitelist 2>/dev/null | sed "s/,/|/g")
+	if [ "$ports" == "(nil)" -o "$ports" == "" ]; then
+		# FIXME: Avoid default duplication with backend
+		ports='53|22|5666|4949|4848|25|631'
+	fi
+	readonly LISTEN_FILTER="^($ports)$"
+	readonly ESTABLISHED_FILTER="${LISTEN_FILTER}"
 }
 
 # Match all whitelisted netmask against a given IP
@@ -146,7 +157,7 @@ fi
 
 main()
 {
-	load_nets
+	load_settings
 
 	declare -A listen_ports
 	declare -A used_services

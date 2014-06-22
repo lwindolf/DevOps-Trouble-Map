@@ -84,7 +84,12 @@ settings = {
 								},
 								'add': True,
 								'fields': ['Service Check Regex', 'Process Regex'],
-								'position': 7}
+								'position': 7},
+	'service_port_whitelist':  {'description': 'Comma separated list of port numbers that are to be ignored. This is to avoid presenting basic Unix services (Postfix, any shared filesystem or monitoring agents) as high-level services of interest. Add ports of services you do not care about. Currently only TCP ports are handled.',
+								'title': 'Aggregator: Service Port Whitelist',
+								'type': 'single_value',
+								'default': '53,22,5666,4949,4848,25,631',
+								'position': 8}
 }
 
 rdb = redis.Redis() # FIXME: provide command line switches and feed them from init script
