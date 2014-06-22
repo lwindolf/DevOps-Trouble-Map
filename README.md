@@ -119,7 +119,4 @@ Right now the following relation namespaces are used in Redis
     ]
 - dotm::checks::config (hash with the following key values):
   * 'last_updated' => &lt;timestamp>
-- dotm::checks::config::update_running (key with set expire flag used as a lock during monitoring data reload)
-- dotm::config::other_internal_networks (array of additional networks to be considered internal in CIDR syntax)
-- dotm::config::user_node_aliases (hash of alias (key) => node name (value) mappings)
-- dotm::config::nagios_use_aliases (string "1" to enable)
+- dotm::checks::config::\* (all preferences, for descriptions check the 'Settings' page)
