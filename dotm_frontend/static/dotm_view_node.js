@@ -56,9 +56,9 @@ function loadNode(node) {
 
 			// Fill in alerts
 			var alerts = [];
-			alerts.push('<tr><th>Service</th><th>Status</th><th>Last Check</th><th>Duration</th><th>Status Information</th></tr>');
+			alerts.push('<tr><th>Check Name</th><th>Service</th><th>Status</th><th>Last Check</th><th>Duration</th><th>Status Information</th></tr>');
 			$.each(data.monitoring.services, function(index, s) {
-				alerts.push('<tr class="alert status_'+s.status+'"><td class="service">'+s.service+'</td><td class="alert_status">'+s.status+'</td><td class="last_check timeago" title="'+s.last_check*1000+'">'+s.last_check*1000+'</td><td class="timeago" title="'+s.last_status_change*1000+'">'+s.last_status_change*1000+'</td><td class="status_information">'+s.status_information+'</td></tr>');
+				alerts.push('<tr class="alert status_'+s.status+'"><td class="service">'+s.service+'</td><td class="mapping">'+(s.mapping?s.mapping:'none')+'</td><td class="alert_status">'+s.status+'</td><td class="last_check timeago" title="'+s.last_check*1000+'">'+s.last_check*1000+'</td><td class="last_status_change timeago" title="'+s.last_status_change*1000+'">'+s.last_status_change*1000+'</td><td class="status_information">'+s.status_information+'</td></tr>');
 			});
 			if(alerts.length > 1)
 				$(".alerts").html(alerts.join(''));

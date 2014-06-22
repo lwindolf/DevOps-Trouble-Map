@@ -97,6 +97,10 @@ tr.alert td {
 	padding:12px 3px;
 }
 
+td.last_check, td.last_status_change {
+	white-space:nowrap;
+}
+
 td.alert_status {
 	text-align: center;
 }
