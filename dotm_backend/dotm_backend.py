@@ -178,7 +178,10 @@ def get_node(name):
                                    'status': nodeDetails,
                                    'services': serviceDetails,
                                    'connections': connectionDetails,
-                                   'monitoring':rdb.get(mon_nodes_key_pfx + name),
+                                   'monitoring':{
+                                       'node':rdb.get(mon_nodes_key_pfx + name),
+	                                   'services':rdb.lrange(mon_services_key_pfx + name, 0, -1)
+	                               },
                                    'settings':{
                                        'aging':get_setting('aging'),
                                    }}))
