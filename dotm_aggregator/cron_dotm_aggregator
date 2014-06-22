@@ -3,5 +3,5 @@
 
 # Trigger monitoring reload every minute (will still follow 
 # the user defined update interval)
-*/1 * * * *	nobody curl -X POST -i http://localhost:8080/mon/reload >/dev/null
+*/1 * * * *	nobody curl -s -X POST -i http://localhost:8080/mon/reload >/dev/null
 
