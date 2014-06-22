@@ -71,7 +71,19 @@ settings = {
 									'Connections': 7
 								},
 								'fields': ['Parameter', 'Value'],
-                                'position': 6}
+                                'position': 6},
+	'service_mapping':         {'description': 'Rules that map Nagios service check names to process names as seen by DOTM. Those rules can be regular expressions. Note that both the service check name as well as the process name can be a regular expression. To enforce exact matching use "^" and "$"! Matching is performed case-insensitive.',
+								'title': 'Mapping Service Checks to Processes',
+								'type': 'hash',
+								'default': {
+									'^HTTP': '^nginx.*|^apache.*|^lighttpd.*',
+									'^Redis': '^redis-server.*',
+									'^MySQL.*': '^mysql.*',
+									'^Postgres.*': '^postmaster.*'
+								},
+								'add': True,
+								'fields': ['Service Check Regex', 'Process Regex'],
+								'position': 7}
 }
 
 rdb = redis.Redis() # FIXME: provide command line switches and feed them from init script
