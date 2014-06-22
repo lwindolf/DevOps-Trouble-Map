@@ -60,16 +60,20 @@ td.menu a:hover {
 	text-decoration:none;
 }
 
+#nodeTables tr:not(.alert) {
+	background:white;
+}
+
 #nodeTables td {
 	padding:3px;
 	border:1px solid #ccc;
-	background: white;
 }
 
 #nodeTables th {
 	background: #777;
 	color:white;
 	font-weight:normal;
+	font-size:10pt;
 }
 
 .service.old, .connection.old {
@@ -84,6 +88,40 @@ tr.service.old td, tr.service.old * div {
 }
 tr.service.old * svg {
 	color:#ccc;
+}
+
+tr.alert {
+	font-size:10pt;
+}
+tr.alert td {
+	padding:12px 3px;
+}
+
+td.alert_status {
+	text-align: center;
+}
+
+tr.alert.status_OK .alert_status {
+	background: #0C3;
+	color:white;
+}
+
+tr.alert.status_WARNING {
+	background:#f8d193;
+}
+
+tr.alert.status_WARNING .alert_status {
+	background: #f5a9a9;
+	color:white;
+}
+
+tr.alert.status_CRITICAL {
+	background:#ffd4c9;
+}
+
+tr.alert.status_CRITICAL .alert_status {
+	background: #f30;
+	color:white;
 }
 
 a:hover {
@@ -134,7 +172,6 @@ a:hover {
 	padding:3px 12px;
 	text-align:center;
 }
-
 
 // nodesChart definition
 svg .node {
