@@ -2,6 +2,7 @@
 
 function printConfigForm(key, setting) {
 	var result = "<div class='settingsForm'>";
+	result += "<a name='"+key+"'/>";
 	result += "<div class='title'>"+setting.title+"</div>";
 	result += "<div class='description'>"+setting.description+"</div>";
 	if(setting.type == 'single_value') {
@@ -93,7 +94,7 @@ function printConfigForm(key, setting) {
 	return result;
 }
 
-function loadConfig() {
+function loadConfig(anchor) {
 	// Clean everything
 	setStatus('Fetching settings...');
 	// FIXME: Use a stage div instead of nodeChart!
@@ -110,6 +111,9 @@ function loadConfig() {
 		$.each(forms, function(position, html) {
 			$(".nodeChart").append(html);
 		});
+
+		if(anchor)
+			location.hash = "#" + anchor;	/* scroll to form selected */
 
 		setStatus("Settings loaded.");
 	})

@@ -98,7 +98,7 @@ function loadNode(node) {
 			// Finally if there we no other exceptions check for monitoring
 			// and complain if it is not there
 			if(data.monitoring == null) 
-				throw("No monitoring found! Ensure that your Nagios setup monitors this host with name '"+node+"' or add a node mapping! (FIXME: Link to config)");
+				throw("No monitoring found! Ensure that your Nagios setup monitors this host with name '"+node+"' or add a <a href='javascript:loadConfig(\"user_node_aliases\")'>node mapping</a>!");
 		} catch(err) {
 			setError(err);
 		}
