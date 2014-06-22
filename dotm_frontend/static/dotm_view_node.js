@@ -49,12 +49,21 @@ function loadNode(node) {
 				connections.push('<tr class="connection '+age+'"><td>'+c.direction+'</td><td>'+c.process+'</td><td>'+c.localPort+'</td><td>'+nodeLink(c.remoteHost)+'</td><td>'+c.connections+'</td><td class="timeago" title="'+c.last_seen*1000+'">'+c.last_seen*1000+'</td></tr>');
 				c['age'] = age;	/* Add age to be reused in nodeGraph */
 			})
-			if(connections.length > 0)
+			if(connections.length > 1)
 				$(".connections").html(connections.join(''));
 			else
 				$(".connections").html("No connections.");
 
-			setStatus(node+' successfully loaded.');
+			// Fill in alerts
+			var alerts = [];
+			alerts.push('<tr><th>Service</th><th>Status</th><th>Last Check</th><th>Duration</th><th>Status Information</th></tr>');
+			$.each(data.monitoring.services, function(index, s) {
+				alerts.push('<tr class="alert"><td>'+s.service+'</td><td>'+s.status+'</td><td class="timeago">'+s.last_check+'</td><td class="timeago">'+s.last_status_change+'</td><td>'+s.status_information+'</td></tr>');
+			});
+			if(alerts.length > 1)
+				$(".alerts").html(alerts.join(''));
+			else
+				$(".alerts").html("No monitoring data.");
 
 			// Apply relative times
 			$(".timeago").timeago();
@@ -94,6 +103,8 @@ function loadNode(node) {
 			nodeDetails += "</table>";
 			$(".nodeChart").html(nodeDetails);
 			$("#nodeTables").show();
+
+			setStatus(node+' successfully loaded.');
 
 			// Finally if there we no other exceptions check for monitoring
 			// and complain if it is not there

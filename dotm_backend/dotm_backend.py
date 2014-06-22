@@ -174,13 +174,17 @@ def get_node(name):
             cHash['remoteHost'] = tmp[1]
             connectionDetails[c] = cHash
 
+	serviceAlerts = []
+	for s in rdb.lrange(mon_services_key_pfx + name, 0, -1):
+		serviceAlerts.extend(json.loads(s))
+
     return resp_or_404(json.dumps({'name': name,
                                    'status': nodeDetails,
                                    'services': serviceDetails,
                                    'connections': connectionDetails,
                                    'monitoring':{
                                        'node':rdb.get(mon_nodes_key_pfx + name),
-	                                   'services':rdb.lrange(mon_services_key_pfx + name, 0, -1)
+	                                   'services':serviceAlerts
 	                               },
                                    'settings':{
                                        'aging':get_setting('aging'),
