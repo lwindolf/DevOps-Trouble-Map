@@ -11,7 +11,7 @@ function loadNode(node) {
 		// Check fetch status
 		try {
 			if(data.status.fetch_status != "OK") {
-				throw "Node status is not 'OK' ("+data.status.fetch_status+")";
+				setError("Presented values are out-of-date! ("+data.status.fetch_status+")");
 			} else {
 				setStatus(node+' successfully loaded.');
 			}
