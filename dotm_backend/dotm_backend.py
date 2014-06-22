@@ -5,6 +5,7 @@
 import json
 import redis
 import time
+import re
 from bottle import route, run, response, request, debug
 
 from dotm_monitor import DOTMMonitor
@@ -190,6 +191,16 @@ def get_node(name):
 	for s in rdb.lrange(mon_services_key_pfx + name, 0, -1):
 		serviceAlerts.extend(json.loads(s))
 
+	# Map node alerts to services
+	service_mapping = get_setting('service_mapping')
+	for service_regexp in service_mapping:
+		for sa in serviceAlerts:
+			if re.match(service_regexp, sa['service']):
+				for s in serviceDetails:
+					if re.match(service_mapping[service_regexp], serviceDetails[s]['process'], re.IGNORECASE):
+						serviceDetails[s]['alert_status'] = sa['status']
+						sa['mapping'] = serviceDetails[s]['process']
+				
     return resp_or_404(json.dumps({'name': name,
                                    'status': nodeDetails,
                                    'services': serviceDetails,
