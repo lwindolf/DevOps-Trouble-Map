@@ -95,7 +95,7 @@ function loadNode(node) {
 						tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remoteHost)+"</div>";
 					}
 				})
-				nodeDetails += "</td></td><td class='service'>"+serviceData.process+"</td><td>";
+				nodeDetails += "</td></td><td class='service status_"+(serviceData.alert_status?serviceData.alert_status:'')+"'>"+serviceData.process+"</td><td>";
 				if(tmp)
 					nodeDetails += "<img src='arrow-right"+((serviceData.age=="fresh")?'':'-dashed')+".svg'/>";
 				nodeDetails += "</td><td>" + tmp + "</td></tr>";
