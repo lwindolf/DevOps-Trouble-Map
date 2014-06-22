@@ -12,7 +12,9 @@ function loadNode(node) {
 		try {
 			if(data.status.fetch_status != "OK") {
 				throw "Node status is not 'OK' ("+data.status.fetch_status+")";
-			}	
+			} else {
+				setStatus(node+' successfully loaded.');
+			}
 
 			// 1.) Setup tables
 
@@ -104,11 +106,9 @@ function loadNode(node) {
 			$(".nodeChart").html(nodeDetails);
 			$("#nodeTables").show();
 
-			setStatus(node+' successfully loaded.');
-
 			// Finally if there we no other exceptions check for monitoring
 			// and complain if it is not there
-			if(data.monitoring == null) 
+			if(data.monitoring.node == null) 
 				throw("No monitoring found! Ensure that your Nagios setup monitors this host with name '"+node+"' or add a <a href='javascript:loadConfig(\"user_node_aliases\")'>node mapping</a>!");
 		} catch(err) {
 			setError(err);

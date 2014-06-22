@@ -128,6 +128,11 @@ tr.alert.status_CRITICAL .alert_status {
 	color:white;
 }
 
+.old .service.status_OK {
+	background: #ccf;
+	color: black;
+}
+
 .service.status_OK {
 	background: #cfc;
 }
@@ -137,7 +142,8 @@ tr.alert.status_CRITICAL .alert_status {
 }
 
 .service.status_CRITICAL {
-	background: #faa;
+	background: #f30;
+	color:white;
 }
 
 a:hover {
