@@ -119,4 +119,4 @@ Right now the following relation namespaces are used in Redis
     ]
 - dotm::checks::config (hash with the following key values):
   * 'last_updated' => &lt;timestamp>
-- dotm::checks::config::\* (all preferences, for descriptions check the 'Settings' page)
+- dotm::config::\* (all preferences, for descriptions check the 'Settings' page)
