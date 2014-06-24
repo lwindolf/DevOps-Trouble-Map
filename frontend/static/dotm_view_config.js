@@ -97,9 +97,7 @@ function printConfigForm(key, setting) {
 function loadConfig(anchor) {
 	// Clean everything
 	setStatus('Fetching settings...');
-	// FIXME: Use a stage div instead of nodeChart!
-	$(".nodeChart").html("");
-	$("#nodeTables").hide();
+	$("#stage").html("");
 
 	$.getJSON("backend/settings", {})
 	.done(function (data) {
@@ -109,7 +107,7 @@ function loadConfig(anchor) {
 			forms[setting.position] = printConfigForm(key, setting);
 		});
 		$.each(forms, function(position, html) {
-			$(".nodeChart").append(html);
+			$("#stage").append(html);
 		});
 
 		if(anchor)

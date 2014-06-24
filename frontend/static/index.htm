@@ -1,7 +1,7 @@
 <!DOCTYPE html> 
 <html>
 <head>
-	<title>Devops Trouble Map</title>
+	<title>DevOps Trouble Map</title>
 	<meta charset="utf-8"/>
 	<link rel='stylesheet' type='text/css' href='css/default.css'/>
 </head>
@@ -26,39 +26,17 @@
 	</tr>
 	</table>
 
-	<div class='statusBox'>
-	<div class='status'></div>
-	</div>
-
-	<div class='blockrow1'>
-	<div class='block'>
+	<div id='leftsidebar'>
+		<!-- FIXME move this into all nodes view -->
 		<div class='blockTitle'><a href=''>Nodes</a></div>
-		<div class='nodes'></div>
+		<div id='nodeList'></div>
 	</div>
 
-	<!-- Chart representation -->
-
-	<div class='nodeChart'>
-	</div>
+	<div class='statusBox'>
+		<div class='status'></div>
 	</div>
 
-	<!-- Table representation -->
-	<div id='nodeTables'>
-		<div class='block'>
-			<div class='blockTitle'>Alerts</div>
-			<table class='alerts'></table>
-		</div>
-
-		<div class='block'>
-			<div class='blockTitle'>Services</div>
-			<table class='services'></table>
-		</div>
-
-		<div class='block'>
-			<div class='blockTitle'>Connections</div>
-			<table class='connections'></table>
-		</div>
-	</div>
+	<div id='stage'></div>
 
 	<script>
 		(function() {
@@ -72,7 +50,7 @@
 			$.each(data.nodes, function (index, node) {
 				nodes.push('<a href="javascript:loadNode(\''+node+'\')">'+node+'</a>');
 			})
-			$(".nodes").html(nodes.join("<br/>"));
+			$("#nodeList").html(nodes.join("<br/>"));
 			setStatus('Please select a node.');
 			loadNodesGraph(data.nodes, data.connections);
 		})

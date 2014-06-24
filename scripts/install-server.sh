@@ -28,7 +28,7 @@ if [ $? -ne 0 ]; then
 fi
  
 echo "### Installing backend init script..."
-cp dotm_backend/dotm_backend.rc /etc/init.d/dotm_backend
+cp backend/dotm_backend.rc /etc/init.d/dotm_backend
 chmod a+x /etc/init.d/dotm_backend
 update-rc.d dotm_backend defaults
 /etc/init.d/dotm_backend restart
@@ -38,4 +38,4 @@ ln -s /usr/local/share/dotm_frontend/apache-2.4.conf /etc/apache2/conf-enabled/d
 /etc/init.d/apache2 reload
 
 echo "### Installing state fetcher cron..."
-cp dotm_aggregator/cron_dotm_aggregator /etc/cron.d/
+cp aggregator/cron_dotm_aggregator /etc/cron.d/

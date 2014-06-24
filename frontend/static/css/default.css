@@ -51,6 +51,21 @@ td.menu a:hover {
 	border-collapse:collapse;
 }
 
+#leftsidebar {
+	float:left;
+	width:150px;
+}
+
+#stage {
+	background:white;
+	margin-left:156px;
+}
+
+div#nodeList {
+	padding:6px;
+	background:white;
+}
+
 #nodeTables {
 	display:none;
 	background:white;
@@ -155,6 +170,7 @@ a:hover {
 	background: white;
 	padding: 3px 6px;
 	border-top:1px solid #ccc;
+	margin-left:156px;
 }
 
 .status {

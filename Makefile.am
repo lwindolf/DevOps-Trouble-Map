@@ -1,1 +1,1 @@
-SUBDIRS=dotm_frontend dotm_backend dotm_aggregator scripts
+SUBDIRS=frontend backend aggregator scripts

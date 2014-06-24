@@ -1,8 +1,6 @@
 function loadNode(node) {
 	// Clean everything
 	setStatus('Fetching details for '+node+'...');
-	$(".nodeChart").html("");
-	$("#nodeTables").hide();
 
 	$.getJSON("backend/nodes/"+node, {})
 	.done(function (data) {
@@ -15,6 +13,23 @@ function loadNode(node) {
 			} else {
 				setStatus(node+' successfully loaded.');
 			}
+
+			$("#stage").html("\
+				<div class='nodeChart'></div>\
+				<div id='nodeTables'>\
+					<div class='block'>\
+						<div class='blockTitle'>Alerts</div>\
+						<table class='alerts'></table>\
+					</div>\
+					<div class='block'>\
+						<div class='blockTitle'>Services</div>\
+						<table class='services'></table>\
+					</div>\
+					<div class='block'>\
+						<div class='blockTitle'>Connections</div>\
+						<table class='connections'></table>\
+					</div>\
+				</div>");
 
 			// 1.) Setup tables
 

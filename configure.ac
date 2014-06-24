@@ -5,11 +5,11 @@ AM_PATH_PYTHON([2.7])
 
 AC_CONFIG_FILES([
 Makefile
-dotm_backend/Makefile
-dotm_backend/dotm_backend.rc
-dotm_frontend/Makefile
-dotm_frontend/apache-2.4.conf
-dotm_aggregator/Makefile
+backend/Makefile
+backend/dotm_backend.rc
+frontend/Makefile
+frontend/apache-2.4.conf
+aggregator/Makefile
 scripts/Makefile
 ])
 

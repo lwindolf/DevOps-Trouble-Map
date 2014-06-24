@@ -9,8 +9,8 @@ function addNodeToColaNodeList(nodeList, nodeIndex, node) {
 
 function loadNodesGraph(nodes, connections) {
 	var width = 800,
-    			    height = 600,
-    			    r = 9;
+	    height = 600,
+	    r = 9;
 
 	var color = d3.scale.category20();
 
@@ -20,7 +20,8 @@ function loadNodesGraph(nodes, connections) {
 	    .size([width, height]);
 	    //.jaccardLinkLengths(150);
 	
-	var svg = d3.select(".nodeChart").append("svg")
+	$("#stage").html("");
+	var svg = d3.select("#stage").append("svg")
 	    .attr("width", width)
 	    .attr("height", height);
 	

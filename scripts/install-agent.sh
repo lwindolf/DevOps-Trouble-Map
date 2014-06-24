@@ -15,7 +15,7 @@ if ! lsb_release -i | egrep 'Debian|Ubuntu' >/dev/null; then
 	exit 1
 fi
 
-cd dotm_node || exit 1
+cd agent || exit 1
 	
 echo "### Compiling and installing ($PREFIX)..."
 autoreconf -i
