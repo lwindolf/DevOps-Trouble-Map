@@ -11,91 +11,103 @@ from bottle import route, run, response, request, debug
 from dotm_monitor import DOTMMonitor
 
 # Namespace configuration
-general_prefix			= 'dotm'
-config_key_pfx			= general_prefix + '::config'
-mon_nodes_key_pfx		= general_prefix + '::checks::nodes::'
-mon_services_key_pfx	= general_prefix + '::checks::services::'
-mon_config_key			= general_prefix + '::checks::config'
-mon_config_key_pfx		= general_prefix + '::checks::config::'
+general_prefix = 'dotm'
+config_key_pfx = general_prefix + '::config'
+mon_nodes_key_pfx = general_prefix + '::checks::nodes::'
+mon_services_key_pfx = general_prefix + '::checks::services::'
+mon_config_key = general_prefix + '::checks::config'
+mon_config_key_pfx = general_prefix + '::checks::config::'
 
 settings = {
-    'other_internal_networks': {'description': 'Networks that DOTM should consider internal. Note that private networks (127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16) are always considered internal. Separate different networks in CIDR syntax by spaces.', 
-								'title': 'Internal Networks',
+    'other_internal_networks': {'description': 'Networks that DOTM should consider internal. Note that private'
+                                ' networks (127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16) are always'
+                                ' considered internal. Separate different networks in CIDR syntax by spaces.',
+                                'title': 'Internal Networks',
                                 'type': 'array',
-								'add': True,
-								'fields' : ['Network'],
-								'position': 1},
+                                'add': True,
+                                'fields': ['Network'],
+                                'position': 1},
     'user_node_aliases':       {'description': 'Node aliases to map node names of your monitoring to a node in DOTM',
-								'title': 'Additional Node Aliases',
+                                'title': 'Additional Node Aliases',
                                 'type': 'hash',
-								'add': True,
-								'fields': ['Alias', 'Node Name'],
-								'position': 2},
-    'nagios_instance':         {'description': 'Nagios/Icinga instance configuration. Currently only one instance is supported. The "url" field should point to your cgi-bin/ location (e.g. "http://my.domain.com/icinga/cgi-bin/"). The "expire" field should contain the number of seconds after which to discard old check results. "Use Aliases" specifies wether the nagios host name or alias should be used. "Refresh" specifices the update interval in seconds.',
-								'title': 'Nagios Instance',
+                                'add': True,
+                                'fields': ['Alias', 'Node Name'],
+                                'position': 2},
+    'nagios_instance':         {'description': 'Nagios/Icinga instance configuration. Currently only one instance'
+                                ' is supported. The "url" field should point to your cgi-bin/ location'
+                                ' (e.g. "http://my.domain.com/icinga/cgi-bin/"). The "expire" field should'
+                                ' contain the number of seconds after which to discard old check results.'
+                                ' "Use Aliases" specifies wether the nagios host name or alias should be used.'
+                                ' "Refresh" specifices the update interval in seconds.',
+                                'title': 'Nagios Instance',
                                 'type': 'hash',
-                                'default':{
+                                'default': {
                                     'url': 'http://localhost/nagios/cgi-bin/',
                                     'user': 'dotm',
                                     'password': 'changeme',
                                     'expire': 86400,
-									'use_aliases': 0,
-									'refresh': 60
-								},
-								'fields': ['Parameter', 'Value'],
-								'position': 3,
-                               },
-    'aging':                   {'description': 'Number of seconds after which a services/connections are considered unused. Default is "300"s.',
-								'title': 'Service Aging',
+                                    'use_aliases': 0,
+                                    'refresh': 60},
+                                'fields': ['Parameter', 'Value'],
+                                'position': 3},
+    'aging':                   {'description': 'Number of seconds after which a services/connections are'
+                                ' considered unused. Default is "300"s.',
+                                'title': 'Service Aging',
                                 'type': 'hash',
                                 'default': {
-									'Services': 5*60,
-									'Connections': 5*60
-								},
-								'fields': ['Parameter', 'Value'],
-								'position':4},
-    'expire':                  {'description': 'Number of days after which old data should be forgotten. Default is "0" (never).',
-								'title': 'Data Retention',
+                                    'Services': 5 * 60,
+                                    'Connections': 5 * 60},
+                                'fields': ['Parameter', 'Value'],
+                                'position': 4},
+    'expire':                  {'description': 'Number of days after which old data should be forgotten.'
+                                ' Default is "0" (never).',
+                                'title': 'Data Retention',
                                 'type': 'hash',
                                 'default': {
-									'Services': 0,
-									'Connections': 0,
-									'Nagios Alerts': 0
-								},
-								'fields': ['Parameter', 'Value'],
-								'position':5},
-    'hiding':                  {'description': 'Number of days after which old service/connection data should not be displayed in node graph anymore. Default is "7" days.',
-								'title': 'Hiding Old Objects',
+                                    'Services': 0,
+                                    'Connections': 0,
+                                    'Nagios Alerts': 0},
+                                'fields': ['Parameter', 'Value'],
+                                'position': 5},
+    'hiding':                  {'description': 'Number of days after which old service/connection data should not'
+                                ' be displayed in node graph anymore. Default is "7" days.',
+                                'title': 'Hiding Old Objects',
                                 'type': 'hash',
                                 'default': {
-									'Services': 7,
-									'Connections': 7
-								},
-								'fields': ['Parameter', 'Value'],
+                                    'Services': 7,
+                                    'Connections': 7},
+                                'fields': ['Parameter', 'Value'],
                                 'position': 6},
-	'service_mapping':         {'description': 'Rules that map Nagios service check names to process names as seen by DOTM. Those rules can be regular expressions. Note that both the service check name as well as the process name can be a regular expression. To enforce exact matching use "^" and "$"! Matching is performed case-insensitive.',
-								'title': 'Mapping Service Checks to Processes',
-								'type': 'hash',
-								'default': {
-									'^HTTP': '^nginx.*|^apache.*|^lighttpd.*',
-									'^Redis': '^redis-server.*',
-									'^MySQL.*': '^mysql.*',
-									'^Postgres.*': '^postmaster.*'
-								},
-								'add': True,
-								'fields': ['Service Check Regex', 'Process Regex'],
-								'position': 7},
-	'service_port_whitelist':  {'description': 'Comma separated list of port numbers that are to be ignored. This is to avoid presenting basic Unix services (Postfix, any shared filesystem or monitoring agents) as high-level services of interest. Add ports of services you do not care about. Currently only TCP ports are handled.',
-								'title': 'Aggregator: Service Port Whitelist',
-								'type': 'single_value',
-								'default': '53,22,5666,4949,4848,25,631',
-								'position': 8}
+    'service_mapping':         {'description': 'Rules that map Nagios service check names to process names as seen'
+                                ' by DOTM. Those rules can be regular expressions. Note that both the service check'
+                                ' name as well as the process name can be a regular expression. To enforce exact'
+                                ' matching use "^" and "$"! Matching is performed case-insensitive.',
+                                'title': 'Mapping Service Checks to Processes',
+                                'type': 'hash',
+                                'default': {
+                                    '^HTTP': '^nginx.*|^apache.*|^lighttpd.*',
+                                    '^Redis': '^redis-server.*',
+                                    '^MySQL.*': '^mysql.*',
+                                    '^Postgres.*': '^postmaster.*'},
+                                'add': True,
+                                'fields': ['Service Check Regex', 'Process Regex'],
+                                'position': 7},
+    'service_port_whitelist':  {'description': 'Comma separated list of port numbers that are to be ignored.'
+                                ' This is to avoid presenting basic Unix services (Postfix, any shared filesystem'
+                                ' or monitoring agents) as high-level services of interest. Add ports of services'
+                                ' you do not care about. Currently only TCP ports are handled.',
+                                'title': 'Aggregator: Service Port Whitelist',
+                                'type': 'single_value',
+                                'default': '53,22,5666,4949,4848,25,631',
+                                'position': 8}
 }
 
-rdb = redis.Redis() # FIXME: provide command line switches and feed them from init script
+rdb = redis.Redis()  # FIXME: provide command line switches and feed them from init script
+
 
 def json_error(message="Not Found", status_code=404):
-	return '{"error": {"message": "' + message + '", "status_code": ' + str(status_code) + '}}'
+    return '{"error": {"message": "' + message + '", "status_code": ' + str(status_code) + '}}'
+
 
 def resp_json(resp=None):
     response.content_type = 'application/json'
@@ -105,7 +117,8 @@ def resp_json(resp=None):
     return resp
 
 
-def resp_jsonp(resp=None, resp_type='apptilacion/javascript'):
+def resp_jsonp(resp=None):
+    response.content_type = 'apptilacion/javascript'
     callback = request.query.get('callback')
     if resp and callback:
         return '{}({})'.format(callback, resp)
@@ -143,9 +156,10 @@ def get_connections():
             key_arr.append({'source': field_arr[2], 'destination': field_arr[4]})
     return key_arr
 
-# Return value(s) or defaults(s) of a settings key 
+
+# Return value(s) or defaults(s) of a settings key
 #
-# s 	key name
+# s     key name
 def get_setting(s):
     if settings[s]['type'] == 'single_value':
         values = rdb.get(config_key_pfx + '::' + s)
@@ -157,19 +171,21 @@ def get_setting(s):
         # or empty. So we fill in the defaults where needed.
         if 'default' in settings[s]:
             for key in settings[s]['default']:
-				if not key in values:
-					values[key] = settings[s]['default'][key]
+                if key not in values:
+                    values[key] = settings[s]['default'][key]
 
     # Apply default if one is defined and key was not yet set
-    if 'default' in settings[s] and values == None:
+    if 'default' in settings[s] and not values:
         values = settings[s]['default']
 
     return values
+
 
 @route('/nodes')
 def get_nodes():
     return resp_or_404(json.dumps({'nodes': rdb.lrange("dotm::nodes", 0, -1),
                                    'connections': get_connections()}))
+
 
 @route('/nodes/<name>')
 def get_node(name):
@@ -192,55 +208,65 @@ def get_node(name):
             cHash['remoteHost'] = tmp[1]
             connectionDetails[c] = cHash
 
-	serviceAlerts = []
-	for s in rdb.lrange(mon_services_key_pfx + name, 0, -1):
-		serviceAlerts.extend(json.loads(s))
+    serviceAlerts = []
+    for s in rdb.lrange(mon_services_key_pfx + name, 0, -1):
+        serviceAlerts.extend(json.loads(s))
 
-	# Map node alerts to services
-	service_mapping = get_setting('service_mapping')
-	for service_regexp in service_mapping:
-		for sa in serviceAlerts:
-			if re.match(service_regexp, sa['service']):
-				for s in serviceDetails:
-					if re.match(service_mapping[service_regexp], serviceDetails[s]['process'], re.IGNORECASE):
-						serviceDetails[s]['alert_status'] = sa['status']
-						sa['mapping'] = serviceDetails[s]['process']
-				
+    # Map node alerts to services
+    # NOTE: This for->for->for doesn't look good :)
+    service_mapping = get_setting('service_mapping')
+    for service_regexp in service_mapping:
+        for sa in serviceAlerts:
+            if re.match(service_regexp, sa['service']):
+                for s in serviceDetails:
+                    if re.match(service_mapping[service_regexp], serviceDetails[s]['process'], re.IGNORECASE):
+                        serviceDetails[s]['alert_status'] = sa['status']
+                        sa['mapping'] = serviceDetails[s]['process']
+
     return resp_or_404(json.dumps({'name': name,
                                    'status': nodeDetails,
                                    'services': serviceDetails,
                                    'connections': connectionDetails,
-                                   'monitoring':{
-                                       'node':rdb.get(mon_nodes_key_pfx + name),
-	                                   'services':serviceAlerts
-	                               },
-                                   'settings':{
-                                       'aging':get_setting('aging'),
+                                   'monitoring': {
+                                       'node': rdb.get(mon_nodes_key_pfx + name),
+                                       'services': serviceAlerts
+                                   },
+                                   'settings': {
+                                       'aging': get_setting('aging'),
                                    }}))
 
+
 @route('/settings/<action>/<key>', method='POST')
+# NOTE: imho ideologically incorrect API interface. My suggestion would be to
+# implement API as /settings/key, when it is needed make use of
+# /settings/key&type=hash. As HTML5 at the moment is limited to forms methods
+# ["GET"|"POST"] we can add /settings/key&type=hash&action=<action>, but at the
+# same time support HTTP methods ["GET"|"POST"|"PUT"|"DELETE"] for actions.
 def change_settings(action, key):
-	if key in settings:
-		if action == 'set' and settings[key]['type'] == 'simple_value':
-				rdb.set(config_key_pfx + '::' + key, request.forms.get('value'))
-		elif action == 'add' and settings[key]['type'] == 'array':
-				rdb.lpush(config_key_pfx + '::' + key, request.forms.get('value'))
-		elif action == 'remove' and settings[key]['type'] == 'array':
-				rdb.lrem(config_key_pfx + '::' + key, request.forms.get('key'), 1)
-		elif action == 'setHash' and settings[key]['type'] == 'hash':
-				# setHash might set multiple enumerated keys, e.g. to set all
-				# Nagios instance settings, therefore we need to loop here
-				i=1
-				while request.forms.get('key'+str(i)) != None:
-					rdb.hset(config_key_pfx + '::' + key, request.forms.get('key'+str(i)), request.forms.get('value'+str(i)))
-					i+=1
-		elif action == 'delHash' and settings[key]['type'] == 'hash':
-				rdb.hdel(config_key_pfx + '::' + key, request.forms.get('key'))
-		else:
-			return json_error("This is not a valid command and settings type combination", 400)
-		return "OK"
-	else:
-		return json_error("This is not a valid settings key or settings command", 400)
+    if key in settings:
+        if action == 'set' and settings[key]['type'] == 'simple_value':
+                rdb.set(config_key_pfx + '::' + key, request.forms.get('value'))
+        elif action == 'add' and settings[key]['type'] == 'array':
+                rdb.lpush(config_key_pfx + '::' + key, request.forms.get('value'))
+        elif action == 'remove' and settings[key]['type'] == 'array':
+                rdb.lrem(config_key_pfx + '::' + key, request.forms.get('key'), 1)
+        elif action == 'setHash' and settings[key]['type'] == 'hash':
+                # setHash might set multiple enumerated keys, e.g. to set all
+                # Nagios instance settings, therefore we need to loop here
+                i = 1
+                while request.forms.get('key' + str(i)):
+                    rdb.hset(config_key_pfx + '::' + key,
+                             request.forms.get('key' + str(i)),
+                             request.forms.get('value' + str(i)))
+                    i += 1
+        elif action == 'delHash' and settings[key]['type'] == 'hash':
+                rdb.hdel(config_key_pfx + '::' + key, request.forms.get('key'))
+        else:
+            return json_error("This is not a valid command and settings type combination", 400)
+        return "OK"
+    else:
+        return json_error("This is not a valid settings key or settings command", 400)
+
 
 @route('/settings', method='GET')
 def get_settings():
@@ -248,6 +274,7 @@ def get_settings():
         settings[s]['values'] = get_setting(s)
 
     return resp_or_404(json.dumps(settings), 'application/javascript', 'no-cache, no-store, must-revalidate')
+
 
 @route('/mon/nodes')
 def get_mon_nodes():
@@ -291,20 +318,20 @@ def mon_reload():
             rdb.setex(update_lock_key, update_lock_expire, 1)
             mon = DOTMMonitor(config['url'], config['user'], config['password'])
             for key, val in mon.get_nodes().items():
-				# Apply user defined node mapping
-				tmp = rdb.hget(config_key_pfx + "::user_node_aliases", key)
-				if tmp != None:
-					val['node'] = tmp   # Overwrite hostname given by Nagios
+                # Apply user defined node mapping
+                tmp = rdb.hget(config_key_pfx + "::user_node_aliases", key)
+                if tmp:
+                    val['node'] = tmp   # Overwrite hostname given by Nagios
 
-				# And store...
-				rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
+                # And store...
+                rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
             for key, val in mon.get_services().items():
                 # Apply user defined node mapping
                 node = rdb.hget(config_key_pfx + "::user_node_aliases", key)
-                if node == None:
+                if not node:
                     node = key  # Overwrite hostname given by Nagios
 
-				# And store...
+                # And store...
                 with rdb.pipeline() as pipe:
                     pipe.delete(mon_services_key_pfx + node)
                     pipe.lpush(mon_services_key_pfx + node, json.dumps(val))
