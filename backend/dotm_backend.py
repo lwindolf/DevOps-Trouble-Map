@@ -6,9 +6,16 @@ import json
 import redis
 import time
 import re
+import argparse
 from bottle import route, run, response, request, debug
 
 from dotm_monitor import DOTMMonitor
+
+# Command-line argument parsing
+cl_parser = argparse.ArgumentParser(description='DOTM Backend API')
+cl_parser.add_argument('-r', '--redis-server', help='Redis Server', type=str, default='localhost')
+cl_parser.add_argument("-p", '--redis-port', help='Redis Port', type=int, default=6379)
+cl_args = cl_parser.parse_args()
 
 # Namespace configuration
 general_prefix = 'dotm'
@@ -102,7 +109,7 @@ settings = {
                                 'position': 8}
 }
 
-rdb = redis.Redis()  # FIXME: provide command line switches and feed them from init script
+rdb = redis.Redis(host=cl_args.redis_server, port=cl_args.redis_port)  # FIXME: add more cmd args switches supported by redis object
 
 
 def json_error(message="Not Found", status_code=404):
