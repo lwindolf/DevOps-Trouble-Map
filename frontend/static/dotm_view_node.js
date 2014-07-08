@@ -109,7 +109,13 @@ function loadNode(node) {
 					if(connectionData.process == serviceData.process &&
 					   connectionData.direction == "out" &&
 					   tmp.indexOf(">"+connectionData.remote_host+"<") == -1) {
-						tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remote_host)+"</div>";
+						tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remote_host);
+						if(connectionData['remote_service']) {
+							if(connectionData.remote_service['process']) {
+								tmp += "<div class='remoteService'>"+connectionData.remote_service.process+"</div>";
+							}
+						}
+						tmp += "</div>";
 					}
 				})
 				nodeDetails += "</td></td><td class='service status_"+(serviceData.alert_status?serviceData.alert_status:'')+"'>"+serviceData.process+"</td><td>";

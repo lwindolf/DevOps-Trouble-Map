@@ -205,7 +205,7 @@ a:hover {
 	margin:3px;
 }
 
-.nodeChart td.service {
+.nodeChart .service, .nodeChart .remoteService {
 	border:1px solid gray;
 	padding:3px 12px;
 	text-align:center;
