@@ -63,7 +63,7 @@ function loadNode(node) {
 				if(now - c.last_seen > data.settings.connection_aging) {
 					age = "old";
 				}
-				connections.push('<tr class="connection '+age+'"><td>'+c.direction+'</td><td>'+c.process+'</td><td>'+c.localPort+'</td><td>'+nodeLink(c.remoteHost)+'</td><td>'+c.connections+'</td><td class="timeago" title="'+c.last_seen*1000+'">'+c.last_seen*1000+'</td></tr>');
+				connections.push('<tr class="connection '+age+'"><td>'+c.direction+'</td><td>'+c.process+'</td><td>'+c.local_port+'</td><td>'+nodeLink(c.remote_host)+'</td><td>'+c.connections+'</td><td class="timeago" title="'+c.last_seen*1000+'">'+c.last_seen*1000+'</td></tr>');
 				c['age'] = age;	/* Add age to be reused in nodeGraph */
 			})
 			if(connections.length > 1)
@@ -94,10 +94,10 @@ function loadNode(node) {
 				tmp = "";
 				nodeDetails += "<tr class='service "+serviceData.age+"'><td>";
 				$.each(data.connections, function(connection, connectionData) {
-					if(connectionData.localPort == service &&
+					if(connectionData.local_port == service &&
 					   connectionData.direction == "in" &&
-					   tmp.indexOf(">"+connectionData.remoteHost+"<") == -1) {
-						tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remoteHost)+"</div>";
+					   tmp.indexOf(">"+connectionData.remote_host+"<") == -1) {
+						tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remote_host)+"</div>";
 					}
 				})
 				nodeDetails += tmp + "<td>";
@@ -108,8 +108,8 @@ function loadNode(node) {
 				$.each(data.connections, function(connection, connectionData) {
 					if(connectionData.process == serviceData.process &&
 					   connectionData.direction == "out" &&
-					   tmp.indexOf(">"+connectionData.remoteHost+"<") == -1) {
-						tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remoteHost)+"</div>";
+					   tmp.indexOf(">"+connectionData.remote_host+"<") == -1) {
+						tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remote_host)+"</div>";
 					}
 				})
 				nodeDetails += "</td></td><td class='service status_"+(serviceData.alert_status?serviceData.alert_status:'')+"'>"+serviceData.process+"</td><td>";

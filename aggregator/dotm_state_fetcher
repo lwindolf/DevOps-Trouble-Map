@@ -222,23 +222,37 @@ main()
 				continue
 			fi
 
-			# FIXME: local connections currently are described as outgoing
+			remoteip=$(ip_to_name $remoteip)
+
+			# FIXME: local connections currently are described as incoming
 			if [ "${listen_ports[${localport}]}" == "" ]; then
-				remoteip=$(ip_to_name $remoteip)
 				# Reduce listings of random ports
 				if [ "$remoteport" -gt 1023 ]; then
 					remoteport="high"
 				fi
 				echo "  -> outgoing connection to $remoteaddr (to $remoteip by $program)"
 				conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
-				redis_push "dotm::connections::${c}::${remoteport}::${remoteip}" process "$program" last_seen "$now" connections "$conn_count" direction "out"	
+				redis_push "dotm::connections::${c}::${remoteport}::${remoteip}" \
+					process "$program" \
+					last_seen "$now" \
+					local_port "$localport" \
+					remote_port "$remoteport" \
+					remote_host "$remoteip" \
+					connections "$conn_count" \
+					direction "out"	
 			else
 				# FIXME: Consolidate incoming connections based on frequency
 				# e.g. count per net and combine to network if too many appear
-				remoteip=$(ip_to_name $remoteip)
 				echo "  -> incoming from $remoteaddr ($remoteip to $localport $program)"
 				conn_count=$(echo "$output" | grep "[[:space:]]$localaddr[[:space:]]*$remoteip:[0-9][0-9]*[[:space:]]" | wc -l)
-				redis_push "dotm::connections::${c}::${localport}::${remoteip}" process "$program" last_seen "$now" connections "$conn_count" direction "in"
+				redis_push "dotm::connections::${c}::${localport}::${remoteip}" \
+					process "$program" \
+					last_seen "$now" \
+					local_port "$localport" \
+					remote_port "$remoteport" \
+					remote_host "$remoteip" \
+					connections "$conn_count" \
+					direction "in"
 				used_services[$localport]=1
 			fi
 		done < <(echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER")

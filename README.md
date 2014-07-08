@@ -78,12 +78,15 @@ Right now the following relation namespaces are used in Redis
   * 'last_fetch' => &lt;timestamp>
   * 'fetch_status' => &lt;'OK' or error message>
   * 'ips' => &lt;comma separated list of IPs>
-- dotm::connections::&lt;node name>::&lt;port>::&lt;remote node/IP> (hash with the following key values):
+- dotm::connections::&lt;node name>::&lt;port>::&lt;remote node/IP> (hash):
   * 'process' => &lt;string>
   * 'connections' => &lt;int>
   * 'last_connection' => &lt;timestamp>
   * 'last_seen' => &lt;timestamp>
   * 'direction' => &lt;in/out>
+  * 'remote_host' => &lt;IP or node name>
+  * 'remote_port' => &lt;port number or 'high'>
+  * 'local_port' => &lt;port number>
 - dotm::services::&lt;node name>::&lt;port> (hash with the following key values):
   * 'process' => &lt;string>
   * 'last_seen' => &lt;timestamp>

@@ -204,16 +204,22 @@ def get_node(name):
     for s in services:
         serviceDetails[s] = rdb.hgetall(prefix + s)
 
+	# Fetch all connection details and expand known services
+	# with their name and state details
     prefix = 'dotm::connections::' + name + '::'
     connectionDetails = {}
     connections = [c.replace(prefix, '') for c in rdb.keys(prefix + '*')]
     for c in connections:
-        tmp = c.split('::')
-        if len(tmp) == 2:
-            cHash = rdb.hgetall(prefix + c)
-            cHash['localPort'] = tmp[0]
-            cHash['remoteHost'] = tmp[1]
-            connectionDetails[c] = cHash
+        cHash = rdb.hgetall(prefix + c)
+		# If remote host name is not an IP and port is not a high port
+		# try to resolve service info
+        try:
+            if cHash['remote_port'] != 'high' and cHash['remote_host'] != 'Internet' and cHash['remote_host'] != '127.0.0.1':
+                cHash['remote_service'] = rdb.hgetall('dotm::services::' + cHash['remote_host'] + '::' + cHash['remote_port'])
+                cHash['remote_service_id'] = 'dotm::services::' + cHash['remote_host'] + '::' + cHash['remote_port']
+        except KeyError:
+            print "Bad: key missing, could be a migration issue..."
+        connectionDetails[c] = cHash
 
     serviceAlerts = []
     for s in rdb.lrange(mon_services_key_pfx + name, 0, -1):
@@ -230,12 +236,18 @@ def get_node(name):
                         serviceDetails[s]['alert_status'] = sa['status']
                         sa['mapping'] = serviceDetails[s]['process']
 
+    try:
+        tmp = rdb.get(mon_nodes_key_pfx + name)
+        json.loads(tmp)
+    except TypeError:
+        print "No node monitoring..."
+
     return resp_or_404(json.dumps({'name': name,
                                    'status': nodeDetails,
                                    'services': serviceDetails,
                                    'connections': connectionDetails,
                                    'monitoring': {
-                                       'node': rdb.get(mon_nodes_key_pfx + name),
+                                       'node': tmp,
                                        'services': serviceAlerts
                                    },
                                    'settings': {
