@@ -12,7 +12,25 @@ When you care about above questions try "DevOps Trouble Map" (short DOTM) which
 - provides automatic *layer 4 system archictecture charts*.
 - maps alerts live into system architecture charts.
 
-Note that the project is pre-alpha right now.
+Note that the project is pre-alpha right now. Here are some impressions what the code does so far:
+
+Mapping of Nagios alerts to detected services (note the 2nd column):
+
+![Alert Mapping](doc/dotm-screenshot-alerts.png?raw=true)
+
+Those Nagios "service check" to "service" mappings are fuzzy logic regular expressions. DOTM brings presets and allows user to refine them as needed. The fact that those mappings are actually necessary indicates the intrinsic problem of the missing service relation in Nagios, which mixes the concepts of "services" and "service checks". Only with "services" (which we detect based on open TCP ports) we can auto-detect impact.
+
+![Service Mapping](doc/dotm-screenshot-service-mapping.png?raw=true)
+
+Additionally to the Nagios node and service states DOTM aggregates the current connection details from the nodes. It remembers old connections to be able to see service usage transitions and create alarms for long unused or suddenly disconnected services. This helps with typical questions like "do we actually still need this X" or uncover a wrong firewall configuration.
+
+![Connection and Service Tracking](doc/dotm-screenshot-connections.png?raw=true)
+
+Finally those two sources of information are combined into a very simple "graphical" representation:
+
+![Node Graph](doc/dotm-screenshot-nodegraph.png?raw=true)
+
+In this "node graph" color coding indicates Nagios alerts as well as service states only discovered by DOTM.
 
 
 Server Installation
