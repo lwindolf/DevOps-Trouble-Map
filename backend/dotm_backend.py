@@ -14,7 +14,9 @@ from dotm_monitor import DOTMMonitor
 # Command-line argument parsing
 cl_parser = argparse.ArgumentParser(description='DOTM Backend API')
 cl_parser.add_argument('-r', '--redis-server', help='Redis Server', type=str, default='localhost')
-cl_parser.add_argument("-p", '--redis-port', help='Redis Port', type=int, default=6379)
+cl_parser.add_argument("-P", '--redis-port', help='Redis Port', type=int, default=6379)
+cl_parser.add_argument("-d", '--redis-db', help='Redis Database', type=int, default=0)
+cl_parser.add_argument("-p", '--redis-password', help='Redis Rassword', type=str, default=None)
 cl_args = cl_parser.parse_args()
 
 # Namespace configuration
@@ -42,7 +44,7 @@ settings = {
                                 'position': 2},
     'nagios_instance':         {'description': 'Nagios/Icinga instance configuration. Currently only one instance'
                                 ' is supported. The "url" field should point to your cgi-bin/ location'
-                                ' (e.g. "http://my.domain.com/icinga/cgi-bin/"). The "expire" field should'
+                                ' (e.g. "http://my.domain.com/cgi-bin/icinga"). The "expire" field should'
                                 ' contain the number of seconds after which to discard old check results.'
                                 ' "Use Aliases" specifies wether the nagios host name or alias should be used.'
                                 ' "Refresh" specifices the update interval in seconds.',
@@ -109,7 +111,10 @@ settings = {
                                 'position': 8}
 }
 
-rdb = redis.Redis(host=cl_args.redis_server, port=cl_args.redis_port)  # FIXME: add more cmd args switches supported by redis object
+rdb = redis.Redis(host=cl_args.redis_server,
+                  port=cl_args.redis_port,
+                  db=cl_args.redis_db,
+                  password=cl_args.redis_password)
 
 
 def json_error(message="Not Found", status_code=404):
@@ -182,7 +187,7 @@ def get_setting(s):
                     values[key] = settings[s]['default'][key]
 
     # Apply default if one is defined and key was not yet set
-    if 'default' in settings[s] and not values:
+    if not values and 'default' in settings[s]:
         values = settings[s]['default']
 
     return values
@@ -204,15 +209,15 @@ def get_node(name):
     for s in services:
         serviceDetails[s] = rdb.hgetall(prefix + s)
 
-	# Fetch all connection details and expand known services
-	# with their name and state details
+    # Fetch all connection details and expand known services
+    # with their name and state details
     prefix = 'dotm::connections::' + name + '::'
     connectionDetails = {}
     connections = [c.replace(prefix, '') for c in rdb.keys(prefix + '*')]
     for c in connections:
         cHash = rdb.hgetall(prefix + c)
-		# If remote host name is not an IP and port is not a high port
-		# try to resolve service info
+        # If remote host name is not an IP and port is not a high port
+        # try to resolve service info
         try:
             if cHash['remote_port'] != 'high' and cHash['remote_host'] != 'Internet' and cHash['remote_host'] != '127.0.0.1':
                 cHash['remote_service'] = rdb.hgetall('dotm::services::' + cHash['remote_host'] + '::' + cHash['remote_port'])
