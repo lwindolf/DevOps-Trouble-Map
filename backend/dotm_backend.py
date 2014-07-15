@@ -168,6 +168,11 @@ def get_connections():
             key_arr.append({'source': field_arr[2], 'destination': field_arr[4]})
     return key_arr
 
+def get_node_alerts(node):
+    try:
+        return json.loads(rdb.get(mon_nodes_key_pfx + node))
+    except TypeError:
+        print "No node monitoring..."
 
 # Return value(s) or defaults(s) of a settings key
 #
@@ -195,7 +200,12 @@ def get_setting(s):
 
 @route('/nodes')
 def get_nodes():
-    return resp_or_404(json.dumps({'nodes': rdb.lrange("dotm::nodes", 0, -1),
+    monitoring = {}
+    nodes = rdb.lrange("dotm::nodes", 0, -1)
+    for node in nodes:
+		monitoring[node] = get_node_alerts(node)
+    return resp_or_404(json.dumps({'nodes': nodes,
+                                   'monitoring': monitoring,
                                    'connections': get_connections()}))
 
 def get_service_details(node):
@@ -233,18 +243,12 @@ def get_node(name):
     for s in rdb.lrange(mon_services_key_pfx + name, 0, -1):
         serviceAlerts.extend(json.loads(s))
 
-    try:
-        tmp = rdb.get(mon_nodes_key_pfx + name)
-        tmp = json.loads(tmp)
-    except TypeError:
-        print "No node monitoring..."
-
     return resp_or_404(json.dumps({'name': name,
                                    'status': nodeDetails,
                                    'services': serviceDetails,
                                    'connections': connectionDetails,
                                    'monitoring': {
-                                       'node': tmp,
+                                       'node': get_node_alerts(name),
                                        'services': serviceAlerts
                                    },
                                    'settings': {
