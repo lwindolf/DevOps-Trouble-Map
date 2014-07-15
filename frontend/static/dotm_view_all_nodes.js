@@ -1,13 +1,19 @@
-function addNodeToColaNodeList(nodeList, nodeIndex, node) {
+function addNodeToColaNodeList(nodeList, nodeIndex, node, monitoring) {
 	var n = {};
 	n['name'] = node;
 	n['width'] = 60;
 	n['height'] = 40;
+
+	if(monitoring[node])
+		n['status'] = monitoring[node]['status'];
+	else
+		n['status'] = '';
+
 	nodeList.push(n);
 	nodeIndex[node] = Object.keys(nodeIndex).length;
 }
 
-function loadNodesGraph(nodes, connections) {
+function loadNodesGraph(data) {
 	var width = 800,
 	    height = 600,
 	    r = 9;
@@ -41,19 +47,19 @@ function loadNodesGraph(nodes, connections) {
 	graph["nodes"] = new Array();
 	graph["links"] = new Array();
 	graph["groups"] = new Array();
-	$.each(nodes, function(index, data) {
-		addNodeToColaNodeList(graph['nodes'], nodeIndex, data);
+	$.each(data.nodes, function(index, nodeData) {
+		addNodeToColaNodeList(graph['nodes'], nodeIndex, nodeData, data.monitoring);
 	});
-	$.each(connections, function(index, data) {
+	$.each(data.connections, function(index, connectionData) {
 		// Node sources and target might not exist
 		// in case of non-managed nodes we connect to/from
-		if(nodeIndex[data.source] == undefined)
-			addNodeToColaNodeList(graph['nodes'], nodeIndex, data.source);
-		if(nodeIndex[data.destination] == undefined)
-			addNodeToColaNodeList(graph['nodes'], nodeIndex, data.destination);
+		if(nodeIndex[connectionData.source] == undefined)
+			addNodeToColaNodeList(graph['nodes'], nodeIndex, connectionData.source, data.monitoring);
+		if(nodeIndex[connectionData.destination] == undefined)
+			addNodeToColaNodeList(graph['nodes'], nodeIndex, connectionData.destination, data.monitoring);
 		var l = {};
-		l['source'] = nodeIndex[data.source];
-		l['target'] = nodeIndex[data.destination];
+		l['source'] = nodeIndex[connectionData.source];
+		l['target'] = nodeIndex[connectionData.destination];
 		graph['links'].push(l);
 	});
 
@@ -81,14 +87,21 @@ function loadNodesGraph(nodes, connections) {
 	var node = svg.selectAll(".node")
 	            .data(graph.nodes)
 		    .enter().append("rect")
-	            .attr("class", "node")
 	            .attr("width", function (d) { return d.width - 2 * pad; })
 	            .attr("height", function (d) { return d.height - 2 * pad; })
 	            .attr("rx", r - 3).attr("ry", r - 3)
-	            .style("fill", function (d) { return color(0); })//color(graph.groups.length); })
+	            .style("fill", function (d) {
+			if(d.status == 'UP')
+				return '#0c3';
+			if(d.status == 'DOWN')
+				return '#f30';
+			if(d.status == 'UNKNOWN')
+				return '#fca';
+			return '#ccc';
+		    })
 	            .on("click", function (d) {
 	                if (d3.event.defaultPrevented) return; // click suppressed
-			if($.inArray(d.name, nodes) != -1) loadNode(d.name); 
+			if($.inArray(d.name, data.nodes) != -1) loadNode(d.name); 
 	            })
 	            .call(d3cola.drag);
 	
@@ -99,7 +112,7 @@ function loadNodesGraph(nodes, connections) {
 	            .text(function (d) { return d.name; })
 	            .on("click", function (d) {
 			if (d3.event.defaultPrevented) return; // click suppressed
-			if($.inArray(d.name, nodes) != -1) loadNode(d.name);
+			if($.inArray(d.name, data.nodes) != -1) loadNode(d.name);
 	            })
 	            .call(d3cola.drag);
 	

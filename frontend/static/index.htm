@@ -52,7 +52,7 @@
 			})
 			$("#nodeList").html(nodes.join("<br/>"));
 			setStatus('Please select a node.');
-			loadNodesGraph(data.nodes, data.connections);
+			loadNodesGraph(data);
 		})
 		.fail(function (jqxhr, textStatus, error) {
 			setError('Node list fetch failed! ('+error+')');
