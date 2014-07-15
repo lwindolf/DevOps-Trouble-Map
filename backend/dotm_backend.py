@@ -235,7 +235,7 @@ def get_node(name):
 
     try:
         tmp = rdb.get(mon_nodes_key_pfx + name)
-        json.loads(tmp)
+        tmp = json.loads(tmp)
     except TypeError:
         print "No node monitoring..."
 
