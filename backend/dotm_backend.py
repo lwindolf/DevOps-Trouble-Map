@@ -193,16 +193,19 @@ def get_nodes():
     return resp_or_404(json.dumps({'nodes': rdb.lrange("dotm::nodes", 0, -1),
                                    'connections': get_connections()}))
 
+def get_service_details(node):
+    prefix = 'dotm::services::' + node + '::'
+    serviceDetails = {}
+    services = [s.replace(prefix, '') for s in rdb.keys(prefix + '*')]
+    for s in services:
+        serviceDetails[s] = rdb.hgetall(prefix + s)
+    return serviceDetails
 
 @route('/nodes/<name>')
 def get_node(name):
     prefix = 'dotm::nodes::' + name
     nodeDetails = rdb.hgetall(prefix)
-    prefix = 'dotm::services::' + name + '::'
-    serviceDetails = {}
-    services = [s.replace(prefix, '') for s in rdb.keys(prefix + '*')]
-    for s in services:
-        serviceDetails[s] = rdb.hgetall(prefix + s)
+    serviceDetails = get_service_details(name)
 
 	# Fetch all connection details and expand known services
 	# with their name and state details
@@ -224,17 +227,6 @@ def get_node(name):
     serviceAlerts = []
     for s in rdb.lrange(mon_services_key_pfx + name, 0, -1):
         serviceAlerts.extend(json.loads(s))
-
-    # Map node alerts to services
-    # NOTE: This for->for->for doesn't look good :)
-    service_mapping = get_setting('service_mapping')
-    for service_regexp in service_mapping:
-        for sa in serviceAlerts:
-            if re.match(service_regexp, sa['service']):
-                for s in serviceDetails:
-                    if re.match(service_mapping[service_regexp], serviceDetails[s]['process'], re.IGNORECASE):
-                        serviceDetails[s]['alert_status'] = sa['status']
-                        sa['mapping'] = serviceDetails[s]['process']
 
     try:
         tmp = rdb.get(mon_nodes_key_pfx + name)
@@ -325,6 +317,7 @@ def get_mon_node_key(node, key):
 
 @route('/mon/reload', method='POST')
 def mon_reload():
+    service_mapping = get_setting('service_mapping')
     config = get_setting('nagios_instance')
     time_now = int(time.time())
     update_time_key = 'last_updated'
@@ -349,6 +342,18 @@ def mon_reload():
                 node = rdb.hget(config_key_pfx + "::user_node_aliases", key)
                 if not node:
                     node = key  # Overwrite hostname given by Nagios
+
+                # Map node alerts to services
+                # NOTE: This for->for->for doesn't look good :)
+                serviceDetails = get_service_details(node)
+                if serviceDetails != None:
+                    for service_regexp in service_mapping:
+                        for s in serviceDetails:
+                            for sa in val:
+                                if re.match(service_regexp, sa['service']):
+                                    if re.match(service_mapping[service_regexp], serviceDetails[s]['process'], re.IGNORECASE):
+                                        rdb.hset('dotm::services::' + node + '::' + s, 'alert_status', sa['status'])
+                                        sa['mapping'] = serviceDetails[s]['process']
 
                 # And store...
                 with rdb.pipeline() as pipe:

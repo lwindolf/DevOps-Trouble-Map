@@ -112,7 +112,7 @@ function loadNode(node) {
 						tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remote_host);
 						if(connectionData['remote_service']) {
 							if(connectionData.remote_service['process']) {
-								tmp += "<div class='remoteService'>"+connectionData.remote_service.process+"</div>";
+								tmp += "<div class='remoteService service status_"+connectionData.remote_service.alert_status+"'>"+connectionData.remote_service.process+"</div>";
 							}
 						}
 						tmp += "</div>";
