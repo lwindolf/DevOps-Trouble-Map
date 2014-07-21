@@ -7,7 +7,7 @@ import redis
 import time
 import re
 import argparse
-from bottle import route, run, response, request, debug
+from bottle import route, run, response, request, debug, static_file
 
 from dotm_monitor import DOTMMonitor
 
@@ -168,11 +168,13 @@ def get_connections():
             key_arr.append({'source': field_arr[2], 'destination': field_arr[4]})
     return key_arr
 
+
 def get_node_alerts(node):
     try:
         return json.loads(rdb.get(mon_nodes_key_pfx + node))
     except TypeError:
         print "No node monitoring..."
+
 
 # Return value(s) or defaults(s) of a settings key
 #
@@ -198,15 +200,17 @@ def get_setting(s):
     return values
 
 
+@route('/backend/nodes')
 @route('/nodes')
 def get_nodes():
     monitoring = {}
     nodes = rdb.lrange("dotm::nodes", 0, -1)
     for node in nodes:
-		monitoring[node] = get_node_alerts(node)
+        monitoring[node] = get_node_alerts(node)
     return resp_or_404(json.dumps({'nodes': nodes,
                                    'monitoring': monitoring,
                                    'connections': get_connections()}))
+
 
 def get_service_details(node):
     prefix = 'dotm::services::' + node + '::'
@@ -215,6 +219,7 @@ def get_service_details(node):
     for s in services:
         serviceDetails[s] = rdb.hgetall(prefix + s)
     return serviceDetails
+
 
 @route('/nodes/<name>')
 def get_node(name):
@@ -256,6 +261,7 @@ def get_node(name):
                                    }}))
 
 
+@route('/backend/settings/<action>/<key>', method='POST')
 @route('/settings/<action>/<key>', method='POST')
 # NOTE: imho ideologically incorrect API interface. My suggestion would be to
 # implement API as /settings/key, when it is needed make use of
@@ -288,6 +294,7 @@ def change_settings(action, key):
         return json_error("This is not a valid settings key or settings command", 400)
 
 
+@route('/backend/settings', method='GET')
 @route('/settings', method='GET')
 def get_settings():
     for s in settings:
@@ -335,7 +342,7 @@ def mon_reload():
     update_time_str = rdb.hget(mon_config_key, update_time_key)
     if update_time_str and not rdb.get(update_lock_key):
         update_time = int(update_time_str)
-        if time_now - update_time >= config['refresh']:
+        if time_now - update_time >= int(config['refresh']):
             rdb.setex(update_lock_key, update_lock_expire, 1)
             mon = DOTMMonitor(config['url'], config['user'], config['password'])
             for key, val in mon.get_nodes().items():
@@ -355,12 +362,14 @@ def mon_reload():
                 # Map node alerts to services
                 # NOTE: This for->for->for doesn't look good :)
                 serviceDetails = get_service_details(node)
-                if serviceDetails != None:
+                if serviceDetails:
                     for service_regexp in service_mapping:
                         for s in serviceDetails:
                             for sa in val:
                                 if re.match(service_regexp, sa['service']):
-                                    if re.match(service_mapping[service_regexp], serviceDetails[s]['process'], re.IGNORECASE):
+                                    if re.match(service_mapping[service_regexp],
+                                                serviceDetails[s]['process'],
+                                                re.IGNORECASE):
                                         rdb.hset('dotm::services::' + node + '::' + s, 'alert_status', sa['status'])
                                         sa['mapping'] = serviceDetails[s]['process']
 
@@ -413,6 +422,15 @@ def set_config():
         # maximum length
         rdb.hset(config_key_pfx, key, val)
     return resp_or_404(json.dumps(data_obj))
+
+
+# Serve static content to eliminate the need of apache in development env.
+# For this to work additional routes for /backend/* paths were added because
+# they are used in the frontend.
+@route('/')
+@route('/<filename:path>')
+def static(filename="index.htm"):
+    return static_file(filename, "../frontend/static/")
 
 
 if __name__ == '__main__':
