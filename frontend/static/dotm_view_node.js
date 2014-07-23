@@ -129,8 +129,12 @@ function loadNode(node) {
 
 			// Finally if there we no other exceptions check for monitoring
 			// and complain if it is not there
-			if(data.monitoring.node == null) 
-				throw("No monitoring found! Ensure that your Nagios setup monitors this host with name '"+node+"' or add a <a href='javascript:loadConfig(\"user_node_aliases\")'>node mapping</a>!");
+			if(data.monitoring.node == null) {
+				if(data.status['fetch_status'])
+					throw("Monitoring fetch error: '"+data.status.fetch_status+"' Ensure that the dotm_node agent is installed and reachable!");
+				else
+					throw("No monitoring found! Ensure that your Nagios setup monitors this host with name '"+node+"' or add a <a href='javascript:loadConfig(\"user_node_aliases\")'>node mapping</a>!");
+			}
 		} catch(err) {
 			setError(err);
 		}
