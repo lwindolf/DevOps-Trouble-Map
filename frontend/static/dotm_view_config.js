@@ -94,10 +94,10 @@ function printConfigForm(key, setting) {
 	return result;
 }
 
-function loadConfig(anchor) {
+function loadConfig(stage, anchor) {
 	// Clean everything
 	setStatus('Fetching settings...');
-	$("#stage").html("");
+	$(stage).html("");
 
 	$.getJSON("backend/settings", {})
 	.done(function (data) {
@@ -107,7 +107,7 @@ function loadConfig(anchor) {
 			forms[setting.position] = printConfigForm(key, setting);
 		});
 		$.each(forms, function(position, html) {
-			$("#stage").append(html);
+			$(stage).append(html);
 		});
 
 		if(anchor)

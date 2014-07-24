@@ -1,12 +1,62 @@
-<!DOCTYPE html> 
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>DevOps Trouble Map</title>
 	<meta charset="utf-8"/>
 	<link rel='stylesheet' type='text/css' href='css/default.css'/>
+	<link rel='stylesheet' type='text/css' href='css/layout-default.css'/>
+
+	<style type="text/css">
+	/*
+	 *	Cosmetic Styles
+	 */
+	body {
+		font-family:	Arial, sans-serif;
+		font-size:		100%;
+		*font-size:		0.8em; /* IE 6/7 only */
+	}
+	p {
+		font-size:		1em;
+		margin:			1em 0;
+	}
+	button {
+		line-height:	normal;
+	}
+
+	/*
+	 *	CUSTOMIZE LAYOUT SETTINGS
+	 */
+	.ui-layout-north {
+		background:		#EEE;
+		border-bottom:	0;
+		padding:		0 20px;
+	}
+	.ui-layout-center {
+		background:		#EEE;
+		border-top:		0;
+		padding:		0;
+		overflow-x:		hidden;
+	}
+	.ui-layout-resizer-west {
+		border-top:		1px solid #BBB;
+	}
+	.ui-layout-west {
+		padding:		0;
+		}
+		.ui-layout-west div {
+			background:		#FEE;
+		}
+		.ui-layout-west div.ui-layout-content {
+			background:		#FFF;
+		}
+
+	</style>
 </head>
 <body>
 	<script type="text/javascript" src="jquery-2.1.1.min.js"></script>
+	<script type="text/javascript" src="jquery-migrate-1.0.0.js"></script>
+	<script type="text/javascript" src="jquery-ui.min.js"></script>
+	<script type="text/javascript" src="jquery.layout.min-1.2.0.js"></script>
 	<script type="text/javascript" src="jquery.timeago.js"></script>
 	<script type="text/javascript" src="dotm_common.js"></script>
 	<script type="text/javascript" src="dotm_view_node.js"></script>
@@ -15,31 +65,43 @@
 	<script src="d3.v3.js"></script>
 	<script src="cola.v3.min.js"></script>
 
-	<table class='header title'>
-	<tr>
-		<td class='title'>
-			<h1 class='title'>Devops Trouble Map</h1>
-		</td>
-		<td class='menu'>
-			<a href="javascript:loadConfig()">Settings</a>
-		</td>
-	</tr>
-	</table>
-
-	<div id='leftsidebar'>
-		<!-- FIXME move this into all nodes view -->
-		<div class='blockTitle'><a href=''>Nodes</a></div>
-		<div id='nodeList'></div>
+	<div class='ui-layout-north'>
+		<h1 class='title'>Devops Trouble Map</h1>
+		<div class='menu'>
+			<a href="javascript:loadConfig('.ui-layout-center .ui-layout-content');">Settings</a>
+		</div>
 	</div>
 
-	<div class='statusBox'>
-		<div class='status'></div>
+	<div class='ui-layout-center'>
+		<div class='statusBox'>
+			<div class='status'></div>
+		</div>
+		<div class='ui-layout-content'>
+		</div>
 	</div>
 
-	<div id='stage'></div>
+	<div class='ui-layout-west'>
+		<div class='ui-layout-content'>
+		</div>
+	</div>
 
 	<script>
+		var myLayout;
+
+		function loadNode(node) {
+			loadNodeGraph('.ui-layout-center .ui-layout-content', node);
+		}
+
 		(function() {
+
+		// Setup layout
+		$.curCSS = $.css;
+		myLayout = $('body').layout({
+			west__size: Math.floor($(document).width() * .60) // 60% screen width
+		,       north__spacing_open: 0
+		});
+
+		// Setup time formatting
 		jQuery.timeago.settings.strings.suffixAgo = null;
 
 		// Fetch nodes
@@ -52,7 +114,8 @@
 			})
 			$("#nodeList").html(nodes.join("<br/>"));
 			setStatus('Please select a node.');
-			loadNodesGraph(data);
+			loadNodesGraph('.ui-layout-west .ui-layout-content', data);
+			myLayout.initContent('west');
 		})
 		.fail(function (jqxhr, textStatus, error) {
 			setError('Node list fetch failed! ('+error+')');

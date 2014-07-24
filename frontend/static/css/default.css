@@ -4,23 +4,25 @@ body {
 	padding:0;
 }
 
-td.title {
-	width:100%;
-}
 h1.title {
 	font-family: Verdana;
 	font-size: 18pt;
 	color: #444;
 	margin:6px;
+	display:inline-block;
 }
 
-td.menu a {
+div.menu {
+	float:right;
+	margin-top:12px;
+}
+
+.menu a {
 	color:#777;
 	text-decoration:none;
-	display:block;
 	padding:6px;
 }
-td.menu a:hover {
+.menu a:hover {
 	color:#444;
 	background:#ddd;
 }
@@ -54,11 +56,6 @@ td.menu a:hover {
 #leftsidebar {
 	float:left;
 	width:150px;
-}
-
-#stage {
-	background:white;
-	margin-left:156px;
 }
 
 div#nodeList {
@@ -170,7 +167,6 @@ a:hover {
 	background: white;
 	padding: 3px 6px;
 	border-top:1px solid #ccc;
-	margin-left:156px;
 }
 
 .status {

@@ -1,4 +1,4 @@
-function loadNode(node) {
+function loadNodeGraph(stage, node) {
 	// Clean everything
 	setStatus('Fetching details for '+node+'...');
 
@@ -14,7 +14,7 @@ function loadNode(node) {
 				setStatus(node+' successfully loaded.');
 			}
 
-			$("#stage").html("\
+			$(stage).html("\
 				<div class='nodeChart'></div>\
 				<div id='nodeTables'>\
 					<div class='block'>\
@@ -130,7 +130,7 @@ function loadNode(node) {
 			// Finally if there we no other exceptions check for monitoring
 			// and complain if it is not there
 			if(data.monitoring.node == null) {
-				if(data.status['fetch_status'])
+				if(data.status['fetch_status'] != 'OK')
 					throw("Monitoring fetch error: '"+data.status.fetch_status+"' Ensure that the dotm_node agent is installed and reachable!");
 				else
 					throw("No monitoring found! Ensure that your Nagios setup monitors this host with name '"+node+"' or add a <a href='javascript:loadConfig(\"user_node_aliases\")'>node mapping</a>!");

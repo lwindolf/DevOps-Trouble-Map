@@ -13,7 +13,7 @@ function addNodeToColaNodeList(nodeList, nodeIndex, node, monitoring) {
 	nodeIndex[node] = Object.keys(nodeIndex).length;
 }
 
-function loadNodesGraph(data) {
+function loadNodesGraph(stage, data) {
 	var width = 800,
 	    height = 600,
 	    r = 9;
@@ -26,8 +26,8 @@ function loadNodesGraph(data) {
 	    .size([width, height]);
 	    //.jaccardLinkLengths(150);
 	
-	$("#stage").html("");
-	var svg = d3.select("#stage").append("svg")
+	$(stage).html("");
+	var svg = d3.select(stage).append("svg")
 	    .attr("width", width)
 	    .attr("height", height);
 	
