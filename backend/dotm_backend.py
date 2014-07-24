@@ -7,6 +7,7 @@ import redis
 import time
 import re
 import argparse
+import GeoIP
 from bottle import route, run, response, request, debug, static_file
 
 from dotm_monitor import DOTMMonitor
@@ -116,6 +117,10 @@ rdb = redis.Redis(host=cl_args.redis_server,
                   db=cl_args.redis_db,
                   password=cl_args.redis_password)
 
+try:
+    gi = GeoIP.open("/usr/share/GeoIP/GeoIPCity.dat", 0)
+except:
+    print "GeoIP could not be initialized!"
 
 def json_error(message="Not Found", status_code=404):
     return '{"error": {"message": "' + message + '", "status_code": ' + str(status_code) + '}}'
@@ -199,6 +204,23 @@ def get_setting(s):
 
     return values
 
+
+@route('/geo/nodes')
+def get_geo_nodes():
+    prefix = 'dotm::resolver::ip_to_node::'
+    ips = rdb.keys(prefix + '*')
+    nodes = rdb.mget(ips)
+    ips = [ip.replace(prefix, '') for ip in ips]
+    geo = {}
+    i = 0
+    for ip in ips:
+        try:
+            result = gi.record_by_addr(ip)
+            geo[nodes[i]] = {'ip': ip, 'lat': result['latitude'], 'lon': result['longitude']}
+        except:
+            pass
+        i+=1
+    return resp_or_404(json.dumps({'nodes': geo}))
 
 @route('/backend/nodes')
 @route('/nodes')

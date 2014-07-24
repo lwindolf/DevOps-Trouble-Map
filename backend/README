@@ -7,7 +7,7 @@ POC of DOTM Backend API
 
 Installing requirements
 -----------------------
-apt-get install python-requests python-redis python-bottle
+apt-get install python-requests python-redis python-bottle python-geoip geoip-database-contrib
 
 Running
 -------
@@ -23,6 +23,7 @@ $ curl -i http://localhost:8080/mon/nodes/<hostname>/status
 $ curl -i http://localhost:8080/mon/services/<hostname>
 $ curl -i http://localhost:8080/mon/nodes/404
 $ curl -X POST -i http://localhost:8080/mon/reload
+$ curl -i http://localhost:8080/geo/nodes
 
 $ curl -i http://localhost:8080/config
 $ curl -i http://localhost:8080/config/<variable>

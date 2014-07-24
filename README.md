@@ -40,10 +40,12 @@ The DOTM server has the following dependencies
 
 - netcat
 - redis-server
+- MaxMind GeoIP Lite (optional)
 - Python2 modules
   - redis
   - bottle
   - requests
+  - GeoIP
 
 To automatically install the server including its dependencies on Debian/Ubuntu 
 simply run
