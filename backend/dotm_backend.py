@@ -211,16 +211,16 @@ def get_geo_nodes():
     ips = rdb.keys(prefix + '*')
     nodes = rdb.mget(ips)
     ips = [ip.replace(prefix, '') for ip in ips]
-    geo = {}
+    geo = []
     i = 0
     for ip in ips:
         try:
             result = gi.record_by_addr(ip)
-            geo[nodes[i]] = {'ip': ip, 'lat': result['latitude'], 'lon': result['longitude']}
+            geo.append({'data':{'node': nodes[i], 'ip': ip}, 'lat': result['latitude'], 'lng': result['longitude']})
         except:
             pass
         i+=1
-    return resp_or_404(json.dumps({'nodes': geo}))
+    return resp_or_404(json.dumps({'locations': geo}))
 
 @route('/backend/nodes')
 @route('/nodes')

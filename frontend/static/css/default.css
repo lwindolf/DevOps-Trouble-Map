@@ -267,3 +267,21 @@ svg .label {
 .settingsForm table td {
 	padding:6px;
 }
+
+#gmap {
+	width:100%;
+	height:100%;
+}
+
+#gmap .mapbullet {
+        overflow: hidden; 
+        cursor: default; 
+        clear: both; 
+        position: relative; 
+        padding: 6px 12px; 
+        background-color: white;
+        border-radius: 4px 4px; 
+        -moz-border-radius: 4px 4px;
+        -webkit-border-radius: 4px 4px;
+        border: 2px solid black;
+}

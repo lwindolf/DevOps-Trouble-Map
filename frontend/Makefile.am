@@ -8,11 +8,13 @@ dotm_frontend_static_DATA = \
 	static/jquery-ui.min.js \
 	static/jquery.layout.min-1.2.0.js \
 	static/jquery.timeago.js \
+	static/gmap3.min.js \
 	static/d3.v3.js \
 	static/cola.v3.min.js \
 	static/dotm_common.js \
 	static/dotm_view_node.js \
 	static/dotm_view_all_nodes.js \
+	static/dotm_view_gmap.js \
 	static/dotm_view_config.js
 
 dotm_frontend_cssdir = $(datadir)/dotm_frontend/static/css

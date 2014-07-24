@@ -58,9 +58,12 @@
 	<script type="text/javascript" src="jquery-ui.min.js"></script>
 	<script type="text/javascript" src="jquery.layout.min-1.2.0.js"></script>
 	<script type="text/javascript" src="jquery.timeago.js"></script>
+	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&amp;language=en"></script>
+	<script type="text/javascript" src="gmap3.min.js"></script>
 	<script type="text/javascript" src="dotm_common.js"></script>
 	<script type="text/javascript" src="dotm_view_node.js"></script>
 	<script type="text/javascript" src="dotm_view_all_nodes.js"></script>
+	<script type="text/javascript" src="dotm_view_gmap.js"></script>
 	<script type="text/javascript" src="dotm_view_config.js"></script>
 	<script src="d3.v3.js"></script>
 	<script src="cola.v3.min.js"></script>
@@ -69,6 +72,9 @@
 		<h1 class='title'>Devops Trouble Map</h1>
 		<div class='menu'>
 			<a href="javascript:loadConfig('.ui-layout-center .ui-layout-content');">Settings</a>
+		</div>
+		<div class='menu'>
+			<a href="javascript:display_ip_map();">Map</a>
 		</div>
 	</div>
 
@@ -92,17 +98,30 @@
 			loadNodeGraph('.ui-layout-center .ui-layout-content', node);
 		}
 
+		function display_ip_map() {
+			$.getJSON("backend/geo/nodes", {})
+			.done(function (data) {
+				loadGMap('.ui-layout-center .ui-layout-content', data.locations);
+			})
+			.fail(function (jqxhr, textStatus, error) {
+				setError('Node geo locations fetch failed! ('+error+')');
+			});
+		}
+
 		(function() {
 
 		// Setup layout
 		$.curCSS = $.css;
 		myLayout = $('body').layout({
-			west__size: Math.floor($(document).width() * .60) // 60% screen width
+			west__size: Math.floor($(document).width() * .50)
 		,       north__spacing_open: 0
 		});
 
 		// Setup time formatting
 		jQuery.timeago.settings.strings.suffixAgo = null;
+
+		// GeoIP map
+		display_ip_map();
 
 		// Fetch nodes
 		setStatus('Fetching nodes...');
@@ -115,7 +134,6 @@
 			$("#nodeList").html(nodes.join("<br/>"));
 			setStatus('Please select a node.');
 			loadNodesGraph('.ui-layout-west .ui-layout-content', data);
-			myLayout.initContent('west');
 		})
 		.fail(function (jqxhr, textStatus, error) {
 			setError('Node list fetch failed! ('+error+')');
