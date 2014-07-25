@@ -1,6 +1,6 @@
 function loadNodeGraph(stage, node) {
 	// Clean everything
-	setStatus('Fetching details for '+node+'...');
+	setStatus(stage, 'Fetching details for '+node+'...');
 
 	$.getJSON("backend/nodes/"+node, {})
 	.done(function (data) {
@@ -9,9 +9,9 @@ function loadNodeGraph(stage, node) {
 		// Check fetch status
 		try {
 			if(data.status.fetch_status != "OK") {
-				setError("Presented values are out-of-date! ("+data.status.fetch_status+")");
+				setError(stage, "Presented values are out-of-date! ("+data.status.fetch_status+")");
 			} else {
-				setStatus(node+' successfully loaded.');
+				setStatus(stage, node+' successfully loaded.');
 			}
 
 			$(stage).html("\
@@ -136,10 +136,10 @@ function loadNodeGraph(stage, node) {
 					throw("No monitoring found! Ensure that your Nagios setup monitors this host with name '"+node+"' or add a <a href='javascript:loadConfig(\".ui-layout-center .ui-layout-content\", \"user_node_aliases\")'>node mapping</a>!");
 			}
 		} catch(err) {
-			setError(err);
+			setError(stage, err);
 		}
 	})
 	.fail(function (jqxhr, textStatus, error) {
-		setError('Node fetch failed! ('+error+')');
+		setError(stage, 'Node fetch failed! ('+error+')');
 	})
 }

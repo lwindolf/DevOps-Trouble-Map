@@ -14,15 +14,17 @@
 		}
 		.ui-layout-center {
 			background:		#EEE;
-			border-top:		0;
+			border:			1px solid gray;
 			padding:		0;
-			overflow-x:		hidden;
+			position:		relative;
 		}
 		.ui-layout-resizer-west {
 			border-top:		1px solid #BBB;
 		}
 		.ui-layout-west {
 			padding:		0;
+			border:			1px solid gray;
+			position:		relative;
 		}
 		.ui-layout-west div {
 			background:		#FEE;
@@ -59,16 +61,13 @@
 	</div>
 
 	<div class='ui-layout-center'>
-		<div class='statusBox'>
-			<div class='status'></div>
-		</div>
-		<div class='ui-layout-content'>
-		</div>
+		<div class='status'></div>
+		<div class='ui-layout-content'></div>
 	</div>
 
 	<div class='ui-layout-west'>
-		<div class='ui-layout-content'>
-		</div>
+		<div class='status'></div>
+		<div class='ui-layout-content'></div>
 	</div>
 
 	<script>
@@ -104,7 +103,8 @@
 		display_ip_map();
 
 		// Fetch nodes
-		setStatus('Fetching nodes...');
+		var stage = '.ui-layout-west .ui-layout-content';
+		setStatus(stage, 'Fetching nodes...');
 		$.getJSON("backend/nodes", {})
 		.done(function (data) {
 			var nodes = [];
@@ -112,11 +112,11 @@
 				nodes.push('<a href="javascript:loadNode(\''+node+'\')">'+node+'</a>');
 			})
 			$("#nodeList").html(nodes.join("<br/>"));
-			setStatus('Please select a node.');
-			loadNodesGraph('.ui-layout-west .ui-layout-content', data);
+			setStatus(stage, 'Please select a node.');
+			loadNodesGraph(stage, data);
 		})
 		.fail(function (jqxhr, textStatus, error) {
-			setError('Node list fetch failed! ('+error+')');
+			setError(stage, 'Node list fetch failed! ('+error+')');
 		})
 		})();
 	</script>

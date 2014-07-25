@@ -96,7 +96,7 @@ function printConfigForm(key, setting) {
 
 function loadConfig(stage, anchor) {
 	// Clean everything
-	setStatus('Fetching settings...');
+	setStatus(stage, 'Fetching settings...');
 	$(stage).html("");
 
 	$.getJSON("backend/settings", {})
@@ -113,9 +113,9 @@ function loadConfig(stage, anchor) {
 		if(anchor)
 			location.hash = "#" + anchor;	/* scroll to form selected */
 
-		setStatus("Settings loaded.");
+		setStatus(stage, "Settings loaded.");
 	})
 	.fail(function (jqxhr, textStatus, error) {
-		setError('Fetching settings failed! ('+error+')');
+		setError(stage, 'Fetching settings failed! ('+error+')');
 	})
 }

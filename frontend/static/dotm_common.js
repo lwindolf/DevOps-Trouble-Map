@@ -1,13 +1,17 @@
 
-function setStatus(text) {
-	$('.status')
+function setStatus(id, text) {
+	$(id)
+	.parent()
+	.find('.status')
 	.addClass('normal')
 	.removeClass('error')
 	.html(text);
 }
 
-function setError(text) {
-	$('.status')
+function setError(id, text) {
+	$(id)
+	.parent()
+	.find('.status')
 	.removeClass('normal')
 	.addClass('error')
 	.html(text);
