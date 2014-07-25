@@ -13,6 +13,9 @@ function loadGMap(stage, locations) {
 				icon: new google.maps.MarkerImage('http://maps.google.com/mapfiles/marker_grey.png')
 			},
 		events:{
+		      click: function(marker, event, context){
+			loadNode(context.data.node);
+		      },
 		      mouseover: function(marker, event, context){
 			$(this).gmap3(
 			  {clear:"overlay"},
