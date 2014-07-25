@@ -216,7 +216,8 @@ def get_geo_nodes():
     for ip in ips:
         try:
             result = gi.record_by_addr(ip)
-            geo.append({'data':{'node': nodes[i], 'ip': ip}, 'lat': result['latitude'], 'lng': result['longitude']})
+            alerts = get_node_alerts(nodes[i])
+            geo.append({'data':{'node': nodes[i], 'monitoring': alerts, 'ip': ip}, 'lat': result['latitude'], 'lng': result['longitude']})
         except:
             pass
         i+=1
