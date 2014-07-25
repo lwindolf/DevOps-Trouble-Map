@@ -16,7 +16,7 @@ if ! lsb_release -i | egrep 'Debian|Ubuntu' >/dev/null; then
 fi
 	
 echo "### Installing dependencies..."
-apt-get install netcat redis-server python-redis python-bottle python-requests python-geoip geoip-database
+apt-get install netcat redis-server python-redis python-bottle python-requests python-geoip geoip-database curl
 
 echo "### Compiling and installing ($PREFIX)..."
 autoreconf -i
