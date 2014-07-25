@@ -11,7 +11,7 @@ function loadNodeGraph(stage, node) {
 			if(data.status.fetch_status != "OK") {
 				setError(stage, "Presented values are out-of-date! ("+data.status.fetch_status+")");
 			} else {
-				setStatus(stage, node+' successfully loaded.');
+				clearStatus(stage);
 			}
 
 			$(stage).html("\
