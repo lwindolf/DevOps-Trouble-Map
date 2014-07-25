@@ -18,7 +18,7 @@ Mapping of Nagios alerts to detected services (note the 2nd column in the alert 
 
 ![Alert Mapping](doc/dotm-screenshot-alerts.png?raw=true)
 
-Those Nagios "service check" to "service" mappings are fuzzy logic regular expressions. DOTM brings presets and allows user to refine them as needed. The fact that those mappings are actually necessary indicates the intrinsic problem of the missing service relation in Nagios, which mixes the concepts of "services" and "service checks". Only with "services" (which we detect based on open TCP ports) we can auto-detect impact.
+Those Nagios "service check" to "service" mappings are fuzzy logic regular expressions. DOTM brings presets and allows the user to refine them as needed. The fact that those mappings are actually necessary indicates the intrinsic problem of the missing service relation in Nagios, which mixes the concepts of "services" and "service checks". Only with "services" (which we detect based on open TCP ports) we can auto-detect impact.
 
 ![Service Mapping](doc/dotm-screenshot-service-mapping.png?raw=true)
 
