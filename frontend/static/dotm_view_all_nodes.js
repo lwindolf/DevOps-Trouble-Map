@@ -1,3 +1,6 @@
+// argh... global
+var selectedNode;
+
 function addNodeToColaNodeList(nodeList, nodeIndex, node, monitoring) {
 	var n = {};
 	n['name'] = node;
@@ -90,6 +93,7 @@ function loadNodesGraph(stage, data) {
 	            .attr("width", function (d) { return d.width - 2 * pad; })
 	            .attr("height", function (d) { return d.height - 2 * pad; })
 	            .attr("rx", r - 3).attr("ry", r - 3)
+	            .attr("class", function (d) { return "node_rect node_" + d.name.replace('.',''); })
 	            .style("fill", function (d) {
 			if(d.status == 'UP')
 				return '#0c3';
@@ -99,9 +103,21 @@ function loadNodesGraph(stage, data) {
 				return '#fca';
 			return '#ccc';
 		    })
+	            .on("mouseover", function(d) {
+			d3.select(this).style({'stroke-width':2,'stroke':'black'});
+	            })
+	            .on("mouseout", function(d) {
+			if(d.name != selectedNode)
+				d3.select(this).style({'stroke-width':0});
+	            })
 	            .on("click", function (d) {
 	                if (d3.event.defaultPrevented) return; // click suppressed
-			if($.inArray(d.name, data.nodes) != -1) loadNode(d.name); 
+			if($.inArray(d.name, data.nodes) != -1) {
+				d3.selectAll(".node_rect").style({'stroke-width':0});
+				d3.select(this).style({'stroke-width':2,'stroke':'black'});
+				selectedNode = d.name;
+				loadNode(d.name);
+			}
 	            })
 	            .call(d3cola.drag);
 	
@@ -110,9 +126,21 @@ function loadNodesGraph(stage, data) {
 		    .enter().append("text")
 	            .attr("class", "label")
 	            .text(function (d) { return d.name; })
+	            .on("mouseover", function(d) {
+			d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':2,'stroke':'black'});
+	            })
+	            .on("mouseout", function(d) {
+			if(d.name != selectedNode)
+				d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':0});
+	            })
 	            .on("click", function (d) {
 			if (d3.event.defaultPrevented) return; // click suppressed
-			if($.inArray(d.name, data.nodes) != -1) loadNode(d.name);
+			if($.inArray(d.name, data.nodes) != -1) {
+				d3.selectAll(".node_rect").style({'stroke-width':0});
+				d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':2,'stroke':'black'});
+				selectedNode = d.name;
+				loadNode(d.name);
+			}
 	            })
 	            .call(d3cola.drag);
 	
