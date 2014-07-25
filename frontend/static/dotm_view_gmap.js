@@ -37,4 +37,9 @@ function loadGMap(stage, locations) {
 	  	}
 		}
 	});
+
+	/* Autofit if >1 marker (with 1 marker only too deep zoom in) */
+	if(locations.length > 1)
+		$("#gmap").gmap3('autofit');
 }
+
