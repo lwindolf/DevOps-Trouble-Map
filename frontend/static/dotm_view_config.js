@@ -113,7 +113,7 @@ function loadConfig(stage, anchor) {
 		if(anchor)
 			location.hash = "#" + anchor;	/* scroll to form selected */
 
-		setStatus(stage, "Settings loaded.");
+		clearStatus(stage);
 	})
 	.fail(function (jqxhr, textStatus, error) {
 		setError(stage, 'Fetching settings failed! ('+error+')');

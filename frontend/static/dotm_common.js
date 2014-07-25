@@ -1,11 +1,20 @@
 
+var timeouts = new Array();
+
 function setStatus(id, text) {
-	$(id)
-	.parent()
-	.find('.status')
+	var statusBox = $(id).parent().find('.status');
+
+	statusBox
 	.addClass('normal')
 	.removeClass('error')
 	.html(text);
+
+	if(timeouts[id])	
+		clearTimeout(timeouts[id]);
+
+	timeouts[id] = setTimeout(function() {
+        	statusBox.hide('blind', {}, 500)
+	}, 5000);
 }
 
 function setError(id, text) {
@@ -15,6 +24,18 @@ function setError(id, text) {
 	.removeClass('normal')
 	.addClass('error')
 	.html(text);
+
+	if(timeouts[id])	
+		clearTimeout(timeouts[id]);
+}
+
+function clearStatus(id) {
+	$(id)
+	.parent()
+	.find('.status')
+	.removeClass('normal')
+	.removeClass('error')
+	.html('');
 }
 
 // Print a node name with optional link
