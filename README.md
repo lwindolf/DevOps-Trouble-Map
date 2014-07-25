@@ -14,7 +14,7 @@ When you care about above questions try "DevOps Trouble Map" (short DOTM) which
 
 Note that the project is pre-alpha right now. Here are some impressions what the code does so far:
 
-Mapping of Nagios alerts to detected services (note the 2nd column):
+Mapping of Nagios alerts to detected services (note the 2nd column in the alert table):
 
 ![Alert Mapping](doc/dotm-screenshot-alerts.png?raw=true)
 
