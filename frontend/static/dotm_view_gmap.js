@@ -8,7 +8,6 @@ function loadGMap(stage, locations) {
 		try {
 			var status = ip.data.monitoring.node.status;
 			ip['options'] = new Array();
-alert(ip.data.node);
 			if(status == 'UP')
 				ip['options']['icon'] = 'http://maps.google.com/mapfiles/marker_green.png';
 			else if(status == 'DOWN')
