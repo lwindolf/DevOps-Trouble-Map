@@ -78,12 +78,13 @@
 		}
 
 		function display_ip_map() {
+			var stage = '.ui-layout-center .ui-layout-content';
 			$.getJSON("backend/geo/nodes", {})
 			.done(function (data) {
-				loadGMap('.ui-layout-center .ui-layout-content', data.locations);
+				loadGMap(stage, data.locations);
 			})
 			.fail(function (jqxhr, textStatus, error) {
-				setError('Node geo locations fetch failed! ('+error+')');
+				setError(stage, 'Node geo locations fetch failed! ('+error+')');
 			});
 		}
 
