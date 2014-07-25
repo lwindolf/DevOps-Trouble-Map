@@ -133,7 +133,7 @@ function loadNodeGraph(stage, node) {
 				if(data.status['fetch_status'] != 'OK')
 					throw("Monitoring fetch error: '"+data.status.fetch_status+"' Ensure that the dotm_node agent is installed and reachable!");
 				else
-					throw("No monitoring found! Ensure that your Nagios setup monitors this host with name '"+node+"' or add a <a href='javascript:loadConfig(\"user_node_aliases\")'>node mapping</a>!");
+					throw("No monitoring found! Ensure that your Nagios setup monitors this host with name '"+node+"' or add a <a href='javascript:loadConfig(\".ui-layout-center .ui-layout-content\", \"user_node_aliases\")'>node mapping</a>!");
 			}
 		} catch(err) {
 			setError(err);
