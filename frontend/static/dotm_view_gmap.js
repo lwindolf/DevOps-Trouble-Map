@@ -2,6 +2,24 @@ function loadGMap(stage, locations) {
 	// Clean everything
 	clearStatus(stage);
 	$(stage).html("<div id='gmap'></div>");
+
+	// Add marker icons to locations list
+	$.each(locations, function(index, ip) {
+		try {
+			var status = ip.data.monitoring.node.status;
+			ip['options'] = new Array();
+alert(ip.data.node);
+			if(status == 'UP')
+				ip['options']['icon'] = 'http://maps.google.com/mapfiles/marker_green.png';
+			else if(status == 'DOWN')
+				ip['options']['icon'] = 'http://maps.google.com/mapfiles/marker_red.png';
+			else
+				ip['options']['icon'] = 'http://maps.google.com/mapfiles/marker_orange.png';
+
+		} catch(e) {
+		}
+	});
+
 	$("#gmap").gmap3({
 		map:{
 			options: {

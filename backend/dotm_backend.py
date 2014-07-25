@@ -216,8 +216,22 @@ def get_geo_nodes():
     for ip in ips:
         try:
             result = gi.record_by_addr(ip)
-            alerts = get_node_alerts(nodes[i])
-            geo.append({'data':{'node': nodes[i], 'monitoring': alerts, 'ip': ip}, 'lat': result['latitude'], 'lng': result['longitude']})
+
+            serviceAlerts = []
+            for s in rdb.lrange(mon_services_key_pfx + nodes[i], 0, -1):
+                serviceAlerts.extend(json.loads(s))
+
+            geo.append({
+                'data':{
+                    'node': nodes[i],
+                    'monitoring': {
+                        'node': get_node_alerts(nodes[i]),
+                        'services': serviceAlerts
+                    },
+                    'ip': ip},
+                'lat': result['latitude'],
+                'lng': result['longitude']
+            })
         except:
             pass
         i+=1
