@@ -1,5 +1,6 @@
 function loadGMap(stage, locations) {
 	// Clean everything
+	clearStatus(stage);
 	$(stage).html("<div id='gmap'></div>");
 	$("#gmap").gmap3({
 		map:{
