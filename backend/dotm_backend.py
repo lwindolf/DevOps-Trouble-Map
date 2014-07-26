@@ -382,24 +382,24 @@ def mon_reload():
         if time_now - update_time >= int(config['refresh']):
             rdb.setex(update_lock_key, update_lock_expire, 1)
             mon = DOTMMonitor(config['url'], config['user'], config['password'])
-            for key, val in mon.get_nodes().items():
-                # Apply user defined node mapping
-                tmp = rdb.hget(config_key_pfx + "::user_node_aliases", key)
-                if tmp:
-                    val['node'] = tmp   # Overwrite hostname given by Nagios
 
-                # And store...
-                rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
+            # Track broken mapped services per node to later save them into node alert info
+            tmp_services_broken={}
+
+			# 1. Process and save services
             for key, val in mon.get_services().items():
                 # Apply user defined node mapping
                 node = rdb.hget(config_key_pfx + "::user_node_aliases", key)
                 if not node:
                     node = key  # Overwrite hostname given by Nagios
 
-                # Map node alerts to services
-                # NOTE: This for->for->for doesn't look good :)
+                # Map node alerts to services and store service
+				# alert summary into node alerts, these are two 
+                # denormalizations used to simplify the /nodes 
+                # and the /node/<name> callback.
                 serviceDetails = get_service_details(node)
                 if serviceDetails:
+                    # FIXME: Refactor for/for/for (Andrej)
                     for service_regexp in service_mapping:
                         for s in serviceDetails:
                             for sa in val:
@@ -409,6 +409,11 @@ def mon_reload():
                                                 re.IGNORECASE):
                                         rdb.hset('dotm::services::' + node + '::' + s, 'alert_status', sa['status'])
                                         sa['mapping'] = serviceDetails[s]['process']
+                                        # Add non-OK services to it's nodes alert info
+                                        if sa['status'] != 'OK':
+                                            if not node in tmp_services_broken:
+                                                tmp_services_broken[node] = {}
+                                            tmp_services_broken[node][serviceDetails[s]['process']] = sa['status']
 
                 # And store...
                 with rdb.pipeline() as pipe:
@@ -416,6 +421,19 @@ def mon_reload():
                     pipe.lpush(mon_services_key_pfx + node, json.dumps(val))
                     pipe.expire(mon_services_key_pfx + node, config['expire'])
                     pipe.execute()
+
+			# 2. Merge broken services into node info and save it
+            for key, val in mon.get_nodes().items():
+                # Apply user defined node mapping
+                tmp = rdb.hget(config_key_pfx + "::user_node_aliases", key)
+                if tmp:
+                    val['node'] = tmp   # Overwrite hostname given by Nagios
+				# Merge broken services summary
+                val['services_alerts'] = tmp_services_broken[val['node']]
+
+                # And store...
+                rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
+
             time_now = int(time.time())
             rdb.hset(mon_config_key, update_time_key, time_now)
             update_time = time_now
