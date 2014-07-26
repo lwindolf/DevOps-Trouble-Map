@@ -6,7 +6,7 @@ import time
 
 class DOTMMonitor(object):
 
-    version = '0.1.8'
+    version = '0.1.9'
 
     def __init__(self, mon_url, user=None, paswd=None, provider='icinga'):
         self.user = user
@@ -33,20 +33,22 @@ class DOTMMonitor(object):
             raise Exception("Error getting Monitoring data from {}"
                             " (status_code: {})".format(self.mon_url, req.status_code))
 
-    def _nagios_last_check_converter(self, last_check):
+    @staticmethod
+    def _nagios_last_check_converter(last_check):
         return int(time.mktime(time.strptime(last_check, "%Y-%m-%d %H:%M:%S")))
 
-    def _nagios_duration_converter(self, last_check_epoch, duration):
+    @staticmethod
+    def _nagios_duration_converter(last_check_epoch, duration):
         m = ''.join(filter(lambda x: x.isdigit() or x.isspace(), duration)).split()
         return last_check_epoch - (int(m[0]) * 86400 + int(m[1]) * 3600 + int(m[2]) * 60 + int(m[3]))
 
     def _get_nodes_icinga(self):
         data = self.get_data()
         try:
-            jsonData = json.loads(data.replace('\t', ' '))
+            json_data = json.loads(data.replace('\t', ' '))
         except ValueError:
             raise ValueError("Value returned by Monitoring server is not in JSON format")
-        js = jsonData['status']['host_status']
+        js = json_data['status']['host_status']
         rjs = {}
         for elem in js:
             last_check = self._nagios_last_check_converter(elem['last_check'])
@@ -62,8 +64,8 @@ class DOTMMonitor(object):
 
     def _get_services_icinga(self):
         data = self.get_data()
-        jsonData = json.loads(data.replace('\t', ' '))
-        js = jsonData['status']['service_status']
+        json_data = json.loads(data.replace('\t', ' '))
+        js = json_data['status']['service_status']
         rjs = {}
         for elem in js:
             hostname = elem['host']
