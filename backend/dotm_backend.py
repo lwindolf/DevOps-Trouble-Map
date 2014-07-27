@@ -17,7 +17,7 @@ cl_parser = argparse.ArgumentParser(description='DOTM Backend API')
 cl_parser.add_argument('-r', '--redis-server', help='Redis Server', type=str, default='localhost')
 cl_parser.add_argument("-P", '--redis-port', help='Redis Port', type=int, default=6379)
 cl_parser.add_argument("-d", '--redis-db', help='Redis Database', type=int, default=0)
-cl_parser.add_argument("-p", '--redis-password', help='Redis Rassword', type=str, default=None)
+cl_parser.add_argument("-p", '--redis-password', help='Redis Password', type=str, default=None)
 cl_args = cl_parser.parse_args()
 
 # Namespace configuration
@@ -48,7 +48,7 @@ settings = {
                                 ' (e.g. "http://my.domain.com/cgi-bin/icinga"). The "expire" field should'
                                 ' contain the number of seconds after which to discard old check results.'
                                 ' "Use Aliases" specifies wether the nagios host name or alias should be used.'
-                                ' "Refresh" specifices the update interval in seconds.',
+                                ' "Refresh" specifies the update interval in seconds.',
                                 'title': 'Nagios Instance',
                                 'type': 'hash',
                                 'default': {
@@ -119,8 +119,9 @@ rdb = redis.Redis(host=cl_args.redis_server,
 
 try:
     gi = GeoIP.open("/usr/share/GeoIP/GeoIPCity.dat", 0)
-except:
-    print "GeoIP could not be initialized!"
+except Exception as e:
+    print e
+
 
 def json_error(message="Not Found", status_code=404):
     return '{"error": {"message": "' + message + '", "status_code": ' + str(status_code) + '}}'
@@ -135,7 +136,7 @@ def resp_json(resp=None):
 
 
 def resp_jsonp(resp=None):
-    response.content_type = 'apptilacion/javascript'
+    response.content_type = 'application/javascript'
     callback = request.query.get('callback')
     if resp and callback:
         return '{}({})'.format(callback, resp)
@@ -146,9 +147,9 @@ def resp_jsonp(resp=None):
     return json_error("No callback function provided")
 
 
-def resp_or_404(resp=None, resp_type='apptilacion/json', cache_control='max-age=30, must-revalidate'):
+def resp_or_404(resp=None, resp_type='application/json', cache_control='max-age=30, must-revalidate'):
     response.set_header('Cache-Control', cache_control)
-    accepted_resp = ('apptilacion/json', 'application/javascript')
+    accepted_resp = ('application/json', 'application/javascript')
     resp_type_arr = request.headers.get('Accept').split(',')
     if resp_type_arr:
         for resp_type in resp_type_arr:
@@ -184,7 +185,7 @@ def get_node_alerts(node):
 # Return value(s) or defaults(s) of a settings key
 #
 # s     key name
-def get_setting(s):
+def get_setting(s, values=None):
     if settings[s]['type'] == 'single_value':
         values = rdb.get(config_key_pfx + '::' + s)
     elif settings[s]['type'] == 'array':
@@ -212,30 +213,26 @@ def get_geo_nodes():
     nodes = rdb.mget(ips)
     ips = [ip.replace(prefix, '') for ip in ips]
     geo = []
-    i = 0
-    for ip in ips:
+    for i, ip in enumerate(ips):
         try:
             result = gi.record_by_addr(ip)
-
             serviceAlerts = []
             for s in rdb.lrange(mon_services_key_pfx + nodes[i], 0, -1):
                 serviceAlerts.extend(json.loads(s))
-
             geo.append({
-                'data':{
+                'data': {
                     'node': nodes[i],
                     'monitoring': {
                         'node': get_node_alerts(nodes[i]),
-                        'services': serviceAlerts
-                    },
+                        'services': serviceAlerts},
                     'ip': ip},
                 'lat': result['latitude'],
-                'lng': result['longitude']
-            })
+                'lng': result['longitude']})
         except:
             pass
-        i+=1
+
     return resp_or_404(json.dumps({'locations': geo}))
+
 
 @route('/backend/nodes')
 @route('/nodes')
@@ -274,9 +271,11 @@ def get_node(name):
         # If remote host name is not an IP and port is not a high port
         # try to resolve service info
         try:
-            if cHash['remote_port'] != 'high' and cHash['remote_host'] != 'Internet' and cHash['remote_host'] != '127.0.0.1':
-                cHash['remote_service'] = rdb.hgetall('dotm::services::' + cHash['remote_host'] + '::' + cHash['remote_port'])
-                cHash['remote_service_id'] = 'dotm::services::' + cHash['remote_host'] + '::' + cHash['remote_port']
+            if cHash['remote_port'] != 'high' and cHash['remote_host'] not in ('Internet', '127.0.0.1'):
+                cHash['remote_service'] = rdb.hgetall('dotm::services::{}::{}'.format(cHash['remote_host'],
+                                                                                      cHash['remote_port']))
+                cHash['remote_service_id'] = 'dotm::services::{}::{}'.format(cHash['remote_host'],
+                                                                             cHash['remote_port'])
         except KeyError:
             print "Bad: key missing, could be a migration issue..."
         connectionDetails[c] = cHash
@@ -291,11 +290,9 @@ def get_node(name):
                                    'connections': connectionDetails,
                                    'monitoring': {
                                        'node': get_node_alerts(name),
-                                       'services': serviceAlerts
-                                   },
+                                       'services': serviceAlerts},
                                    'settings': {
-                                       'aging': get_setting('aging'),
-                                   }}))
+                                       'aging': get_setting('aging')}}))
 
 
 @route('/backend/settings/<action>/<key>', method='POST')
@@ -336,14 +333,13 @@ def change_settings(action, key):
 def get_settings():
     for s in settings:
         settings[s]['values'] = get_setting(s)
-
     return resp_or_404(json.dumps(settings), 'application/javascript', 'no-cache, no-store, must-revalidate')
 
 
 @route('/mon/nodes')
 def get_mon_nodes():
     node_arr = rdb.keys(mon_nodes_key_pfx + '*')
-    return resp_or_404(json.dumps([n.split('::')[-1]for n in node_arr])
+    return resp_or_404(json.dumps([n.split('::')[-1] for n in node_arr])
                        if node_arr else None)
 
 
