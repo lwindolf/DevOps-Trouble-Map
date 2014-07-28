@@ -7,7 +7,7 @@ POC of DOTM Backend API
 
 Installing requirements
 -----------------------
-apt-get install python-requests python-redis python-bottle python-geoip geoip-database-contrib
+apt-get install python-requests python-redis python-bottle python-geoip geoip-database-contrib python-daemon
 
 Running
 -------

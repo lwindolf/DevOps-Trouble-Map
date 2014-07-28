@@ -2,127 +2,14 @@
 # vim: ts=4 sw=4
 # -*- coding: utf-8 -*-
 
-import json
-import redis
-import time
-import re
-import argparse
-import GeoIP
 from bottle import route, run, response, request, debug, static_file
 
-from dotm_monitor import DOTMMonitor
-
-# Command-line argument parsing
-cl_parser = argparse.ArgumentParser(description='DOTM Backend API')
-cl_parser.add_argument('-r', '--redis-server', help='Redis Server', type=str, default='localhost')
-cl_parser.add_argument("-P", '--redis-port', help='Redis Port', type=int, default=6379)
-cl_parser.add_argument("-d", '--redis-db', help='Redis Database', type=int, default=0)
-cl_parser.add_argument("-p", '--redis-password', help='Redis Password', type=str, default=None)
-cl_args = cl_parser.parse_args()
-
-# Namespace configuration
-general_prefix = 'dotm'
-config_key_pfx = general_prefix + '::config'
-mon_nodes_key_pfx = general_prefix + '::checks::nodes::'
-mon_services_key_pfx = general_prefix + '::checks::services::'
-mon_config_key = general_prefix + '::checks::config'
-mon_config_key_pfx = general_prefix + '::checks::config::'
-
-settings = {
-    'other_internal_networks': {'description': 'Networks that DOTM should consider internal. Note that private'
-                                ' networks (127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16) are always'
-                                ' considered internal. Separate different networks in CIDR syntax by spaces.',
-                                'title': 'Internal Networks',
-                                'type': 'array',
-                                'add': True,
-                                'fields': ['Network'],
-                                'position': 1},
-    'user_node_aliases':       {'description': 'Node aliases to map node names of your monitoring to a node in DOTM',
-                                'title': 'Additional Node Aliases',
-                                'type': 'hash',
-                                'add': True,
-                                'fields': ['Alias', 'Node Name'],
-                                'position': 2},
-    'nagios_instance':         {'description': 'Nagios/Icinga instance configuration. Currently only one instance'
-                                ' is supported. The "url" field should point to your cgi-bin/ location'
-                                ' (e.g. "http://my.domain.com/cgi-bin/icinga"). The "expire" field should'
-                                ' contain the number of seconds after which to discard old check results.'
-                                ' "Use Aliases" specifies wether the nagios host name or alias should be used.'
-                                ' "Refresh" specifies the update interval in seconds.',
-                                'title': 'Nagios Instance',
-                                'type': 'hash',
-                                'default': {
-                                    'url': 'http://localhost/nagios/cgi-bin/',
-                                    'user': 'dotm',
-                                    'password': 'changeme',
-                                    'expire': 86400,
-                                    'use_aliases': 0,
-                                    'refresh': 60},
-                                'fields': ['Parameter', 'Value'],
-                                'position': 3},
-    'aging':                   {'description': 'Number of seconds after which a services/connections are'
-                                ' considered unused. Default is "300"s.',
-                                'title': 'Service Aging',
-                                'type': 'hash',
-                                'default': {
-                                    'Services': 5 * 60,
-                                    'Connections': 5 * 60},
-                                'fields': ['Parameter', 'Value'],
-                                'position': 4},
-    'expire':                  {'description': 'Number of days after which old data should be forgotten.'
-                                ' Default is "0" (never).',
-                                'title': 'Data Retention',
-                                'type': 'hash',
-                                'default': {
-                                    'Services': 0,
-                                    'Connections': 0,
-                                    'Nagios Alerts': 0},
-                                'fields': ['Parameter', 'Value'],
-                                'position': 5},
-    'hiding':                  {'description': 'Number of days after which old service/connection data should not'
-                                ' be displayed in node graph anymore. Default is "7" days.',
-                                'title': 'Hiding Old Objects',
-                                'type': 'hash',
-                                'default': {
-                                    'Services': 7,
-                                    'Connections': 7},
-                                'fields': ['Parameter', 'Value'],
-                                'position': 6},
-    'service_mapping':         {'description': 'Rules that map Nagios service check names to process names as seen'
-                                ' by DOTM. Those rules can be regular expressions. Note that both the service check'
-                                ' name as well as the process name can be a regular expression. To enforce exact'
-                                ' matching use "^" and "$"! Matching is performed case-insensitive.',
-                                'title': 'Mapping Service Checks to Processes',
-                                'type': 'hash',
-                                'default': {
-                                    '^HTTP': '^nginx.*|^apache.*|^lighttpd.*',
-                                    '^Redis': '^redis-server.*',
-                                    '^MySQL.*': '^mysql.*',
-                                    '^Postgres.*': '^postmaster.*'},
-                                'add': True,
-                                'fields': ['Service Check Regex', 'Process Regex'],
-                                'position': 7},
-    'service_port_whitelist':  {'description': 'Comma separated list of port numbers that are to be ignored.'
-                                ' This is to avoid presenting basic Unix services (Postfix, any shared filesystem'
-                                ' or monitoring agents) as high-level services of interest. Add ports of services'
-                                ' you do not care about. Currently only TCP ports are handled.',
-                                'title': 'Aggregator: Service Port Whitelist',
-                                'type': 'single_value',
-                                'default': '53,22,5666,4949,4848,25,631',
-                                'position': 8}
-}
-
-rdb = redis.Redis(host=cl_args.redis_server,
-                  port=cl_args.redis_port,
-                  db=cl_args.redis_db,
-                  password=cl_args.redis_password)
-
-try:
-    gi = GeoIP.open("/usr/share/GeoIP/GeoIPCity.dat", 0)
-except Exception as e:
-    print e
+# Backend Web API local imports
+# FIXME: import only what is needed instead of *
+from settings import *
 
 
+# JSON Response helper functions
 def json_error(message="Not Found", status_code=404):
     return '{"error": {"message": "' + message + '", "status_code": ' + str(status_code) + '}}'
 
@@ -160,10 +47,7 @@ def resp_or_404(resp=None, resp_type='application/json', cache_control='max-age=
     return resp_json(resp)
 
 
-def vars_to_json(key, val):
-    return json.dumps({key: val})
-
-
+# Redis helper functions
 def get_connections():
     prefix = 'dotm::connections::'
     key_arr = []
@@ -182,30 +66,15 @@ def get_node_alerts(node):
         print "No node monitoring..."
 
 
-# Return value(s) or defaults(s) of a settings key
-#
-# s     key name
-def get_setting(s, values=None):
-    if settings[s]['type'] == 'single_value':
-        values = rdb.get(config_key_pfx + '::' + s)
-    elif settings[s]['type'] == 'array':
-        values = rdb.lrange(config_key_pfx + '::' + s, 0, -1)
-    elif settings[s]['type'] == 'hash':
-        values = rdb.hgetall(config_key_pfx + '::' + s)
-        # We always get a hash back from hgetall() but it might be incomplete
-        # or empty. So we fill in the defaults where needed.
-        if 'default' in settings[s]:
-            for key in settings[s]['default']:
-                if key not in values:
-                    values[key] = settings[s]['default'][key]
-
-    # Apply default if one is defined and key was not yet set
-    if not values and 'default' in settings[s]:
-        values = settings[s]['default']
-
-    return values
+# Backend Queue helper functions
+def queue_func(fname, *args, **kwargs):
+    rkey = '{}::result::{}'.format(queue_key_pfx, str(uuid4()))
+    qval = json.dumps({"id": rkey, "fn": fname, "args": [a for a in args], "kwargs": kwargs})
+    rdb.rpush(queue_key_pfx, qval)
+    return rkey
 
 
+# Bottle HTTP routing
 @route('/geo/nodes')
 def get_geo_nodes():
     prefix = 'dotm::resolver::ip_to_node::'
@@ -244,15 +113,6 @@ def get_nodes():
     return resp_or_404(json.dumps({'nodes': nodes,
                                    'monitoring': monitoring,
                                    'connections': get_connections()}))
-
-
-def get_service_details(node):
-    prefix = 'dotm::services::' + node + '::'
-    serviceDetails = {}
-    services = [s.replace(prefix, '') for s in rdb.keys(prefix + '*')]
-    for s in services:
-        serviceDetails[s] = rdb.hgetall(prefix + s)
-    return serviceDetails
 
 
 @route('/nodes/<name>')
@@ -363,84 +223,20 @@ def get_mon_node_key(node, key):
             result = vars_to_json(key, node_obj[key])
     return resp_or_404(result)
 
-
+# FIXME: Ugly implementation just as POC, callback should be stored in a session.
+# Unfortunately bottle-sessions is not included in to Ubuntu repo...
 @route('/mon/reload', method='POST')
 def mon_reload():
-    service_mapping = get_setting('service_mapping')
-    config = get_setting('nagios_instance')
-    time_now = int(time.time())
-    update_time_key = 'last_updated'
-    update_lock_key = mon_config_key_pfx + 'update_running'
-    update_lock_expire = config['refresh'] * 5
-    update_time_str = rdb.hget(mon_config_key, update_time_key)
-    if update_time_str and not rdb.get(update_lock_key):
-        update_time = int(update_time_str)
-        if time_now - update_time >= int(config['refresh']):
-            rdb.setex(update_lock_key, update_lock_expire, 1)
-            mon = DOTMMonitor(config['url'], config['user'], config['password'])
+    response.status = 303
+    response.set_header('Location', '/queue/result/' + queue_func('reload'))
+    return
 
-            # Track broken mapped services per node to later save them into node alert info
-            tmp_services_broken={}
 
-			# 1. Process and save services
-            for key, val in mon.get_services().items():
-                # Apply user defined node mapping
-                node = rdb.hget(config_key_pfx + "::user_node_aliases", key)
-                if not node:
-                    node = key  # Overwrite hostname given by Nagios
-
-                # Map node alerts to services and store service
-				# alert summary into node alerts, these are two 
-                # denormalizations used to simplify the /nodes 
-                # and the /node/<name> callback.
-                serviceDetails = get_service_details(node)
-                if serviceDetails:
-                    # FIXME: Refactor for/for/for (Andrej)
-                    for service_regexp in service_mapping:
-                        for s in serviceDetails:
-                            for sa in val:
-                                if re.match(service_regexp, sa['service']):
-                                    if re.match(service_mapping[service_regexp],
-                                                serviceDetails[s]['process'],
-                                                re.IGNORECASE):
-                                        rdb.hset('dotm::services::' + node + '::' + s, 'alert_status', sa['status'])
-                                        sa['mapping'] = serviceDetails[s]['process']
-                                        # Add non-OK services to it's nodes alert info
-                                        if sa['status'] != 'OK':
-                                            if not node in tmp_services_broken:
-                                                tmp_services_broken[node] = {}
-                                            tmp_services_broken[node][serviceDetails[s]['process']] = sa['status']
-
-                # And store...
-                with rdb.pipeline() as pipe:
-                    pipe.delete(mon_services_key_pfx + node)
-                    pipe.lpush(mon_services_key_pfx + node, json.dumps(val))
-                    pipe.expire(mon_services_key_pfx + node, config['expire'])
-                    pipe.execute()
-
-			# 2. Merge broken services into node info and save it
-            for key, val in mon.get_nodes().items():
-                # Apply user defined node mapping
-                tmp = rdb.hget(config_key_pfx + "::user_node_aliases", key)
-                if tmp:
-                    val['node'] = tmp   # Overwrite hostname given by Nagios
-				# Merge broken services summary
-                val['services_alerts'] = tmp_services_broken[val['node']]
-
-                # And store...
-                rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
-
-            time_now = int(time.time())
-            rdb.hset(mon_config_key, update_time_key, time_now)
-            update_time = time_now
-            rdb.delete(update_lock_key)
-        return resp_or_404(vars_to_json(update_time_key, update_time))
-    elif update_time_str:
-        update_time = int(update_time_str)
-        return resp_or_404(vars_to_json(update_time_key, update_time))
-    else:
-        rdb.hset(mon_config_key, update_time_key, 0)
-    return resp_or_404()
+@route('/queue/result/'
+       '<key:re:dotm::queue::result::[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z>',
+       method=['GET', 'POST'])
+def queue_result(key):
+    return resp_or_404(rdb.get(key))
 
 
 @route('/config', method='GET')
