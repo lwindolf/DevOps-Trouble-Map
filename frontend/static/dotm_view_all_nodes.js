@@ -131,8 +131,7 @@ function loadNodesGraph(stage, data) {
 					selectedNode = d.name;
 					loadNode(d.name);
 				}
-			    })
-			    .call(d3cola.drag);
+			    });
 
 			if(d['services']) {
 				var tmp = this;
@@ -183,9 +182,9 @@ function loadNodesGraph(stage, data) {
 					selectedNode = d.name;
 					loadNode(d.name);
 				}
-			    })
-			    .call(d3cola.drag);
-		});
+			    });
+		})
+	        .call(d3cola.drag);
 
 	d3cola.on("tick", function() {
 	            link.attr("x1", function (d) { return d.source.x = Math.max(r, Math.min(width - r, d.source.x)); })
