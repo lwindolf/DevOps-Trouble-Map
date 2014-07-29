@@ -127,7 +127,7 @@ tr.alert.status_WARNING {
 }
 
 tr.alert.status_WARNING .alert_status {
-	background: #f5a9a9;
+	background: #FFA500;
 	color:white;
 }
 
