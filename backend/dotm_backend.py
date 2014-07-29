@@ -88,8 +88,8 @@ def mon_reload():
                 if tmp:
                     val['node'] = tmp   # Overwrite hostname given by Nagios
                 # Merge broken services summary
-                # FIXME: This is failing due to KeyError exception, need to investigate (commented)
-                #val['services_alerts'] = tmp_services_broken[val['node']]
+                if val['node'] in tmp_services_broken:
+                    val['services_alerts'] = tmp_services_broken[val['node']]
 
                 # And store...
                 rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
