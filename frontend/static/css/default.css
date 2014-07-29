@@ -150,7 +150,8 @@ tr.alert.status_CRITICAL .alert_status {
 }
 
 .service.status_WARNING {
-	background: #fca;
+	background: #FFA500;
+	color:white;
 }
 
 .service.status_CRITICAL {
