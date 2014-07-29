@@ -29,7 +29,7 @@ function loadNodesGraph(stage, data) {
 	    .size([width, height]);
 	    //.jaccardLinkLengths(150);
 	
-	$(stage).html("");
+	$(stage).html("<form id='node_add' action='backend/nodes' method='POST'><input size='10' type='text' name='name'/><input type='submit' value='Add Node'/></form>");
 	var svg = d3.select(stage).append("svg")
 	    .attr("width", width)
 	    .attr("height", height);

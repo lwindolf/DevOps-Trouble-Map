@@ -103,8 +103,8 @@ def get_geo_nodes():
     return resp_or_404(json.dumps({'locations': geo}))
 
 
-@route('/backend/nodes')
-@route('/nodes')
+@route('/backend/nodes', method='GET')
+@route('/nodes', method='GET')
 def get_nodes():
     monitoring = {}
     nodes = rdb.lrange("dotm::nodes", 0, -1)
@@ -114,8 +114,14 @@ def get_nodes():
                                    'monitoring': monitoring,
                                    'connections': get_connections()}))
 
+@route('/backend/nodes', method='POST')
+@route('/nodes', method='POST')
+def add_node():
+	# FIXME: validate name
+	rdb.lpush('dotm::nodes', request.forms.get('name'))
 
-@route('/nodes/<name>')
+
+@route('/nodes/<name>', method='GET')
 def get_node(name):
     prefix = 'dotm::nodes::' + name
     nodeDetails = rdb.hgetall(prefix)
