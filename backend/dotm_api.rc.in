@@ -1,20 +1,20 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          dotm_backend
+# Provides:          dotm_api
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
 # Required-Stop:     $local_fs $remote_fs $network $syslog $named
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # X-Interactive:     true
-# Short-Description: Start/stop dotm_backend
-# Description:       Start the Devops Trouble Map (DOTM) backend
-#  This script will start the DTOM backend.
+# Short-Description: Start/stop dotm_api
+# Description:       Start the Devops Trouble Map (DOTM) API
+#  This script will start the DTOM API.
 ### END INIT INFO
 
 . /lib/lsb/init-functions
 
-DESC="DOTM backend"
-NAME=dotm_backend
+DESC="DOTM API"
+NAME=dotm_api
 DAEMON=@prefix@/bin/$NAME
 PIDFILE=/var/run/$NAME.pid
 #CONF=/etc/$NAME.conf

@@ -7,6 +7,7 @@ AC_CONFIG_FILES([
 Makefile
 backend/Makefile
 backend/dotm_backend.rc
+backend/dotm_api.rc
 frontend/Makefile
 frontend/apache-2.4.conf
 aggregator/Makefile

@@ -1,5 +1,5 @@
-dotm_backend_PYTHON = dotm_backend.py dotm_monitor/dotm_mon.py
-dotm_mon_PYTHON = dotm_monitor/dotm_mon.py dotm_monitor/__init__.py
+dotm_backend_PYTHON = dotm_backend.py dotm_monitor.py settings.py
+dotm_api_PYTHON = dotm_api.py settings.py
 
 dotm_backenddir = $(pythondir)/dotm
-dotm_mondir = $(pythondir)/dotm/dotm_monitor
+dotm_apidir = $(pythondir)/dotm

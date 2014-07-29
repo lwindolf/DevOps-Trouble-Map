@@ -16,7 +16,7 @@ if ! lsb_release -i | egrep 'Debian|Ubuntu' >/dev/null; then
 fi
 	
 echo "### Installing dependencies..."
-apt-get install netcat redis-server python-redis python-bottle python-requests python-geoip geoip-database curl
+apt-get install netcat redis-server python-redis python-bottle python-requests python-geoip geoip-database python-daemon curl
 
 echo "### Compiling and installing ($PREFIX)..."
 autoreconf -i
@@ -32,6 +32,12 @@ cp backend/dotm_backend.rc /etc/init.d/dotm_backend
 chmod a+x /etc/init.d/dotm_backend
 update-rc.d dotm_backend defaults
 /etc/init.d/dotm_backend restart
+
+echo "### Installing api init script..."
+cp backend/dotm_api.rc /etc/init.d/dotm_api
+chmod a+x /etc/init.d/dotm_api
+update-rc.d dotm_api defaults
+/etc/init.d/dotm_api restart
 
 echo "### Setting up Apache config..."
 ln -s /usr/local/share/dotm_frontend/apache-2.4.conf /etc/apache2/conf-enabled/dotm.conf
