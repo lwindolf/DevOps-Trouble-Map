@@ -98,6 +98,7 @@ Right now the following relation namespaces are used in Redis
   * 'last_fetch' => &lt;timestamp>
   * 'fetch_status' => &lt;'OK' or error message>
   * 'ips' => &lt;comma separated list of IPs>
+  * 'service_alerts' => &lt;hash of service name - status tuples>
 - dotm::connections::&lt;node name>::&lt;port>::&lt;remote node/IP> (hash):
   * 'process' => &lt;string>
   * 'connections' => &lt;int>
