@@ -6,11 +6,11 @@ dotm_python_wrapper: dotm_python_wrapper.in
 
 # Installing python scripts as suggested by
 # http://blog.couchbase.com/installing-python-scripts-automake
-PYTHON_TOOLS=dotm_backend
+PYTHON_TOOLS = dotm_backend dotm_api
 ${PYTHON_TOOLS}: dotm_python_wrapper
 	cp $< $@
 
 BUILT_SOURCES = ${PYTHON_TOOLS}
-CLEANFILES= ${PYTHON_TOOLS}
+CLEANFILES = ${PYTHON_TOOLS}
 bin_SCRIPTS = ${PYTHON_TOOLS}
 

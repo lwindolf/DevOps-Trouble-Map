@@ -1,17 +1,19 @@
 dotm_backend.py
+dotm_api.py
 ================
 
 Description
 -----------
-POC of DOTM Backend API
+POC of DOTM Backend and API
 
 Installing requirements
 -----------------------
-apt-get install python-requests python-redis python-bottle python-geoip geoip-database-contrib
+apt-get install python-requests python-redis python-bottle python-geoip geoip-database-contrib python-daemon
 
 Running
 -------
 $ ./dotm_backend.py
+$ ./dotm_api.py
 
 Testing JSON API
 ----------------
@@ -22,7 +24,7 @@ $ curl -i http://localhost:8080/mon/nodes/<hostname>
 $ curl -i http://localhost:8080/mon/nodes/<hostname>/status
 $ curl -i http://localhost:8080/mon/services/<hostname>
 $ curl -i http://localhost:8080/mon/nodes/404
-$ curl -X POST -i http://localhost:8080/mon/reload
+$ curl -L -X POST -i http://localhost:8080/mon/reload
 $ curl -i http://localhost:8080/geo/nodes
 
 $ curl -i http://localhost:8080/config

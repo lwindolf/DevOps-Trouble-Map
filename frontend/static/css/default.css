@@ -281,3 +281,7 @@ svg .label {
         -webkit-border-radius: 4px 4px;
         border: 2px solid black;
 }
+
+form#node_add {
+	float:right;
+}
