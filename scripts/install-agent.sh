@@ -26,8 +26,6 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
  
-echo "### Installing agent init script..."
-cp dotm_node.rc /etc/init.d/dotm_node
-chmod a+x /etc/init.d/dotm_node
+echo "### Activating agent ..."
 update-rc.d dotm_node defaults
 /etc/init.d/dotm_node restart
