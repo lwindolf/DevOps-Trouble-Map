@@ -106,7 +106,7 @@ function loadNodesGraph(stage, data) {
 			    .attr("width", function (d) { return d.width - 2 * pad; })
 			    .attr("height", function (d) { return d.height - 2 * pad; })
 			    .attr("rx", r - 3).attr("ry", r - 3)
-			    .attr("class", function (d) { return "node_rect node_" + d.name.replace('.','') + (d.faulty)?' node_with_faulty_services':''; })
+			    .attr("class", function (d) { return "node_rect node_" + d.name.replace('.',''); })
 			    .style("fill", function (d) {
 				if(d.status == 'UP')
 					return '#0c3';
@@ -127,7 +127,7 @@ function loadNodesGraph(stage, data) {
 				if (d3.event.defaultPrevented) return; // click suppressed
 				if($.inArray(d.name, data.nodes) != -1) {
 					d3.selectAll(".node_rect").style({'stroke-width':0});
-					d3.select(this).style({'stroke-lowidth':2,'stroke':'black'});
+					d3.select(this).style({'stroke-width':2,'stroke':'black'});
 					selectedNode = d.name;
 					loadNode(d.name);
 				}
