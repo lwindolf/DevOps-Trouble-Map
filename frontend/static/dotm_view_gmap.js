@@ -47,7 +47,8 @@ function loadGMap(stage, locations) {
 	$("#gmap").gmap3({
 		map:{
 			options: {
-				zoom:3
+				zoom:3,
+				mapTypeId: google.maps.MapTypeId.SATELLITE,
 			}
 		},
 		marker:{

@@ -120,19 +120,21 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 					return '#f30';
 				if(d.status == 'UNKNOWN')
 					return '#fca';
-				return '#ccc';
+				return 'white';
 			    })
+			    .style("stroke-width", 1)
+			    .style("stroke", "gray")
 			    .on("mouseover", function(d) {
 				d3.select(this).style({'stroke-width':2,'stroke':'black'});
 			    })
 			    .on("mouseout", function(d) {
 				if(d.name != view.selectedNode)
-					d3.select(this).style({'stroke-width':0});
+					d3.select(this).style({'stroke-width':1,'stroke':'gray'});
 			    })
 			    .on("click", function (d) {
 				if (d3.event.defaultPrevented) return; // click suppressed
 				if($.inArray(d.name, data.nodes) != -1) {
-					d3.selectAll(".node_rect").style({'stroke-width':0});
+					d3.selectAll(".node_rect").style({'stroke-width':1,'stroke':'gray'});
 					d3.select(this).style({'stroke-width':2,'stroke':'black'});
 					view.selectedNode = d.name;
 					loadNode(d.name);
@@ -153,7 +155,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 						if(state == "CRITICAL")
 							return "#F30";
 						else 
-							return "#FFA500";
+							return "#FF0";
 					    });
 
 					d3.select(tmp)
@@ -170,7 +172,6 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 			d3.select(this)
 			    .append("text")
 			    .attr("dy", function(d) { return pad + 18 - d.height/2 })
-			    .attr("text-anchor", "middle")
 			    .attr("class", "label")
 			    .text(function (d) { return d.name; })
 			    .on("mouseover", function(d) {
@@ -178,12 +179,12 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 			    })
 			    .on("mouseout", function(d) {
 				if(d.name != view.selectedNode)
-					d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':0});
+					d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':1,'stroke':'gray'});
 			    })
 			    .on("click", function (d) {
 				if (d3.event.defaultPrevented) return; // click suppressed
 				if($.inArray(d.name, data.nodes) != -1) {
-					d3.selectAll(".node_rect").style({'stroke-width':0});
+					d3.selectAll(".node_rect").style({'stroke-width':1,'stroke':'gray'});
 					d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':2,'stroke':'black'});
 					view.selectedNode = d.name;
 					loadNode(d.name);
@@ -220,4 +221,7 @@ DOTMViewAllNodes.prototype.reload = function() {
 	.fail(function (jqxhr, textStatus, error) {
 		setError(view.stage, 'Node list fetch failed! ('+error+')');
 	});
+
+	// FIXME: hard-coded timeout
+	setTimeout(view.reload, 30000);
 };

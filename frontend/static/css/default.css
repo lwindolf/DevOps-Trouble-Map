@@ -5,9 +5,9 @@ body {
 }
 
 h1.title {
-	font-family: Verdana;
+	font-family: "Gotham Book", Arial, sans-serif;
 	font-size: 18pt;
-	color: #444;
+	color: #ccc;
 	margin:6px;
 	display:inline-block;
 }
@@ -18,7 +18,7 @@ div.menu {
 }
 
 .menu a {
-	color:#777;
+	color:#aaa;
 	text-decoration:none;
 	padding:6px;
 }
@@ -123,12 +123,12 @@ tr.alert.status_OK .alert_status {
 }
 
 tr.alert.status_WARNING {
-	background:#f8d193;
+	background:#feffbf;
 }
 
 tr.alert.status_WARNING .alert_status {
-	background: #FFA500;
-	color:white;
+	background: #FFFF00;
+	color:black;
 }
 
 tr.alert.status_CRITICAL {
@@ -225,7 +225,7 @@ svg .link {
 }
 
 svg .label {
-    fill: white;
+    color:black;
     font-family: Monospace;
     font-size: 10px;
     text-anchor: middle;
