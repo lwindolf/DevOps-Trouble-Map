@@ -61,12 +61,12 @@
 	</div>
 
 	<div class='ui-layout-center'>
-		<div class='status'></div>
+		<div class='statusBox'></div>
 		<div class='ui-layout-content'></div>
 	</div>
 
 	<div class='ui-layout-west'>
-		<div class='status'></div>
+		<div class='statusBox'></div>
 		<div class='ui-layout-content'></div>
 	</div>
 
@@ -89,36 +89,21 @@
 		}
 
 		(function() {
+			// Setup layout
+			$.curCSS = $.css;
+			myLayout = $('body').layout({
+				west__size: Math.floor($(document).width() * .50)
+			,       north__spacing_open: 0
+			});
 
-		// Setup layout
-		$.curCSS = $.css;
-		myLayout = $('body').layout({
-			west__size: Math.floor($(document).width() * .50)
-		,       north__spacing_open: 0
-		});
+			// Setup time formatting
+			jQuery.timeago.settings.strings.suffixAgo = null;
 
-		// Setup time formatting
-		jQuery.timeago.settings.strings.suffixAgo = null;
+			// GeoIP map
+			display_ip_map();
 
-		// GeoIP map
-		display_ip_map();
-
-		// Fetch nodes
-		var stage = '.ui-layout-west .ui-layout-content';
-		setStatus(stage, 'Fetching nodes...');
-		$.getJSON("backend/nodes", {})
-		.done(function (data) {
-			var nodes = [];
-			$.each(data.nodes, function (index, node) {
-				nodes.push('<a href="javascript:loadNode(\''+node+'\')">'+node+'</a>');
-			})
-			$("#nodeList").html(nodes.join("<br/>"));
-			setStatus(stage, 'Please select a node.');
-			loadNodesGraph(stage, data);
-		})
-		.fail(function (jqxhr, textStatus, error) {
-			setError(stage, 'Node list fetch failed! ('+error+')');
-		})
+			// Setup views
+			new DOTMViewAllNodes('.ui-layout-west .ui-layout-content');
 		})();
 	</script>
 </body>
