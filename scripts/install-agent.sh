@@ -27,5 +27,5 @@ if [ $? -ne 0 ]; then
 fi
  
 echo "### Activating agent ..."
-update-rc.d dotm_node defaults
-/etc/init.d/dotm_node restart
+update-rc.d dotm_node.rc defaults
+/etc/init.d/dotm_node.rc restart
