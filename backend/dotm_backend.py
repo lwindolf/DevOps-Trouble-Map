@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import daemon
+import signal
+import sys
 import logging
 
 # Backend local imports
@@ -10,22 +11,58 @@ from settings import *
 from dotm_monitor import DOTMMonitor
 
 
+# Handle SIGINT in Debug mode
+def signal_handler(signal, frame):
+    print 'Exit on SIGINT'
+    sys.exit(1)
+
+signal.signal(signal.SIGINT, signal_handler)
+
+# Logging configuration
+log_file = '/tmp/dotm_backend.log'
+log_level = logging.INFO
+log_format = logging.Formatter("%(asctime)s %(levelname)-8s %(message)s")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+if cl_args.log:
+    log_file = cl_args.log
+if cl_args.debug:
+    log_level = logging.DEBUG
+    # Additionally log to console in DEBUG mode
+    log_ch = logging.StreamHandler()
+    log_ch.setFormatter(log_format)
+    log_ch.setLevel(log_level)
+    logger.addHandler(log_ch)
+
+log_fh = logging.FileHandler(log_file)
+log_fh.setFormatter(log_format)
+log_fh.setLevel(log_level)
+logger.addHandler(log_fh)
+
+
 def monitor_queue():
-    print "Started!"
-    # TODO: Implement logging
+    logger.info('DOTM Backend Started')
     while True:
         try:
-            msg = json.loads(rdb.blpop(queue_key_pfx)[1])
+            msg_data = rdb.blpop(queue_key_pfx)
         except Exception as e:
-            #logging.critical(e)
-            print e
+            logger.error("Error getting message from the queue: {}".format(e))
             continue
-        if msg and msg['fn'] == 'reload':
+
+        try:
+            msg_obj = json.loads(msg_data[1])
+        except Exception as e:
+            logger.warning('Message discarded (Bad message format)')
+            logger.debug('Message: {}\nException: {}'.format(msg_data, e))
+            continue
+
+        if msg_obj and msg_obj['fn'] == 'reload':
             # TODO: move queue_result_expire variable to settings
-            print msg
+            logger.info('Reloading monitoring data')
             result = mon_reload()
-            print result
-            rdb.setex(msg['id'], result, 300)
+            logger.debug("Reloading monitoring data result: {}".format(result))
+            rdb.setex(msg_obj['id'], result, 300)
 
 
 def mon_reload():
@@ -107,8 +144,4 @@ def mon_reload():
     return None
 
 if __name__ == '__main__':
-    if cl_args.debug:
-        monitor_queue()
-    else:
-        with daemon.DaemonContext():
-            monitor_queue()
+    monitor_queue()

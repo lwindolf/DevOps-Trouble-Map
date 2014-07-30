@@ -152,6 +152,7 @@ cl_parser.add_argument("-P", '--redis-port', help='Redis Port', type=int, defaul
 cl_parser.add_argument("-d", '--redis-db', help='Redis Database', type=int, default=0)
 cl_parser.add_argument("-p", '--redis-password', help='Redis Password', type=str, default=None)
 cl_parser.add_argument("-D", '--debug', help='DEBUG Mode On', action="store_true")
+cl_parser.add_argument("-l", '--log', help='Log file', type=str, default=None)
 cl_args = cl_parser.parse_args()
 
 
