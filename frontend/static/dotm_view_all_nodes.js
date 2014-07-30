@@ -1,7 +1,12 @@
-// argh... global
-var selectedNode;
+/* DOTM view displaying all node connections and faulty services */
 
-function addNodeToColaNodeList(nodeList, nodeIndex, node, monitoring) {
+function DOTMViewAllNodes(stage) {
+	this.stage = stage;
+	this.selectedNode = null;
+	this.reload();
+}
+
+DOTMViewAllNodes.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex, node, monitoring) {
 	var n = {};
 	n['name'] = node;
 	n['width'] = 100;
@@ -20,9 +25,10 @@ function addNodeToColaNodeList(nodeList, nodeIndex, node, monitoring) {
 
 	nodeList.push(n);
 	nodeIndex[node] = Object.keys(nodeIndex).length;
-}
+};
 
-function loadNodesGraph(stage, data) {
+DOTMViewAllNodes.prototype.setData = function(data) {
+	var view = this;
 	var width = 800,
 	    height = 600,
 	    r = 9;
@@ -35,8 +41,8 @@ function loadNodesGraph(stage, data) {
 	    .size([width, height]);
 	    //.jaccardLinkLengths(150);
 	
-	$(stage).html("<form id='node_add' action='backend/nodes' method='POST'><input size='10' type='text' name='name'/><input type='submit' value='Add Node'/></form>");
-	var svg = d3.select(stage).append("svg")
+	$(this.stage).html("<form id='node_add' action='backend/nodes' method='POST'><input size='10' type='text' name='name'/><input type='submit' value='Add Node'/></form>");
+	var svg = d3.select(this.stage).append("svg")
 	    .attr("width", width)
 	    .attr("height", height);
 	
@@ -57,15 +63,15 @@ function loadNodesGraph(stage, data) {
 	graph["links"] = new Array();
 	graph["groups"] = new Array();
 	$.each(data.nodes, function(index, nodeData) {
-		addNodeToColaNodeList(graph['nodes'], nodeIndex, nodeData, data.monitoring);
+		view.addNodeToColaNodeList(graph['nodes'], nodeIndex, nodeData, data.monitoring);
 	});
 	$.each(data.connections, function(index, connectionData) {
 		// Node sources and target might not exist
 		// in case of non-managed nodes we connect to/from
 		if(nodeIndex[connectionData.source] == undefined)
-			addNodeToColaNodeList(graph['nodes'], nodeIndex, connectionData.source, data.monitoring);
+			view.addNodeToColaNodeList(graph['nodes'], nodeIndex, connectionData.source, data.monitoring);
 		if(nodeIndex[connectionData.destination] == undefined)
-			addNodeToColaNodeList(graph['nodes'], nodeIndex, connectionData.destination, data.monitoring);
+			view.addNodeToColaNodeList(graph['nodes'], nodeIndex, connectionData.destination, data.monitoring);
 		var l = {};
 		l['source'] = nodeIndex[connectionData.source];
 		l['target'] = nodeIndex[connectionData.destination];
@@ -120,7 +126,7 @@ function loadNodesGraph(stage, data) {
 				d3.select(this).style({'stroke-width':2,'stroke':'black'});
 			    })
 			    .on("mouseout", function(d) {
-				if(d.name != selectedNode)
+				if(d.name != view.selectedNode)
 					d3.select(this).style({'stroke-width':0});
 			    })
 			    .on("click", function (d) {
@@ -128,7 +134,7 @@ function loadNodesGraph(stage, data) {
 				if($.inArray(d.name, data.nodes) != -1) {
 					d3.selectAll(".node_rect").style({'stroke-width':0});
 					d3.select(this).style({'stroke-width':2,'stroke':'black'});
-					selectedNode = d.name;
+					view.selectedNode = d.name;
 					loadNode(d.name);
 				}
 			    });
@@ -171,7 +177,7 @@ function loadNodesGraph(stage, data) {
 				d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':2,'stroke':'black'});
 			    })
 			    .on("mouseout", function(d) {
-				if(d.name != selectedNode)
+				if(d.name != view.selectedNode)
 					d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':0});
 			    })
 			    .on("click", function (d) {
@@ -179,7 +185,7 @@ function loadNodesGraph(stage, data) {
 				if($.inArray(d.name, data.nodes) != -1) {
 					d3.selectAll(".node_rect").style({'stroke-width':0});
 					d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':2,'stroke':'black'});
-					selectedNode = d.name;
+					view.selectedNode = d.name;
 					loadNode(d.name);
 				}
 			    });
@@ -200,4 +206,18 @@ function loadNodesGraph(stage, data) {
                     node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 	  });
 	});
-}
+};
+
+DOTMViewAllNodes.prototype.reload = function() {
+	var view = this;
+
+	setStatus(this.stage, 'Fetching nodes...');
+	$.getJSON("backend/nodes", {})
+	.done(function (data) {
+		clearStatus(view.stage);
+		view.setData(data);
+	})
+	.fail(function (jqxhr, textStatus, error) {
+		setError(view.stage, 'Node list fetch failed! ('+error+')');
+	});
+};
