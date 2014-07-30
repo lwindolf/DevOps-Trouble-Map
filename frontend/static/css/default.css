@@ -164,7 +164,7 @@ a:hover {
 	color:white;
 }
 
-.status {
+.statusBox {
 	padding: 6px;
 	margin: 6px 0;
 	border:6px;
@@ -174,11 +174,11 @@ a:hover {
 	z-index:1;
 }
 
-.status.normal {
+.statusBox.normal {
 	background:#cfc;
 }
 
-.status.error {
+.statusBox.error {
 	background:#faa;
 	color:white;
 }
