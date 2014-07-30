@@ -2,12 +2,13 @@
 var timeouts = new Array();
 
 function setStatus(id, text) {
-	var statusBox = $(id).parent().find('.status');
+	var statusBox = $(id).parent().find('.statusBox');
 
 	statusBox
 	.addClass('normal')
 	.removeClass('error')
-	.html(text);
+	.html(text)
+	.show();
 
 	if(timeouts[id])	
 		clearTimeout(timeouts[id]);
@@ -20,10 +21,11 @@ function setStatus(id, text) {
 function setError(id, text) {
 	$(id)
 	.parent()
-	.find('.status')
+	.find('.statusBox')
 	.removeClass('normal')
 	.addClass('error')
-	.html(text);
+	.html(text)
+	.show();
 
 	if(timeouts[id])	
 		clearTimeout(timeouts[id]);
@@ -32,10 +34,14 @@ function setError(id, text) {
 function clearStatus(id) {
 	$(id)
 	.parent()
-	.find('.status')
+	.find('.statusBox')
 	.removeClass('normal')
 	.removeClass('error')
-	.html('');
+	.html('test')
+	.hide();
+
+	if(timeouts[id])	
+		clearTimeout(timeouts[id]);
 }
 
 // Print a node name with optional link
