@@ -60,7 +60,6 @@ def monitor_queue():
             continue
 
         if msg_obj and msg_obj['fn'] == 'reload':
-            # TODO: move queue_result_expire variable to settings
             msg_key = msg_obj['id']
             qresp = QResponse(rdb, msg_key, logger)
             qresp.processing()

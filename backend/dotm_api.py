@@ -119,19 +119,19 @@ def get_nodes():
 @route('/backend/nodes', method='POST')
 @route('/nodes', method='POST')
 def add_node():
-	# FIXME: validate name
-	rdb.lpush('dotm::nodes', request.forms.get('name'))
+    # FIXME: validate name
+    rdb.lpush(nodes_key_pfx, request.forms.get('name'))
 
 
 @route('/nodes/<name>', method='GET')
 def get_node(name):
-    prefix = 'dotm::nodes::' + name
+    prefix = nodes_key_pfx + '::' + name
     nodeDetails = rdb.hgetall(prefix)
     serviceDetails = get_service_details(name)
 
     # Fetch all connection details and expand known services
     # with their name and state details
-    prefix = 'dotm::connections::' + name + '::'
+    prefix = connections_key_pfx + '::' + name + '::'
     connectionDetails = {}
     connections = [c.replace(prefix, '') for c in rdb.keys(prefix + '*')]
     for c in connections:
