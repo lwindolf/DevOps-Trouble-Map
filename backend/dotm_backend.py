@@ -87,32 +87,30 @@ def mon_reload():
 
             # 1. Process and save services
             for key, val in mon.get_services().items():
-                # Apply user defined node mapping
-                node = rdb.hget(config_key_pfx + "::user_node_aliases", key)
-                if not node:
-                    node = key  # Overwrite hostname given by Nagios
+                # Apply user defined node mapping or overwrite hostname given by Nagios
+                node = rdb.hget(config_key_pfx + "::user_node_aliases", key) or key
 
                 # Map node alerts to services and store service
                 # alert summary into node alerts, these are two
                 # denormalizations used to simplify the /nodes
                 # and the /node/<name> callback.
-                serviceDetails = get_service_details(node)
-                if serviceDetails:
+                service_details = get_service_details(node)
+                if service_details:
                     # FIXME: Refactor for/for/for (Andrej)
                     for service_regexp in service_mapping:
-                        for s in serviceDetails:
+                        for s in service_details:
                             for sa in val:
                                 if re.match(service_regexp, sa['service']):
                                     if re.match(service_mapping[service_regexp],
-                                                serviceDetails[s]['process'],
+                                                service_details[s]['process'],
                                                 re.IGNORECASE):
-                                        rdb.hset('dotm::services::' + node + '::' + s, 'alert_status', sa['status'])
-                                        sa['mapping'] = serviceDetails[s]['process']
+                                        rdb.hset(services_key_pfx + '::' + node + '::' + s, 'alert_status', sa['status'])
+                                        sa['mapping'] = service_details[s]['process']
                                         # Add non-OK services to it's nodes alert info
                                         if sa['status'] != 'OK':
                                             if not node in tmp_services_broken:
                                                 tmp_services_broken[node] = {}
-                                            tmp_services_broken[node][serviceDetails[s]['process']] = sa['status']
+                                            tmp_services_broken[node][service_details[s]['process']] = sa['status']
 
                 # And store...
                 with rdb.pipeline() as pipe:
@@ -145,6 +143,7 @@ def mon_reload():
     else:
         rdb.hset(mon_config_key, update_time_key, 0)
     return None
+
 
 if __name__ == '__main__':
     monitor_queue()

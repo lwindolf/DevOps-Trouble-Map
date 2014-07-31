@@ -231,6 +231,7 @@ def get_mon_node_key(node, key):
             result = vars_to_json(key, node_obj[key])
     return resp_or_404(result)
 
+
 # FIXME: Ugly implementation just as POC, callback should be stored in a session.
 # Unfortunately bottle-sessions is not included in to Ubuntu repo...
 @route('/mon/reload', method='POST')
