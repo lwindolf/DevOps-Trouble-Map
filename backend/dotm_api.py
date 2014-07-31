@@ -7,6 +7,7 @@ from bottle import route, run, response, request, debug, static_file
 # Backend Web API local imports
 # FIXME: import only what is needed instead of *
 from settings import *
+from dotm_queue import QResponse
 
 
 # JSON Response helper functions
@@ -67,10 +68,11 @@ def get_node_alerts(node):
 
 
 # Backend Queue helper functions
-def queue_func(fname, *args, **kwargs):
+def queue_func(fn, *args, **kwargs):
     rkey = '{}::result::{}'.format(queue_key_pfx, str(uuid4()))
-    qval = json.dumps({"id": rkey, "fn": fname, "args": [a for a in args], "kwargs": kwargs})
-    rdb.rpush(queue_key_pfx, qval)
+    qresp = QResponse(rdb, rkey, logger=None)
+    qresp.queue(fn, args, kwargs)
+    qresp.pending()
     return rkey
 
 

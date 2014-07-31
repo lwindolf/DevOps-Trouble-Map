@@ -8,6 +8,7 @@ import logging
 # Backend local imports
 # FIXME: import only what is needed instead of *
 from settings import *
+from dotm_queue import QResponse
 from dotm_monitor import DOTMMonitor
 
 
@@ -47,11 +48,12 @@ def monitor_queue():
         try:
             msg_data = rdb.blpop(queue_key_pfx)
         except Exception as e:
-            logger.error("Error getting message from the queue: {}".format(e))
+            logger.error('Error getting message from the queue: {}'.format(e))
             continue
 
         try:
             msg_obj = json.loads(msg_data[1])
+            logger.debug('Message received for processing: {}'.format(msg_obj))
         except Exception as e:
             logger.warning('Message discarded (Bad message format)')
             logger.debug('Message: {}\nException: {}'.format(msg_data, e))
@@ -59,10 +61,12 @@ def monitor_queue():
 
         if msg_obj and msg_obj['fn'] == 'reload':
             # TODO: move queue_result_expire variable to settings
+            msg_key = msg_obj['id']
+            qresp = QResponse(rdb, msg_key, logger)
+            qresp.processing()
             logger.info('Reloading monitoring data')
             result = mon_reload()
-            logger.debug("Reloading monitoring data result: {}".format(result))
-            rdb.setex(msg_obj['id'], result, 300)
+            qresp.ready(result)
 
 
 def mon_reload():
@@ -135,10 +139,10 @@ def mon_reload():
             rdb.hset(mon_config_key, update_time_key, time_now)
             update_time = time_now
             rdb.delete(update_lock_key)
-        return vars_to_json(update_time_key, update_time)
+        return {update_time_key: update_time}
     elif update_time_str:
         update_time = int(update_time_str)
-        return vars_to_json(update_time_key, update_time)
+        return {update_time_key: update_time}
     else:
         rdb.hset(mon_config_key, update_time_key, 0)
     return None
