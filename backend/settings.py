@@ -12,6 +12,8 @@ from uuid import uuid4
 
 # Namespace configuration
 general_prefix = 'dotm'
+nodes_key_pfx = general_prefix + '::nodes'
+connections_key_pfx = general_prefix + '::connections'
 queue_key_pfx = general_prefix + '::queue'
 config_key_pfx = general_prefix + '::config'
 services_key_pfx = general_prefix + '::services'

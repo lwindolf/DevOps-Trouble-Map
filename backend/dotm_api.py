@@ -119,19 +119,19 @@ def get_nodes():
 @route('/backend/nodes', method='POST')
 @route('/nodes', method='POST')
 def add_node():
-	# FIXME: validate name
-	rdb.lpush('dotm::nodes', request.forms.get('name'))
+    # FIXME: validate name
+    rdb.lpush(nodes_key_pfx, request.forms.get('name'))
 
 
 @route('/nodes/<name>', method='GET')
 def get_node(name):
-    prefix = 'dotm::nodes::' + name
+    prefix = nodes_key_pfx + '::' + name
     nodeDetails = rdb.hgetall(prefix)
     serviceDetails = get_service_details(name)
 
     # Fetch all connection details and expand known services
     # with their name and state details
-    prefix = 'dotm::connections::' + name + '::'
+    prefix = connections_key_pfx + '::' + name + '::'
     connectionDetails = {}
     connections = [c.replace(prefix, '') for c in rdb.keys(prefix + '*')]
     for c in connections:
@@ -230,6 +230,7 @@ def get_mon_node_key(node, key):
         if key in node_obj:
             result = vars_to_json(key, node_obj[key])
     return resp_or_404(result)
+
 
 # FIXME: Ugly implementation just as POC, callback should be stored in a session.
 # Unfortunately bottle-sessions is not included in to Ubuntu repo...
