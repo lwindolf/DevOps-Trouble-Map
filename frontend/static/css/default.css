@@ -146,12 +146,13 @@ tr.alert.status_CRITICAL .alert_status {
 }
 
 .service.status_OK {
-	background: #cfc;
+	background: #0c3;
+	color:white;
 }
 
 .service.status_WARNING {
-	background: #FFA500;
-	color:white;
+	background: #FFFF00;
+	color:black;
 }
 
 .service.status_CRITICAL {
