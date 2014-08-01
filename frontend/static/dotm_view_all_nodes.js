@@ -237,5 +237,5 @@ DOTMViewAllNodes.prototype.reload = function() {
 	});
 
 	// FIXME: hard-coded timeout
-	setTimeout(view.reload, 30000);
+	setTimeout(function(){view.reload()}, 30000);
 };
