@@ -29,8 +29,8 @@ DOTMViewAllNodes.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex,
 
 DOTMViewAllNodes.prototype.setData = function(data) {
 	var view = this;
-	var width = 800,
-	    height = 600,
+	var width = $(this.stage).width(),
+	    height = $(this.stage).height(),
 	    r = 9;
 
 	var color = d3.scale.category20();
