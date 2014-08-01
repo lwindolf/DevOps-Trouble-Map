@@ -16,7 +16,8 @@ dotm_frontend_static_DATA = \
 	static/dotm_view_all_nodes.js \
 	static/dotm_view_gmap.js \
 	static/dotm_view_config.js \
-	static/tiny_grid.png
+	static/tiny_grid.png \
+	static/cloud.png
 
 dotm_frontend_cssdir = $(datadir)/dotm_frontend/static/css
 dotm_frontend_css_DATA = \

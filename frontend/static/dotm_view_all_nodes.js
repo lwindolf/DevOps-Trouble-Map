@@ -99,41 +99,52 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	node.enter().append("g")
 		.attr("class", "node")
 		.each(function(d) {
-			d3.select(this)
-			    .append("rect")
-			    .attr("x", function (d) { return -d.width/2; })
-			    .attr("y", function (d) { return -d.height/2; })
-			    .attr("width", function (d) { return d.width - 2 * pad; })
-			    .attr("height", function (d) { return d.height - 2 * pad; })
-			    .attr("rx", r - 3).attr("ry", r - 3)
-			    .attr("class", function (d) { return "node_rect node_" + d.name.replace('.',''); })
-			    .style("fill", function (d) {
-				if(d.status == 'UP')
-					return '#0c3';
-				if(d.status == 'DOWN')
-					return '#f30';
-				if(d.status == 'UNKNOWN')
-					return '#fca';
-				return 'white';
-			    })
-			    .style("stroke-width", 1)
-			    .style("stroke", "gray")
-			    .on("mouseover", function(d) {
-				d3.select(this).style({'stroke-width':2,'stroke':'black'});
-			    })
-			    .on("mouseout", function(d) {
-				if(d.name != view.selectedNode)
-					d3.select(this).style({'stroke-width':1,'stroke':'gray'});
-			    })
-			    .on("click", function (d) {
-				if (d3.event.defaultPrevented) return; // click suppressed
-				if($.inArray(d.name, data.nodes) != -1) {
-					d3.selectAll(".node_rect").style({'stroke-width':1,'stroke':'gray'});
+			if(d.name == "Internet") {
+				d3.select(this)
+				    .append("svg:image")
+				    .attr("xlink:href", "cloud.png")
+				    .attr("width", "100px")
+				    .attr("height", "40px")
+				    .attr("preserveAspectRatio", "none")
+				    .attr("x", "-50px")
+				    .attr("y", "-20px");
+			} else {
+				d3.select(this)
+				    .append("rect")
+				    .attr("x", function (d) { return -d.width/2; })
+				    .attr("y", function (d) { return -d.height/2; })
+				    .attr("width", function (d) { return d.width - 2 * pad; })
+				    .attr("height", function (d) { return d.height - 2 * pad; })
+				    .attr("rx", r - 3).attr("ry", r - 3)
+				    .attr("class", function (d) { return "node_rect node_" + d.name.replace('.',''); })
+				    .style("fill", function (d) {
+					if(d.status == 'UP')
+						return '#0c3';
+					if(d.status == 'DOWN')
+						return '#f30';
+					if(d.status == 'UNKNOWN')
+						return '#fca';
+					return 'white';
+				    })
+				    .style("stroke-width", 1)
+				    .style("stroke", "gray")
+				    .on("mouseover", function(d) {
 					d3.select(this).style({'stroke-width':2,'stroke':'black'});
-					view.selectedNode = d.name;
-					loadNode(d.name);
-				}
-			    });
+				    })
+				    .on("mouseout", function(d) {
+					if(d.name != view.selectedNode)
+						d3.select(this).style({'stroke-width':1,'stroke':'gray'});
+				    })
+				    .on("click", function (d) {
+					if (d3.event.defaultPrevented) return; // click suppressed
+					if($.inArray(d.name, data.nodes) != -1) {
+						d3.selectAll(".node_rect").style({'stroke-width':1,'stroke':'gray'});
+						d3.select(this).style({'stroke-width':2,'stroke':'black'});
+						view.selectedNode = d.name;
+						loadNode(d.name);
+					}
+				    });
+			}
 
 			if(d['services']) {
 				var tmp = this;
