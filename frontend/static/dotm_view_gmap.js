@@ -1,3 +1,12 @@
+/* DOTM view displaying all external IPs and resolvable names with a
+   popup bubble presenting IP and faulty services */
+
+function DOTMViewGMap(stage) {
+	this.stage = stage;
+	this.selectedNode = null;
+	this.reload();
+}
+
 function dotm_view_gmap_render_services (data) {
         if (!data)
                 return "";
@@ -15,10 +24,10 @@ function dotm_view_gmap_render_services (data) {
         return result;
 }
 
-function loadGMap(stage, locations) {
+DOTMViewGMap.prototype.setData = function(locations) {
 	// Clean everything
-	clearStatus(stage);
-	$(stage).html("<div id='gmap'></div>");
+	clearStatus(this.stage);
+	$(this.stage).html("<div id='gmap'></div>");
 
 	// Add marker icons to locations list
 	$.each(locations, function(index, ip) {
@@ -93,3 +102,15 @@ function loadGMap(stage, locations) {
 		$("#gmap").gmap3('autofit');
 }
 
+
+DOTMViewGMap.prototype.reload = function() {
+	var view = this;
+
+	$.getJSON("backend/geo/nodes", {})
+	.done(function (data) {
+		view.setData(data.locations);
+	})
+	.fail(function (jqxhr, textStatus, error) {
+		setError(view.stage, 'Node geo locations fetch failed! ('+error+')');
+	});
+}

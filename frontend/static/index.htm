@@ -78,17 +78,6 @@
 			loadNodeGraph('.ui-layout-center .ui-layout-content', node);
 		}
 
-		function display_ip_map() {
-			var stage = '.ui-layout-center .ui-layout-content';
-			$.getJSON("backend/geo/nodes", {})
-			.done(function (data) {
-				loadGMap(stage, data.locations);
-			})
-			.fail(function (jqxhr, textStatus, error) {
-				setError(stage, 'Node geo locations fetch failed! ('+error+')');
-			});
-		}
-
 		(function() {
 			// Setup layout
 			$.curCSS = $.css;
@@ -100,10 +89,8 @@
 			// Setup time formatting
 			jQuery.timeago.settings.strings.suffixAgo = null;
 
-			// GeoIP map
-			display_ip_map();
-
 			// Setup views
+			new DOTMViewGMap('.ui-layout-center .ui-layout-content');
 			new DOTMViewAllNodes('.ui-layout-west .ui-layout-content');
 		})();
 	</script>
