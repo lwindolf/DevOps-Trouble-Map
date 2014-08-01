@@ -1,5 +1,7 @@
 /* DOTM view displaying all node connections and faulty services */
 
+var allNodesViewReload;
+
 function DOTMViewAllNodes(stage) {
 	this.stage = stage;
 	this.selectedNode = null;
@@ -248,5 +250,6 @@ DOTMViewAllNodes.prototype.reload = function() {
 	});
 
 	// FIXME: hard-coded timeout
-	setTimeout(function(){view.reload()}, 30000);
+	clearTimeout(allNodesViewReload);
+	allNodesViewReload = setTimeout(function(){view.reload()}, 30000);
 };
