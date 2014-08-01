@@ -31,7 +31,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	var view = this;
 	var width = $(this.stage).width(),
 	    height = $(this.stage).height(),
-	    r = 9;
+	    r = 9, margin = 0;
 
 	var color = d3.scale.category20();
 
@@ -46,14 +46,6 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	    .attr("width", width)
 	    .attr("height", height);
 	
-	d3.json('notused', function(error, graph) {
-	/* FIXME: Don't want another JSON request here
-	   especially because the backend should be 
-	   agnostic to the specific renderer, therefore
-	   fill in 'graph' JSON data here by convertion 
-	   data passed via loadNodesGraph() parameters.
-	*/
-
 	// Map data 
 	var i = 0;
 	var nodeIndex = {};
@@ -84,6 +76,8 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	      .links(graph.links)
 	      .groups(graph.groups)
 	      .start(5,15,20);
+
+	svg.append('svg:defs').append('svg:marker').attr('id', 'end-arrow').attr('viewBox', '0 -5 10 10').attr('refX', 5).attr('markerWidth', 9).attr('markerHeight', 3).attr('orient', 'auto').append('svg:path').attr('d', 'M0,-5L10,0L0,5L2,0').attr('stroke-width', '0xp').attr('fill', '#555');
 	
 	var group = svg.selectAll(".group")
 	      .data(graph.groups)
@@ -194,19 +188,39 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	        .call(d3cola.drag);
 
 	d3cola.on("tick", function() {
-	            link.attr("x1", function (d) { return d.source.x = Math.max(r, Math.min(width - r, d.source.x)); })
-	                .attr("y1", function (d) { return d.source.y = Math.max(r, Math.min(height - r, d.source.y)); })
-	                .attr("x2", function (d) { return d.target.x = Math.max(r, Math.min(width - r, d.target.x)); })
-	                .attr("y2", function (d) { return d.target.y = Math.max(r, Math.min(height - r, d.target.y)); });
+		node.each(function (d) {
+			return d.innerBounds = d.bounds.inflate(-margin);
+		});
+		link.each(function (d) {
+			cola.vpsc.makeEdgeBetween(d, d.source.innerBounds, d.target.innerBounds, 5);
+		});
+		link.attr("x1", function (d) {
+			return d.sourceIntersection.x;
+		}).attr("y1", function (d) {
+			return d.sourceIntersection.y;
+		}).attr("x2", function (d) {
+			return d.arrowStart.x;
+		}).attr("y2", function (d) {
+			return d.arrowStart.y;
+		});
+
+		node.attr("x", function (d) {
+			return d.innerBounds.x;
+		}).attr("y", function (d) {
+			return d.innerBounds.y;
+		}).attr("width", function (d) {
+			return d.innerBounds.width();
+		}).attr("height", function (d) {
+			return d.innerBounds.height();
+		});
 	
 /*	            group.attr("x", function (d) { return d.bounds.x = Math.max(r, Math.min(width - r, d.bounds.x)); })
 	                 .attr("y", function (d) { return d.bounds.y = Math.max(r, Math.min(height - r, d.bounds.y)); })
 	                .attr("width", function (d) { return d.bounds.width(); })
 	                .attr("height", function (d) { return d.bounds.height(); });*/
 
-                    node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
+		node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 	  });
-	});
 };
 
 DOTMViewAllNodes.prototype.reload = function() {
