@@ -12,15 +12,18 @@ from uuid import uuid4
 
 # Namespace configuration
 general_prefix = 'dotm'
-nodes_key_pfx = general_prefix + '::nodes'
-connections_key_pfx = general_prefix + '::connections'
-queue_key_pfx = general_prefix + '::queue'
-config_key_pfx = general_prefix + '::config'
-services_key_pfx = general_prefix + '::services'
-mon_nodes_key_pfx = general_prefix + '::checks::nodes::'
-mon_services_key_pfx = general_prefix + '::checks::services::'
-mon_config_key = general_prefix + '::checks::config'
-mon_config_key_pfx = general_prefix + '::checks::config::'
+nodes_key = general_prefix + '::nodes'
+connections_key = general_prefix + '::connections'
+queue_key = general_prefix + '::queue'
+history_key = general_prefix + '::history'
+config_key = general_prefix + '::config'
+services_key = general_prefix + '::services'
+checks_key = general_prefix + '::checks'
+resolver_key = general_prefix + '::resolver'
+mon_nodes_key_pfx = checks_key + '::nodes::'
+mon_services_key_pfx = checks_key + '::services::'
+mon_config_key = checks_key + '::config'
+mon_config_key_pfx = mon_config_key + '::'
 
 
 # Default Settings
@@ -115,11 +118,11 @@ settings = {
 def get_setting(s, values=None):
     """Get setting from Redis or default settings from settings dict"""
     if settings[s]['type'] == 'single_value':
-        values = rdb.get(config_key_pfx + '::' + s)
+        values = rdb.get(config_key + '::' + s)
     elif settings[s]['type'] == 'array':
-        values = rdb.lrange(config_key_pfx + '::' + s, 0, -1)
+        values = rdb.lrange(config_key + '::' + s, 0, -1)
     elif settings[s]['type'] == 'hash':
-        values = rdb.hgetall(config_key_pfx + '::' + s)
+        values = rdb.hgetall(config_key + '::' + s)
         # We always get a hash back from hgetall() but it might be incomplete
         # or empty. So we fill in the defaults where needed.
         if 'default' in settings[s]:
@@ -135,7 +138,7 @@ def get_setting(s, values=None):
 
 
 def get_service_details(node):
-    prefix = services_key_pfx + '::' + node + '::'
+    prefix = services_key + '::' + node + '::'
     service_details = {}
     services = [s.replace(prefix, '') for s in rdb.keys(prefix + '*')]
     for s in services:
