@@ -86,7 +86,7 @@ def set_history():
                                       'COUNT', 100,
                                       'MATCH', general_prefix + '*')
         for key in keys:
-            for pat in (nodes_key, connections_key, config_key, services_key, checks_key, resolver_key):
+            for pat in (nodes_key, connections_key, services_key, checks_key, config_key, resolver_key):
                 if key.startswith(pat):
                     rdb.evalsha(copy_hash, 2, key, str(time_now) + '::' + key)
                     continue
