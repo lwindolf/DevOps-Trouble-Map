@@ -5,13 +5,13 @@ import json
 class QResponse(object):
     """Queue response helper class"""
 
-    version = '0.1.0'
+    version = '0.1.1'
 
     def __init__(self, rdb, key, logger=None, expire=300):
         self.rdb = rdb
         self.key = key
-        self.expire = expire
         self.logger = logger
+        self.expire = expire
 
     def _qresp(self, status, msg=None):
         # Put response to the queue
@@ -29,6 +29,7 @@ class QResponse(object):
         self.rdb.setex(self.key, resp, self.expire)
 
     def queue(self, action, *args, **kwargs):
+        """Queue the message"""
         qobj = {"id": self.key, "fn": action, "args": [a for a in args], "kwargs": kwargs}
         try:
             qjson = json.dumps(qobj)
