@@ -96,8 +96,7 @@ def get_geo_nodes():
                     'ip': ip},
                 'lat': result['latitude'],
                 'lng': result['longitude']})
-        except Exception as e:
-            print e
+        except:
             pass
 
     return resp_or_404(json.dumps({'locations': geo}))

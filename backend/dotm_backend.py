@@ -41,12 +41,13 @@ log_fh.setFormatter(log_format)
 log_fh.setLevel(log_level)
 logger.addHandler(log_fh)
 
+
 # Redis COPY function setup
 with open('redis_copy.lua', 'r') as f:
     redis_copy = rdb.script_load(f.read())
 
 
-def queue_processor():
+def process_queue():
     """Process Redis message queue"""
     logger.info('DOTM Backend Started')
     while True:
@@ -213,4 +214,4 @@ def monitoring_reload():
 
 
 if __name__ == '__main__':
-    queue_processor()
+    process_queue()
