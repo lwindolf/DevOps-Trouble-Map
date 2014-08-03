@@ -24,6 +24,7 @@ mon_nodes_key_pfx = checks_key + '::nodes::'
 mon_services_key_pfx = checks_key + '::services::'
 mon_config_key = checks_key + '::config'
 mon_config_key_pfx = mon_config_key + '::'
+history_key_set = (nodes_key, connections_key, services_key, checks_key, config_key, resolver_key)
 
 
 # Default Settings

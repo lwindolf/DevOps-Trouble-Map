@@ -41,6 +41,10 @@ log_fh.setFormatter(log_format)
 log_fh.setLevel(log_level)
 logger.addHandler(log_fh)
 
+# Redis COPY function setup
+with open('redis_copy.lua', 'r') as f:
+    redis_copy = rdb.script_load(f.read())
+
 
 def monitor_queue():
     logger.info('DOTM Backend Started')
@@ -76,19 +80,15 @@ def monitor_queue():
 def set_history():
     """Copy keys to history (<timestamp>::<key>) resetting expiration"""
     time_now = int(time.time())
-    # FIXME: move redis func initialization to settings
-    with open('redis_copy.lua', 'r') as f:
-        copy_hash = rdb.script_load(f.read())
-        print copy_hash
     i = 0
     while True:
         i, keys = rdb.execute_command('SCAN', int(i),
                                       'COUNT', 100,
                                       'MATCH', general_prefix + '*')
         for key in keys:
-            for pat in (nodes_key, connections_key, services_key, checks_key, config_key, resolver_key):
+            for pat in history_key_set:
                 if key.startswith(pat):
-                    rdb.evalsha(copy_hash, 2, key, str(time_now) + '::' + key)
+                    rdb.evalsha(redis_copy, 2, key, str(time_now) + '::' + key)
                     continue
         if int(i) == 0:
             break
