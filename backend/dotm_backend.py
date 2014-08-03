@@ -42,11 +42,17 @@ log_fh.setLevel(log_level)
 logger.addHandler(log_fh)
 
 
-def monitor_queue():
+# Redis COPY function setup
+with open('redis_copy.lua', 'r') as f:
+    redis_copy = rdb.script_load(f.read())
+
+
+def process_queue():
+    """Process Redis message queue"""
     logger.info('DOTM Backend Started')
     while True:
         try:
-            msg_data = rdb.blpop(queue_key_pfx)
+            msg_data = rdb.blpop(queue_key)
         except Exception as e:
             logger.error('Error getting message from the queue: {}'.format(e))
             continue
@@ -59,18 +65,73 @@ def monitor_queue():
             logger.debug('Message: {}\nException: {}'.format(msg_data, e))
             continue
 
-        if msg_obj and msg_obj['fn'] == 'reload':
-            msg_key = msg_obj['id']
-            qresp = QResponse(rdb, msg_key, logger)
-            qresp.processing()
-            logger.info('Reloading monitoring data')
-            result = mon_reload()
-            qresp.ready(result)
+        try:
+            if msg_obj and msg_obj['fn'] == 'reload':
+                msg_key = msg_obj['id']
+                qresp = QResponse(rdb, msg_key, logger)
+                qresp.processing()
+                logger.info('Reloading monitoring data')
+                result = monitoring_reload()
+                qresp.ready(result)
+        except TypeError as e:
+            logger.critical('Wrong message type in the queue! Skipping...')
+            logger.debug('Message: {}\nException: {}'.format(msg_data, e))
+            continue
 
 
-def mon_reload():
+def func_on_keys(func, prefix):
+    """Run passed function on a set of keys defined by prefix"""
+    i = 0
+    while True:
+        i, keys = rdb.execute_command('SCAN', int(i), 'COUNT', 100, 'MATCH', prefix + '*')
+        func(keys)
+        if int(i) == 0:
+            break
+
+
+def history_add():
+    """Copy keys to history (<timestamp>::<key>) while resetting expiration"""
+    keep_history_sec = int(get_setting('expire')['History'])
+    if keep_history_sec < 60:
+        return
+
+    time_now = int(time.time())
+
+    def copy_keys_to_history(keys):
+        for key in keys:
+            for pat in history_key_set:
+                if key.startswith(pat):
+                    rdb.evalsha(redis_copy, 2, key, str(time_now) + '::' + key)
+                    break
+
+    func_on_keys(copy_keys_to_history, general_prefix)
+    rdb.rpush(history_key, time_now)
+
+
+def history_rotate(keep_sec=0):
+    """Rotate history by removing old keys (default: 0 - do not keep history)"""
+    time_now = int(time.time())
+    def delete_keys(keys):
+        for key in keys:
+            rdb.delete(key)
+    time_limit = time_now - keep_sec
+    while True:
+        try:
+            hist_first = rdb.lrange(history_key, 0, 1)[0]
+        except IndexError:
+            break
+        if int(hist_first) < time_limit:
+            func_on_keys(delete_keys, hist_first)
+            rdb.lpop(history_key)
+        else:
+            break
+
+
+def monitoring_reload():
+    # FIXME: add logging to monitoring_reload()
     service_mapping = get_setting('service_mapping')
     config = get_setting('nagios_instance')
+    keep_history_sec = int(get_setting('expire')['History'])
     time_now = int(time.time())
     update_time_key = 'last_updated'
     update_lock_key = mon_config_key_pfx + 'update_running'
@@ -82,13 +143,21 @@ def mon_reload():
             rdb.setex(update_lock_key, update_lock_expire, 1)
             mon = DOTMMonitor(config['url'], config['user'], config['password'])
 
+            # FIXME: not sure this is a good way. Planning on moving reload lock and history operation
+            # higher up the call chain.
+
+            # Put keys to history before reloading monitoring
+            if keep_history_sec > 60:
+                history_add()
+                history_rotate(keep_history_sec)
+
             # Track broken mapped services per node to later save them into node alert info
             tmp_services_broken = {}
 
             # 1. Process and save services
             for key, val in mon.get_services().items():
                 # Apply user defined node mapping or overwrite hostname given by Nagios
-                node = rdb.hget(config_key_pfx + "::user_node_aliases", key) or key
+                node = rdb.hget(config_key + "::user_node_aliases", key) or key
 
                 # Map node alerts to services and store service
                 # alert summary into node alerts, these are two
@@ -104,7 +173,7 @@ def mon_reload():
                                     if re.match(service_mapping[service_regexp],
                                                 service_details[s]['process'],
                                                 re.IGNORECASE):
-                                        rdb.hset(services_key_pfx + '::' + node + '::' + s, 'alert_status', sa['status'])
+                                        rdb.hset(services_key + '::' + node + '::' + s, 'alert_status', sa['status'])
                                         sa['mapping'] = service_details[s]['process']
                                         # Add non-OK services to it's nodes alert info
                                         if sa['status'] != 'OK':
@@ -112,24 +181,23 @@ def mon_reload():
                                                 tmp_services_broken[node] = {}
                                             tmp_services_broken[node][service_details[s]['process']] = sa['status']
 
-                # And store...
-                with rdb.pipeline() as pipe:
-                    pipe.delete(mon_services_key_pfx + node)
-                    pipe.lpush(mon_services_key_pfx + node, json.dumps(val))
-                    pipe.expire(mon_services_key_pfx + node, config['expire'])
-                    pipe.execute()
+                # And store in list...
+                rdb.delete(mon_services_key_pfx + node)
+                for v in val:
+                    rdb.lpush(mon_services_key_pfx + node, json.dumps(v))
+                rdb.expire(mon_services_key_pfx + node, config['expire'])
 
             # 2. Merge broken services into node info and save it
             for key, val in mon.get_nodes().items():
                 # Apply user defined node mapping
-                tmp = rdb.hget(config_key_pfx + "::user_node_aliases", key)
+                tmp = rdb.hget(config_key + '::user_node_aliases', key)
                 if tmp:
                     val['node'] = tmp   # Overwrite hostname given by Nagios
                 # Merge broken services summary
                 if val['node'] in tmp_services_broken:
                     val['services_alerts'] = tmp_services_broken[val['node']]
 
-                # And store...
+                # And store in string...
                 rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
 
             time_now = int(time.time())
@@ -146,4 +214,4 @@ def mon_reload():
 
 
 if __name__ == '__main__':
-    monitor_queue()
+    process_queue()

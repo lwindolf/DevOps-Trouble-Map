@@ -148,3 +148,4 @@ Right now the following relation namespaces are used in Redis
   * {"id": &lt;task key>, "fn": &lt;function name/action>, "args": &lt;function arguments>, "kwargs": &lt;function keywords>}
 - dotm::queue::result::&lt;uuid4 name> (status and result of the queued task in JSON)
   * {"status": &lt;pending/processing/ready>, "result": &lt;result in JSON>}
+- dotm::history (list of history &lt;timestamps>)

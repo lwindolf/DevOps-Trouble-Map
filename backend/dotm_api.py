@@ -50,9 +50,8 @@ def resp_or_404(resp=None, resp_type='application/json', cache_control='max-age=
 
 # Redis helper functions
 def get_connections():
-    prefix = 'dotm::connections::'
     key_arr = []
-    for key in rdb.keys(prefix + '*'):
+    for key in rdb.keys(connections_key + '*'):
         field_arr = key.split('::')
         if not (field_arr[3].isdigit() or field_arr[4].startswith('127')
                 or field_arr[2].startswith('127')):
@@ -69,7 +68,7 @@ def get_node_alerts(node):
 
 # Backend Queue helper functions
 def queue_func(fn, *args, **kwargs):
-    rkey = '{}::result::{}'.format(queue_key_pfx, str(uuid4()))
+    rkey = '{}::result::{}'.format(queue_key, str(uuid4()))
     qresp = QResponse(rdb, rkey, logger=None)
     qresp.queue(fn, args, kwargs)
     qresp.pending()
@@ -79,7 +78,7 @@ def queue_func(fn, *args, **kwargs):
 # Bottle HTTP routing
 @route('/geo/nodes')
 def get_geo_nodes():
-    prefix = 'dotm::resolver::ip_to_node::'
+    prefix = resolver_key + '::ip_to_node::'
     ips = rdb.keys(prefix + '*')
     nodes = rdb.mget(ips)
     ips = [ip.replace(prefix, '') for ip in ips]
@@ -87,15 +86,13 @@ def get_geo_nodes():
     for i, ip in enumerate(ips):
         try:
             result = gi.record_by_addr(ip)
-            serviceAlerts = []
-            for s in rdb.lrange(mon_services_key_pfx + nodes[i], 0, -1):
-                serviceAlerts.extend(json.loads(s))
+            service_alerts = get_json_array(mon_services_key_pfx + nodes[i])
             geo.append({
                 'data': {
                     'node': nodes[i],
                     'monitoring': {
                         'node': get_node_alerts(nodes[i]),
-                        'services': serviceAlerts},
+                        'services': service_alerts},
                     'ip': ip},
                 'lat': result['latitude'],
                 'lng': result['longitude']})
@@ -109,29 +106,30 @@ def get_geo_nodes():
 @route('/nodes', method='GET')
 def get_nodes():
     monitoring = {}
-    nodes = rdb.lrange("dotm::nodes", 0, -1)
+    nodes = rdb.lrange(nodes_key, 0, -1)
     for node in nodes:
         monitoring[node] = get_node_alerts(node)
     return resp_or_404(json.dumps({'nodes': nodes,
                                    'monitoring': monitoring,
                                    'connections': get_connections()}))
 
+
 @route('/backend/nodes', method='POST')
 @route('/nodes', method='POST')
 def add_node():
     # FIXME: validate name
-    rdb.lpush(nodes_key_pfx, request.forms.get('name'))
+    rdb.lpush(nodes_key, request.forms.get('name'))
 
 
 @route('/nodes/<name>', method='GET')
 def get_node(name):
-    prefix = nodes_key_pfx + '::' + name
+    prefix = nodes_key + '::' + name
     nodeDetails = rdb.hgetall(prefix)
     serviceDetails = get_service_details(name)
 
     # Fetch all connection details and expand known services
     # with their name and state details
-    prefix = connections_key_pfx + '::' + name + '::'
+    prefix = connections_key + '::' + name + '::'
     connectionDetails = {}
     connections = [c.replace(prefix, '') for c in rdb.keys(prefix + '*')]
     for c in connections:
@@ -173,22 +171,22 @@ def get_node(name):
 def change_settings(action, key):
     if key in settings:
         if action == 'set' and settings[key]['type'] == 'simple_value':
-                rdb.set(config_key_pfx + '::' + key, request.forms.get('value'))
+                rdb.set(config_key + '::' + key, request.forms.get('value'))
         elif action == 'add' and settings[key]['type'] == 'array':
-                rdb.lpush(config_key_pfx + '::' + key, request.forms.get('value'))
+                rdb.lpush(config_key + '::' + key, request.forms.get('value'))
         elif action == 'remove' and settings[key]['type'] == 'array':
-                rdb.lrem(config_key_pfx + '::' + key, request.forms.get('key'), 1)
+                rdb.lrem(config_key + '::' + key, request.forms.get('key'), 1)
         elif action == 'setHash' and settings[key]['type'] == 'hash':
                 # setHash might set multiple enumerated keys, e.g. to set all
                 # Nagios instance settings, therefore we need to loop here
                 i = 1
                 while request.forms.get('key' + str(i)):
-                    rdb.hset(config_key_pfx + '::' + key,
+                    rdb.hset(config_key + '::' + key,
                              request.forms.get('key' + str(i)),
                              request.forms.get('value' + str(i)))
                     i += 1
         elif action == 'delHash' and settings[key]['type'] == 'hash':
-                rdb.hdel(config_key_pfx + '::' + key, request.forms.get('key'))
+                rdb.hdel(config_key + '::' + key, request.forms.get('key'))
         else:
             return json_error("This is not a valid command and settings type combination", 400)
         return "OK"
@@ -218,7 +216,7 @@ def get_mon_node(node):
 
 @route('/mon/services/<node>')
 def get_mon_node_services(node):
-    return resp_or_404(rdb.lrange(mon_services_key_pfx + node, 0, -1))
+    return resp_or_404(json.dumps(get_json_array(mon_services_key_pfx + node)))
 
 
 @route('/mon/nodes/<node>/<key>')
@@ -248,14 +246,19 @@ def queue_result(key):
     return resp_or_404(rdb.get(key))
 
 
+@route('/history', method='GET')
+def get_history():
+    return resp_or_404(json.dumps(rdb.lrange(history_key, 0, -1)))
+
+
 @route('/config', method='GET')
 def get_config():
-    return resp_or_404(json.dumps(rdb.hgetall(config_key_pfx)))
+    return resp_or_404(json.dumps(rdb.hgetall(config_key)))
 
 
 @route('/config/<variable>', method='GET')
 def get_config_variable(variable):
-    value = rdb.hget(config_key_pfx, variable)
+    value = rdb.hget(config_key, variable)
     if value:
         return resp_or_404(vars_to_json(variable, value))
     return resp_or_404()
@@ -276,7 +279,7 @@ def set_config():
     for key, val in data_obj.items():
         # TODO: allow only defined variable names with defined value type and
         # maximum length
-        rdb.hset(config_key_pfx, key, val)
+        rdb.hset(config_key, key, val)
     return resp_or_404(json.dumps(data_obj))
 
 

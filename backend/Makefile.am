@@ -1,3 +1,3 @@
-dotm_backend_PYTHON = dotm_backend.py dotm_api.py dotm_monitor.py dotm_queue.py settings.py
+dotm_backend_PYTHON = dotm_backend.py dotm_api.py dotm_monitor.py dotm_queue.py settings.py redis_copy.lua
 
 dotm_backenddir = $(pythondir)/dotm

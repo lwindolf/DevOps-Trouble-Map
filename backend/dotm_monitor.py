@@ -5,8 +5,9 @@ import time
 
 
 class DOTMMonitor(object):
+    """Class to deliver monitoring data"""
 
-    version = '0.1.9'
+    version = '0.2.0'
 
     def __init__(self, mon_url, user=None, paswd=None, provider='icinga'):
         self.user = user
@@ -21,11 +22,13 @@ class DOTMMonitor(object):
             raise NameError('Unknown provider')
 
     def _get_req(self):
+        # Get request object from monitoring server
         if self.user and self.paswd:
             return requests.get(self.mon_url, auth=(self.user, self.paswd), verify=False, timeout=10)
         return requests.get(self.mon_url, verify=False)
 
     def get_data(self):
+        """Get text data from monitoring server"""
         req = self._get_req()
         if req.ok:
             return req.text
@@ -35,14 +38,17 @@ class DOTMMonitor(object):
 
     @staticmethod
     def _nagios_last_check_converter(last_check):
+        # Convert nagios "last check" format to timestamp
         return int(time.mktime(time.strptime(last_check, "%Y-%m-%d %H:%M:%S")))
 
     @staticmethod
     def _nagios_duration_converter(last_check_epoch, duration):
+        # Convert nagios "duration" format to timestamp
         m = ''.join(filter(lambda x: x.isdigit() or x.isspace(), duration)).split()
         return last_check_epoch - (int(m[0]) * 86400 + int(m[1]) * 3600 + int(m[2]) * 60 + int(m[3]))
 
     def _get_nodes_icinga(self):
+        # Get nodes status from Icinga
         data = self.get_data()
         try:
             json_data = json.loads(data.replace('\t', ' '))
@@ -63,6 +69,7 @@ class DOTMMonitor(object):
         return rjs
 
     def _get_services_icinga(self):
+        # Get services status from Icinga
         data = self.get_data()
         json_data = json.loads(data.replace('\t', ' '))
         js = json_data['status']['service_status']
@@ -85,8 +92,8 @@ class DOTMMonitor(object):
 
     def get_nodes(self):
         """
-        Return JSON format:
-
+        Get nodes status from monitoring server
+        Returns JSON of format:
         {
             "hostname01": {
                 "node": "hostname01",
@@ -115,8 +122,8 @@ class DOTMMonitor(object):
 
     def get_services(self):
         """
-        Returned JSON format:
-
+        Get services status from monitoring server
+        Returns JSON of format:
         {
             "hostname01": [
                 {
