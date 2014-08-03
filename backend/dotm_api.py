@@ -50,9 +50,8 @@ def resp_or_404(resp=None, resp_type='application/json', cache_control='max-age=
 
 # Redis helper functions
 def get_connections():
-    prefix = 'dotm::connections::'
     key_arr = []
-    for key in rdb.keys(prefix + '*'):
+    for key in rdb.keys(connections_key + '*'):
         field_arr = key.split('::')
         if not (field_arr[3].isdigit() or field_arr[4].startswith('127')
                 or field_arr[2].startswith('127')):
@@ -87,8 +86,7 @@ def get_geo_nodes():
     for i, ip in enumerate(ips):
         try:
             result = gi.record_by_addr(ip)
-            service_alerts = [json.loads(s) for s in rdb.lrange(mon_services_key_pfx + nodes[i], 0, -1)]
-            print service_alerts
+            service_alerts = get_json_array(mon_services_key_pfx + nodes[i])
             geo.append({
                 'data': {
                     'node': nodes[i],
@@ -115,6 +113,7 @@ def get_nodes():
     return resp_or_404(json.dumps({'nodes': nodes,
                                    'monitoring': monitoring,
                                    'connections': get_connections()}))
+
 
 @route('/backend/nodes', method='POST')
 @route('/nodes', method='POST')
@@ -218,7 +217,7 @@ def get_mon_node(node):
 
 @route('/mon/services/<node>')
 def get_mon_node_services(node):
-    return resp_or_404(json.dumps([json.loads(el) for el in rdb.lrange(mon_services_key_pfx + node, 0, -1)]))
+    return resp_or_404(json.dumps(get_json_array(mon_services_key_pfx + node)))
 
 
 @route('/mon/nodes/<node>/<key>')
@@ -246,6 +245,11 @@ def mon_reload():
        method=['GET', 'POST'])
 def queue_result(key):
     return resp_or_404(rdb.get(key))
+
+
+@route('/history', method='GET')
+def get_history():
+    return resp_or_404(json.dumps(rdb.lrange(history_key, 0, -1)))
 
 
 @route('/config', method='GET')

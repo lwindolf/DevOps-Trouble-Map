@@ -149,6 +149,10 @@ def vars_to_json(key, val):
     return json.dumps({key: val})
 
 
+def get_json_array(key, start=0, end=-1):
+    return [json.loads(el) for el in rdb.lrange(key, start, end)]
+
+
 # Command-line argument parsing
 cl_parser = argparse.ArgumentParser(description='DOTM Backend')
 cl_parser.add_argument('-r', '--redis-server', help='Redis Server', type=str, default='localhost')
