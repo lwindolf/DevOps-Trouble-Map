@@ -10,7 +10,7 @@ import json
 from uuid import uuid4
 
 
-# Namespace configuration
+# Redis namespace configuration
 general_prefix = 'dotm'
 nodes_key = general_prefix + '::nodes'
 connections_key = general_prefix + '::connections'
@@ -27,7 +27,7 @@ mon_config_key_pfx = mon_config_key + '::'
 history_key_set = (nodes_key, connections_key, services_key, checks_key, config_key, resolver_key)
 
 
-# Default Settings
+# Default DOTM Settings
 settings = {
     'other_internal_networks': {'description': 'Networks that DOTM should consider internal. Note that private'
                                 ' networks (127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16) are always'
@@ -76,7 +76,8 @@ settings = {
                                 'default': {
                                     'Services': 0,
                                     'Connections': 0,
-                                    'Nagios Alerts': 0},
+                                    'Nagios Alerts': 0,
+                                    'History': 0},
                                 'fields': ['Parameter', 'Value'],
                                 'position': 5},
     'hiding':                  {'description': 'Number of days after which old service/connection data should not'
@@ -113,9 +114,6 @@ settings = {
 }
 
 
-# Return value(s) or defaults(s) of a settings key
-#
-# s     key name
 def get_setting(s, values=None):
     """Get setting from Redis or default settings from settings dict"""
     if settings[s]['type'] == 'single_value':

@@ -79,7 +79,7 @@ def queue_func(fn, *args, **kwargs):
 # Bottle HTTP routing
 @route('/geo/nodes')
 def get_geo_nodes():
-    prefix = 'dotm::resolver::ip_to_node::'
+    prefix = resolver_key + '::ip_to_node::'
     ips = rdb.keys(prefix + '*')
     nodes = rdb.mget(ips)
     ips = [ip.replace(prefix, '') for ip in ips]
