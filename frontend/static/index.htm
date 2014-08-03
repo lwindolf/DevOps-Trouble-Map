@@ -33,6 +33,9 @@
 			background-image:url('tiny_grid.png');
 			background-repeat:repeat;
 		}
+		.link {
+			marker-end: url(#end-arrow);
+		}
 	</style>
 </head>
 <body>
@@ -75,7 +78,7 @@
 		var myLayout;
 
 		function loadNode(node) {
-			loadNodeGraph('.ui-layout-center .ui-layout-content', node);
+			new DOTMViewNode('.ui-layout-center .ui-layout-content', node);
 		}
 
 		(function() {

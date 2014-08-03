@@ -1,5 +1,7 @@
 /* DOTM view displaying all node connections and faulty services */
 
+var allNodesViewReload;
+
 function DOTMViewAllNodes(stage) {
 	this.stage = stage;
 	this.selectedNode = null;
@@ -31,7 +33,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	var view = this;
 	var width = $(this.stage).width(),
 	    height = $(this.stage).height(),
-	    r = 9;
+	    r = 9, margin = 0;
 
 	var color = d3.scale.category20();
 
@@ -46,14 +48,6 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	    .attr("width", width)
 	    .attr("height", height);
 	
-	d3.json('notused', function(error, graph) {
-	/* FIXME: Don't want another JSON request here
-	   especially because the backend should be 
-	   agnostic to the specific renderer, therefore
-	   fill in 'graph' JSON data here by convertion 
-	   data passed via loadNodesGraph() parameters.
-	*/
-
 	// Map data 
 	var i = 0;
 	var nodeIndex = {};
@@ -84,6 +78,8 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	      .links(graph.links)
 	      .groups(graph.groups)
 	      .start(5,15,20);
+
+	svg.append('svg:defs').append('svg:marker').attr('id', 'end-arrow').attr('viewBox', '0 -5 10 10').attr('refX', 5).attr('markerWidth', 9).attr('markerHeight', 3).attr('orient', 'auto').append('svg:path').attr('d', 'M0,-5L10,0L0,5L2,0').attr('stroke-width', '0xp').attr('fill', '#555');
 	
 	var group = svg.selectAll(".group")
 	      .data(graph.groups)
@@ -105,41 +101,52 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	node.enter().append("g")
 		.attr("class", "node")
 		.each(function(d) {
-			d3.select(this)
-			    .append("rect")
-			    .attr("x", function (d) { return -d.width/2; })
-			    .attr("y", function (d) { return -d.height/2; })
-			    .attr("width", function (d) { return d.width - 2 * pad; })
-			    .attr("height", function (d) { return d.height - 2 * pad; })
-			    .attr("rx", r - 3).attr("ry", r - 3)
-			    .attr("class", function (d) { return "node_rect node_" + d.name.replace('.',''); })
-			    .style("fill", function (d) {
-				if(d.status == 'UP')
-					return '#0c3';
-				if(d.status == 'DOWN')
-					return '#f30';
-				if(d.status == 'UNKNOWN')
-					return '#fca';
-				return 'white';
-			    })
-			    .style("stroke-width", 1)
-			    .style("stroke", "gray")
-			    .on("mouseover", function(d) {
-				d3.select(this).style({'stroke-width':2,'stroke':'black'});
-			    })
-			    .on("mouseout", function(d) {
-				if(d.name != view.selectedNode)
-					d3.select(this).style({'stroke-width':1,'stroke':'gray'});
-			    })
-			    .on("click", function (d) {
-				if (d3.event.defaultPrevented) return; // click suppressed
-				if($.inArray(d.name, data.nodes) != -1) {
-					d3.selectAll(".node_rect").style({'stroke-width':1,'stroke':'gray'});
+			if(d.name == "Internet") {
+				d3.select(this)
+				    .append("svg:image")
+				    .attr("xlink:href", "cloud.png")
+				    .attr("width", "100px")
+				    .attr("height", "40px")
+				    .attr("preserveAspectRatio", "none")
+				    .attr("x", "-50px")
+				    .attr("y", "-20px");
+			} else {
+				d3.select(this)
+				    .append("rect")
+				    .attr("x", function (d) { return -d.width/2; })
+				    .attr("y", function (d) { return -d.height/2; })
+				    .attr("width", function (d) { return d.width - 2 * pad; })
+				    .attr("height", function (d) { return d.height - 2 * pad; })
+				    .attr("rx", r - 3).attr("ry", r - 3)
+				    .attr("class", function (d) { return "node_rect node_" + d.name.replace('.',''); })
+				    .style("fill", function (d) {
+					if(d.status == 'UP')
+						return '#0c3';
+					if(d.status == 'DOWN')
+						return '#f30';
+					if(d.status == 'UNKNOWN')
+						return '#fca';
+					return 'white';
+				    })
+				    .style("stroke-width", 1)
+				    .style("stroke", "gray")
+				    .on("mouseover", function(d) {
 					d3.select(this).style({'stroke-width':2,'stroke':'black'});
-					view.selectedNode = d.name;
-					loadNode(d.name);
-				}
-			    });
+				    })
+				    .on("mouseout", function(d) {
+					if(d.name != view.selectedNode)
+						d3.select(this).style({'stroke-width':1,'stroke':'gray'});
+				    })
+				    .on("click", function (d) {
+					if (d3.event.defaultPrevented) return; // click suppressed
+					if($.inArray(d.name, data.nodes) != -1) {
+						d3.selectAll(".node_rect").style({'stroke-width':1,'stroke':'gray'});
+						d3.select(this).style({'stroke-width':2,'stroke':'black'});
+						view.selectedNode = d.name;
+						loadNode(d.name);
+					}
+				    });
+			}
 
 			if(d['services']) {
 				var tmp = this;
@@ -194,19 +201,39 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	        .call(d3cola.drag);
 
 	d3cola.on("tick", function() {
-	            link.attr("x1", function (d) { return d.source.x = Math.max(r, Math.min(width - r, d.source.x)); })
-	                .attr("y1", function (d) { return d.source.y = Math.max(r, Math.min(height - r, d.source.y)); })
-	                .attr("x2", function (d) { return d.target.x = Math.max(r, Math.min(width - r, d.target.x)); })
-	                .attr("y2", function (d) { return d.target.y = Math.max(r, Math.min(height - r, d.target.y)); });
+		node.each(function (d) {
+			return d.innerBounds = d.bounds.inflate(-margin);
+		});
+		link.each(function (d) {
+			cola.vpsc.makeEdgeBetween(d, d.source.innerBounds, d.target.innerBounds, 5);
+		});
+		link.attr("x1", function (d) {
+			return d.sourceIntersection.x;
+		}).attr("y1", function (d) {
+			return d.sourceIntersection.y;
+		}).attr("x2", function (d) {
+			return d.arrowStart.x;
+		}).attr("y2", function (d) {
+			return d.arrowStart.y;
+		});
+
+		node.attr("x", function (d) {
+			return d.innerBounds.x;
+		}).attr("y", function (d) {
+			return d.innerBounds.y;
+		}).attr("width", function (d) {
+			return d.innerBounds.width();
+		}).attr("height", function (d) {
+			return d.innerBounds.height();
+		});
 	
 /*	            group.attr("x", function (d) { return d.bounds.x = Math.max(r, Math.min(width - r, d.bounds.x)); })
 	                 .attr("y", function (d) { return d.bounds.y = Math.max(r, Math.min(height - r, d.bounds.y)); })
 	                .attr("width", function (d) { return d.bounds.width(); })
 	                .attr("height", function (d) { return d.bounds.height(); });*/
 
-                    node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
+		node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 	  });
-	});
 };
 
 DOTMViewAllNodes.prototype.reload = function() {
@@ -223,5 +250,6 @@ DOTMViewAllNodes.prototype.reload = function() {
 	});
 
 	// FIXME: hard-coded timeout
-	setTimeout(view.reload, 30000);
+	clearTimeout(allNodesViewReload);
+	allNodesViewReload = setTimeout(function(){view.reload()}, 30000);
 };
