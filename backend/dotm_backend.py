@@ -96,6 +96,14 @@ def set_history():
     rdb.rpush(history_key, time_now)
 
 
+def rotate_history(keep_sec=2592000):
+    """Rotate history by removing old keys (default: 30 days)"""
+    time_now = int(time.time())
+    time_limit = time_now - keep_sec
+    while int(rdb.lrange(history_key, 0, 1)[0]) < time_limit:
+        rdb.lpop(history_key)
+
+
 def mon_reload():
     service_mapping = get_setting('service_mapping')
     config = get_setting('nagios_instance')
