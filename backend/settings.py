@@ -8,42 +8,15 @@ import GeoIP
 import time
 import json
 from uuid import uuid4
-
+from dotm_namespace import DOTMNamespace
 
 # Redis namespace configuration
-class DOTMKeys(object):
-    """Class to automatically generate DOTM Redis prefixes on the fly (needed for history feature)"""
-
-    version = '0.1.0'
-
-    def __init__(self, history_key=None):
-        self.general_pfx = 'dotm'
-        if history_key:
-            self.history_pfx = history_key + '::' + self.general_pfx
-        else:
-            self.history_pfx = self.general_pfx
-
-        self.nodes_key = self.history_pfx + '::nodes'
-        self.connections_key = self.history_pfx + '::connections'
-        self.services_key = self.history_pfx + '::services'
-        self.config_key = self.history_pfx + '::config'
-        self.resolver_key = self.history_pfx + '::resolver'
-
-        self.checks_key = self.history_pfx + '::checks'
-        self.mon_nodes_key_pfx = self.checks_key + '::nodes::'
-        self.mon_services_key_pfx = self.checks_key + '::services::'
-        self.mon_config_key = self.checks_key + '::config'
-        self.mon_config_key_pfx = self.mon_config_key + '::'
-
-        self.queue_key = self.general_pfx + '::queue'
-        self.history_key = self.general_pfx + '::history'
-
-rpfx = DOTMKeys()
+ns = DOTMNamespace()
 
 general_prefix = 'dotm'
 nodes_key = general_prefix + '::nodes'
 connections_key = general_prefix + '::connections'
-queue_key = general_prefix + '::queue'
+#queue_key = general_prefix + '::queue'
 history_key = general_prefix + '::history'
 config_key = general_prefix + '::config'
 services_key = general_prefix + '::services'
@@ -51,8 +24,8 @@ checks_key = general_prefix + '::checks'
 resolver_key = general_prefix + '::resolver'
 mon_nodes_key_pfx = checks_key + '::nodes::'
 mon_services_key_pfx = checks_key + '::services::'
-mon_config_key = checks_key + '::config'
-mon_config_key_pfx = mon_config_key + '::'
+#mon_config_key = checks_key + '::config'
+#mon_config_key_pfx = mon_config_key + '::'
 
 history_key_set = (nodes_key, connections_key, services_key, checks_key, config_key, resolver_key)
 

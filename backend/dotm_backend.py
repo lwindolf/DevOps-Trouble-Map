@@ -52,7 +52,7 @@ def process_queue():
     logger.info('DOTM Backend Started')
     while True:
         try:
-            msg_data = rdb.blpop(queue_key)
+            msg_data = rdb.blpop(ns.queue)
         except Exception as e:
             logger.error('Error getting message from the queue: {}'.format(e))
             continue
@@ -133,10 +133,10 @@ def monitoring_reload():
     config = get_setting('nagios_instance')
     keep_history_sec = int(get_setting('expire')['History'])
     time_now = int(time.time())
-    update_time_key = 'last_updated'
-    update_lock_key = mon_config_key_pfx + 'update_running'
+    update_time_key = ns.config + '::last_updated'
+    update_lock_key = ns.config + '::update_running'
     update_lock_expire = config['refresh'] * 5
-    update_time_str = rdb.hget(mon_config_key, update_time_key)
+    update_time_str = rdb.get(update_time_key)
     if update_time_str and not rdb.get(update_lock_key):
         update_time = int(update_time_str)
         if time_now - update_time >= int(config['refresh']):
@@ -201,15 +201,15 @@ def monitoring_reload():
                 rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
 
             time_now = int(time.time())
-            rdb.hset(mon_config_key, update_time_key, time_now)
+            rdb.set(update_time_key, time_now)
             update_time = time_now
             rdb.delete(update_lock_key)
-        return {update_time_key: update_time}
+        return {update_time_key.split('::')[-1]: update_time}
     elif update_time_str:
         update_time = int(update_time_str)
-        return {update_time_key: update_time}
+        return {update_time_key.split('::')[-1]: update_time}
     else:
-        rdb.hset(mon_config_key, update_time_key, 0)
+        rdb.set(update_time_key, 0)
     return None
 
 
