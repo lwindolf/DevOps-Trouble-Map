@@ -94,13 +94,10 @@ def get_geo_nodes():
     for i, ip in enumerate(ips):
         try:
             result = gi.record_by_addr(ip)
-            service_alerts = get_json_array(mon_services_key_pfx + nodes[i])
             geo.append({
                 'data': {
                     'node': nodes[i],
-                    'monitoring': {
-                        'node': get_node_alerts(nodes[i]),
-                        'services': service_alerts},
+                    'monitoring': get_node_alerts(nodes[i]),
                     'ip': ip},
                 'lat': result['latitude'],
                 'lng': result['longitude']})

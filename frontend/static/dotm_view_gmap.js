@@ -11,15 +11,13 @@ function dotm_view_gmap_render_services (data) {
         if (!data)
                 return "";
 
-        if (!data['services'])
+        if (!data['services_alerts'])
                 return "";
 
         var result = "";
-        for (var i = 0; i < data['services'].length; i++) {
-		var s = data['services'][i];
-		if (s['status'] != 'OK')
-	                result += " <span class='service status_"+s['status']+"'> " + s['service'] + " </span>";
-        }
+        $.each(data['services_alerts'], function(service, status) {
+                result += " <span class='service status_"+status+"'> " + service + " </span>";
+        });
 
         return result;
 }
@@ -30,24 +28,24 @@ DOTMViewGMap.prototype.setData = function(locations) {
 	$(this.stage).html("<div id='gmap'></div>");
 
 	// Add marker icons to locations list
-	$.each(locations, function(index, ip) {
+	$.each(locations, function(index, location) {
 		try {
 			/* Merge maximum node and service status */
-			var status = ip.data.monitoring.node.status;
-			$.each(ip.data.monitoring.services, function(index, s) {
-				if(s['status'] == 'WARNING' && status != "DOWN")
-					status = s['status'];
-				if(s['status'] == 'CRITICAL')
-					status = "DOWN";
+			var status = location.data.monitoring.status;
+			$.each(location.data.monitoring.services_alerts, function(service, service_status) {
+				if(service_status == 'WARNING' && status != "DOWN")
+					status = 'WARNING';
+				if(service_status == 'CRITICAL')
+					status = 'DOWN';
 			});
 
-			ip['options'] = new Array();
+			location['options'] = new Array();
 			if(status == 'UP')
-				ip['options']['icon'] = 'http://maps.google.com/mapfiles/marker_green.png';
+				location['options']['icon'] = 'http://maps.google.com/mapfiles/marker_green.png';
 			else if(status == 'DOWN')
-				ip['options']['icon'] = 'http://maps.google.com/mapfiles/marker.png';
+				location['options']['icon'] = 'http://maps.google.com/mapfiles/marker.png';
 			else
-				ip['options']['icon'] = 'http://maps.google.com/mapfiles/marker_orange.png';
+				location['options']['icon'] = 'http://maps.google.com/mapfiles/marker_orange.png';
 
 		} catch(e) {
 		}
