@@ -1,8 +1,6 @@
 /* DOTM view displaying alert, service and connection detail tables for 
    a single node */
 
-var nodeViewReload;
-
 function DOTMViewNode(stage, node) {
 	this.stage = stage;
 	this.selectedNode = node;
@@ -43,18 +41,11 @@ DOTMViewNode.prototype.setData = function(data) {
 		var services = [];
 		services.push('<tr><th>Process</th><th>Port</th><th>Last Up</th><th>Last Used</th></tr>');
 		$.each(data.services, function(port, s) {
-			var age = "fresh";
 			var lastConn = "<td>never</td>";
 			if(!isNaN(s.last_connection)) {
 				lastConn = "<td class='timeago' title='"+s.last_connection*1000+"'>"+s.last_connection*1000+"</td>";
-			} else {
-				age = "old";
 			}
-			if(now - s.last_seen > data.settings.service_aging) {
-				age = "old";
-			}
-			services.push('<tr class="service '+age+'"><td>'+s.process+'</td><td>'+port+'</td><td class="timeago" title="'+s.last_seen*1000+'">'+s.last_seen*1000+'</td>'+lastConn+'</tr>');
-			s['age'] = age;	/* Add age to be reused in nodeGraph */
+			services.push('<tr class="service '+s.age+'"><td>'+s.process+'</td><td>'+port+'</td><td class="timeago" title="'+s.last_seen*1000+'">'+s.last_seen*1000+'</td>'+lastConn+'</tr>');
 		})
 		if(services.length > 1)
 			$(".services").html(services.join(''));
@@ -65,12 +56,7 @@ DOTMViewNode.prototype.setData = function(data) {
 		var connections = [];
 		connections.push('<tr><th>I/O</th><th>Process</th><th>Port</th><th>Remote</th><th>Count</th><th>Seen</th></tr>');
 		$.each(data.connections, function(service, c) {
-			var age = "fresh";
-			if(now - c.last_seen > data.settings.connection_aging) {
-				age = "old";
-			}
-			connections.push('<tr class="connection '+age+'"><td>'+c.direction+'</td><td>'+c.process+'</td><td>'+c.local_port+'</td><td>'+nodeLink(c.remote_host)+'</td><td>'+c.connections+'</td><td class="timeago" title="'+c.last_seen*1000+'">'+c.last_seen*1000+'</td></tr>');
-			c['age'] = age;	/* Add age to be reused in nodeGraph */
+			connections.push('<tr class="connection '+c.age+'"><td>'+c.direction+'</td><td>'+c.process+'</td><td>'+c.local_port+'</td><td>'+nodeLink(c.remote_host)+'</td><td>'+c.connections+'</td><td class="timeago" title="'+c.last_seen*1000+'">'+c.last_seen*1000+'</td></tr>');
 		})
 		if(connections.length > 1)
 			$(".connections").html(connections.join(''));
@@ -160,8 +146,4 @@ DOTMViewNode.prototype.reload = function() {
 	.fail(function (jqxhr, textStatus, error) {
 		setError(view.stage, 'Node fetch failed! ('+error+')');
 	})
-
-	// FIXME: hard-coded timeout
-	clearTimeout(nodeViewReload);
-	nodeViewReload = setTimeout(function(){view.reload()}, 30000);
 };
