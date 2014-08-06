@@ -1,7 +1,5 @@
 /* DOTM view displaying all node connections and faulty services */
 
-var allNodesViewReload;
-
 function DOTMViewAllNodes(stage) {
 	this.stage = stage;
 	this.selectedNode = null;
@@ -248,8 +246,4 @@ DOTMViewAllNodes.prototype.reload = function() {
 	.fail(function (jqxhr, textStatus, error) {
 		setError(view.stage, 'Node list fetch failed! ('+error+')');
 	});
-
-	// FIXME: hard-coded timeout
-	clearTimeout(allNodesViewReload);
-	allNodesViewReload = setTimeout(function(){view.reload()}, 30000);
 };

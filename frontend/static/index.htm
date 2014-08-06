@@ -76,9 +76,27 @@
 
 	<script>
 		var myLayout;
+		var panes = Array();
+		var reloadTimeout;
 
 		function loadNode(node) {
-			new DOTMViewNode('.ui-layout-center .ui-layout-content', node);
+			panes['right'] = new DOTMViewNode('.ui-layout-center .ui-layout-content', node);
+		}
+
+		function reload() {
+			try {
+				panes['left'].reload();
+			} catch(e) {
+				console.log(e);
+			}
+			try {
+				panes['right'].reload();
+			} catch(e) {
+				console.log(e);
+			}
+
+			clearTimeout(reloadTimeout);
+			reloadTimeout = setTimeout(function(){reload()}, 30000);
 		}
 
 		(function() {
@@ -93,8 +111,11 @@
 			jQuery.timeago.settings.strings.suffixAgo = null;
 
 			// Setup views
-			new DOTMViewGMap('.ui-layout-center .ui-layout-content');
-			new DOTMViewAllNodes('.ui-layout-west .ui-layout-content');
+			panes['right'] = new DOTMViewGMap('.ui-layout-center .ui-layout-content');
+			panes['left'] = new DOTMViewAllNodes('.ui-layout-west .ui-layout-content');
+
+			// FIXME: hard-coded timeout
+			reloadTimeout = setTimeout(function(){reload()}, 30000);
 		})();
 	</script>
 </body>

@@ -1,8 +1,6 @@
 /* DOTM view displaying alert, service and connection detail tables for 
    a single node */
 
-var nodeViewReload;
-
 function DOTMViewNode(stage, node) {
 	this.stage = stage;
 	this.selectedNode = node;
@@ -160,8 +158,4 @@ DOTMViewNode.prototype.reload = function() {
 	.fail(function (jqxhr, textStatus, error) {
 		setError(view.stage, 'Node fetch failed! ('+error+')');
 	})
-
-	// FIXME: hard-coded timeout
-	clearTimeout(nodeViewReload);
-	nodeViewReload = setTimeout(function(){view.reload()}, 30000);
 };
