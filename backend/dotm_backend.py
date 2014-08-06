@@ -129,6 +129,7 @@ def history_rotate(keep_sec=0):
 
 def monitoring_reload():
     # FIXME: add logging to monitoring_reload()
+    service_aging = int(get_setting('aging')['Services'])
     service_mapping = get_setting('service_mapping')
     config = get_setting('nagios_instance')
     keep_history_sec = int(get_setting('expire')['History'])
@@ -159,15 +160,22 @@ def monitoring_reload():
                 # Apply user defined node mapping or overwrite hostname given by Nagios
                 node = rdb.hget(config_key + "::user_node_aliases", key) or key
 
-                # Map node alerts to services and store service
-                # alert summary into node alerts, these are two
-                # denormalizations used to simplify the /nodes
-                # and the /node/<name> callback.
                 service_details = get_service_details(node)
                 if service_details:
                     # FIXME: Refactor for/for/for (Andrej)
                     for service_regexp in service_mapping:
                         for s in service_details:
+                            # Do time diff to indicate out-dated services
+                            age = 'old'
+                            if 'last_connection' in service_details[s]:
+                                if time_now - int(service_details[s]['last_connection']) < service_aging:
+                                    age = 'fresh'
+                            rdb.hset(services_key + '::' + node + '::' + s, 'age', age)
+
+                            # Map node alerts to services and store service
+                            # alert summary into node alerts, these are two
+                            # denormalizations used to simplify the /nodes
+                            # and the /node/<name> callback.
                             for sa in val:
                                 if re.match(service_regexp, sa['service']):
                                     if re.match(service_mapping[service_regexp],

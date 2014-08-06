@@ -128,6 +128,8 @@ def add_node():
 
 @route('/nodes/<name>', method='GET')
 def get_node(name):
+    time_now = int(time.time())
+    connection_aging = int(get_setting('aging')['Connections'])
     prefix = nodes_key + '::' + name
     nodeDetails = rdb.hgetall(prefix)
     serviceDetails = get_service_details(name)
@@ -139,6 +141,13 @@ def get_node(name):
     connections = [c.replace(prefix, '') for c in rdb.keys(prefix + '*')]
     for c in connections:
         cHash = rdb.hgetall(prefix + c)
+
+        # Add connection freshness
+        cHash['age'] = 'old'
+        if 'last_seen' in cHash:
+            if time_now - int(cHash['last_seen']) < connection_aging:
+                cHash['age'] = 'fresh'
+
         # If remote host name is not an IP and port is not a high port
         # try to resolve service info
         try:
@@ -153,7 +162,7 @@ def get_node(name):
 
     serviceAlerts = []
     for s in rdb.lrange(mon_services_key_pfx + name, 0, -1):
-        serviceAlerts.extend(json.loads(s))
+        serviceAlerts.append(dict(json.loads(s)))
 
     return resp_or_404(json.dumps({'name': name,
                                    'status': nodeDetails,
@@ -161,9 +170,8 @@ def get_node(name):
                                    'connections': connectionDetails,
                                    'monitoring': {
                                        'node': get_node_alerts(name),
-                                       'services': serviceAlerts},
-                                   'settings': {
-                                       'aging': get_setting('aging')}}))
+                                       'services': serviceAlerts
+								   }}))
 
 
 @route('/backend/settings/<action>/<key>', method='POST')
