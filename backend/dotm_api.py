@@ -49,6 +49,14 @@ def resp_or_404(resp=None, resp_type='application/json', cache_control='max-age=
 
 
 # Redis helper functions
+def history_call(f):
+    """History decorator"""
+    def wrap(*args, **kwargs):
+        f.func_globals['rpfx'] = DOTMKeys(request.query.get('history'))
+        return f(*args, **kwargs)
+    return wrap
+
+
 def get_connections():
     key_arr = []
     for key in rdb.keys(connections_key + '*'):
@@ -203,8 +211,9 @@ def get_settings():
 
 
 @route('/mon/nodes')
+@history_call
 def get_mon_nodes():
-    node_arr = rdb.keys(mon_nodes_key_pfx + '*')
+    node_arr = rdb.keys(rpfx.mon_nodes_key_pfx + '*')
     return resp_or_404(json.dumps([n.split('::')[-1] for n in node_arr])
                        if node_arr else None)
 
