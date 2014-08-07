@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="cloud.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.979899"
+     inkscape:cx="127.32119"
+     inkscape:cy="748.57143"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="960"
+     inkscape:window-height="1017"
+     inkscape:window-x="694"
+     inkscape:window-y="87"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.60317725;stroke-opacity:1"
+       d="m 137.76839,184.93469 c -5.56031,0 -10.70451,1.26389 -14.8486,3.40733 -3.18718,-0.98628 -6.71504,-1.53138 -10.41257,-1.53138 -11.28087,0 -20.874295,5.0851 -24.518752,12.21279 -8.087928,3.2134 -13.215251,7.96431 -13.215251,13.26563 0,9.68936 17.092058,17.53435 38.179453,17.53435 5.76365,0 11.23,-0.5762 16.12929,-1.6271 3.8004,0.84121 7.94942,1.30168 12.28722,1.30168 18.39029,0 33.29798,-8.31587 33.29798,-18.56804 0,-6.17368 -5.41786,-11.63267 -13.73496,-15.00758 -3.63877,-6.42955 -12.63157,-10.98768 -23.16381,-10.98768 z"
+       id="path2985"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/lars/oss/dotm/frontend/static/cloud.png"
+       inkscape:export-xdpi="89.550003"
+       inkscape:export-ydpi="89.550003" />
+    <text
+       xml:space="preserve"
+       style="font-size:17.72451019px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+       x="157.17572"
+       y="216.93205"
+       id="text3773"
+       sodipodi:linespacing="125%"
+       transform="scale(1.0092262,0.99085819)"
+       inkscape:export-filename="/home/lars/oss/dotm/frontend/static/cloud.png"
+       inkscape:export-xdpi="89.550003"
+       inkscape:export-ydpi="89.550003"><tspan
+         sodipodi:role="line"
+         id="tspan3775"
+         x="157.17572"
+         y="216.93205">Internet</tspan></text>
+  </g>
+</svg>

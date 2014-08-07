@@ -144,6 +144,28 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 						loadNode(d.name);
 					}
 				    });
+
+				d3.select(this)
+				    .append("text")
+				    .attr("dy", function(d) { return pad + 18 - d.height/2 })
+				    .attr("class", "label")
+				    .text(function (d) { return d.name; })
+				    .on("mouseover", function(d) {
+					d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':2,'stroke':'black'});
+				    })
+				    .on("mouseout", function(d) {
+					if(d.name != view.selectedNode)
+						d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':1,'stroke':'gray'});
+				    })
+				    .on("click", function (d) {
+					if (d3.event.defaultPrevented) return; // click suppressed
+					if($.inArray(d.name, data.nodes) != -1) {
+						d3.selectAll(".node_rect").style({'stroke-width':1,'stroke':'gray'});
+						d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':2,'stroke':'black'});
+						view.selectedNode = d.name;
+						loadNode(d.name);
+					}
+				    });
 			}
 
 			if(d['services']) {
@@ -173,28 +195,6 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 					pos++;
 				});
 			}
-
-			d3.select(this)
-			    .append("text")
-			    .attr("dy", function(d) { return pad + 18 - d.height/2 })
-			    .attr("class", "label")
-			    .text(function (d) { return d.name; })
-			    .on("mouseover", function(d) {
-				d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':2,'stroke':'black'});
-			    })
-			    .on("mouseout", function(d) {
-				if(d.name != view.selectedNode)
-					d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':1,'stroke':'gray'});
-			    })
-			    .on("click", function (d) {
-				if (d3.event.defaultPrevented) return; // click suppressed
-				if($.inArray(d.name, data.nodes) != -1) {
-					d3.selectAll(".node_rect").style({'stroke-width':1,'stroke':'gray'});
-					d3.select(".node_"+d.name.replace('.','')).style({'stroke-width':2,'stroke':'black'});
-					view.selectedNode = d.name;
-					loadNode(d.name);
-				}
-			    });
 		})
 	        .call(d3cola.drag);
 
