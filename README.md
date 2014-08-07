@@ -141,8 +141,6 @@ Right now the following relation namespaces are used in Redis
             "status_information": "Service02 status information"
         }
     ]
-- dotm::checks::config (hash with the following key values):
-  * 'last_updated' => &lt;timestamp>
 - dotm::config::\* (all preferences, for descriptions check the 'Settings' page)
 - dotm::queue (list of queued backend tasks in JSON)
   * {"id": &lt;task key>, "fn": &lt;function name/action>, "args": &lt;function arguments>, "kwargs": &lt;function keywords>}
