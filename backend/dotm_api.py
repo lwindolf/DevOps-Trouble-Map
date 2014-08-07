@@ -56,14 +56,18 @@ def history_call(f):
         return f(*args, **kwargs)
     return wrap
 
-
+# Return a connection graph for all nodes
 def get_connections():
     key_arr = []
     for key in rdb.keys(connections_key + '*'):
         field_arr = key.split('::')
-        if not (field_arr[3].isdigit() or field_arr[4].startswith('127')
+        if not (not field_arr[3].isdigit() or field_arr[4].startswith('127')
                 or field_arr[2].startswith('127')):
-            key_arr.append({'source': field_arr[2], 'destination': field_arr[4]})
+            direction = rdb.hget(key, 'direction')
+            if direction == "out":
+                key_arr.append({'source': field_arr[2], 'destination': field_arr[4], 'name': key})
+            else:
+                key_arr.append({'destination': field_arr[2], 'source': field_arr[4], 'name': key})
     return key_arr
 
 
