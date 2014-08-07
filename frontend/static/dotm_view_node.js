@@ -90,6 +90,11 @@ DOTMViewNode.prototype.setData = function(data) {
 				   connectionData.direction == "in" &&
 				   tmp.indexOf(">"+connectionData.remote_host+"<") == -1) {
 					tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remote_host)+"</div>";
+					if(connectionData['remote_service']) {
+						if(connectionData.remote_service['process']) {
+							tmp += "<div class='remoteService service status_"+connectionData.remote_service.alert_status+"'>"+connectionData.remote_service.process+"</div>";
+						}
+					}
 				}
 			})
 			nodeDetails += tmp + "<td>";
