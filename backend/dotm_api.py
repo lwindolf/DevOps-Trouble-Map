@@ -52,7 +52,7 @@ def resp_or_404(resp=None, resp_type='application/json', cache_control='max-age=
 def history_call(f):
     """History decorator"""
     def wrap(*args, **kwargs):
-        f.func_globals['rpfx'] = DOTMKeys(request.query.get('history'))
+        f.func_globals['ns'] = DOTMNamespace(request.query.get('history'))
         return f(*args, **kwargs)
     return wrap
 
@@ -76,7 +76,7 @@ def get_node_alerts(node):
 
 # Backend Queue helper functions
 def queue_func(fn, *args, **kwargs):
-    rkey = '{}::result::{}'.format(queue_key, str(uuid4()))
+    rkey = '{}::result::{}'.format(ns.queue, str(uuid4()))
     qresp = QResponse(rdb, rkey, logger=None)
     qresp.queue(fn, args, kwargs)
     qresp.pending()
@@ -218,7 +218,7 @@ def get_settings():
 @route('/mon/nodes')
 @history_call
 def get_mon_nodes():
-    node_arr = rdb.keys(rpfx.mon_nodes_key_pfx + '*')
+    node_arr = rdb.keys(ns.nodes_checks + '::*')
     return resp_or_404(json.dumps([n.split('::')[-1] for n in node_arr])
                        if node_arr else None)
 
