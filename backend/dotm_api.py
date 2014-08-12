@@ -17,7 +17,7 @@ def json_error(message="Not Found", status_code=404):
 
 def resp_json(resp=None):
     response.content_type = 'application/json'
-    if not resp:
+    if not resp or resp == '[]':
         response.status = 404
         return json_error()
     return resp
@@ -89,6 +89,7 @@ def queue_func(fn, *args, **kwargs):
 
 # Bottle HTTP routing
 @route('/geo/nodes')
+@history_call
 def get_geo_nodes():
     prefix = ns.resolver + '::ip_to_node::'
     ips = rdb.keys(prefix + '*')
@@ -113,6 +114,7 @@ def get_geo_nodes():
 
 @route('/backend/nodes', method='GET')
 @route('/nodes', method='GET')
+@history_call
 def get_nodes():
     monitoring = {}
     nodes = rdb.lrange(ns.nodes, 0, -1)
@@ -131,6 +133,7 @@ def add_node():
 
 
 @route('/nodes/<name>', method='GET')
+@history_call
 def get_node(name):
     time_now = int(time.time())
     connection_aging = int(get_setting('aging')['Connections'])
@@ -156,10 +159,11 @@ def get_node(name):
         # try to resolve service info
         try:
             if cHash['remote_port'] != 'high' and cHash['remote_host'] not in ('Internet', '127.0.0.1'):
-                cHash['remote_service'] = rdb.hgetall('dotm::services::{}::{}'.format(cHash['remote_host'],
-                                                                                      cHash['remote_port']))
-                cHash['remote_service_id'] = 'dotm::services::{}::{}'.format(cHash['remote_host'],
-                                                                             cHash['remote_port'])
+                cHash['remote_service_id'] = '{}::{}::{}'.format(ns.services,
+                                                                 cHash['remote_host'],
+                                                                 cHash['remote_port'])
+                cHash['remote_service'] = rdb.hgetall(cHash['remote_service_id'])
+
         except KeyError:
             print "Bad: key missing, could be a migration issue..."
         connectionDetails[c] = cHash
@@ -212,6 +216,7 @@ def change_settings(action, key):
 
 @route('/backend/settings', method='GET')
 @route('/settings', method='GET')
+@history_call
 def get_settings():
     for s in settings:
         settings[s]['values'] = get_setting(s)
@@ -227,16 +232,19 @@ def get_mon_nodes():
 
 
 @route('/mon/nodes/<node>')
+@history_call
 def get_mon_node(node):
     return resp_or_404(rdb.get(ns.nodes_checks + '::' + node))
 
 
 @route('/mon/services/<node>')
+@history_call
 def get_mon_node_services(node):
     return resp_or_404(json.dumps(get_json_array(ns.services_checks + '::' + node)))
 
 
 @route('/mon/nodes/<node>/<key>')
+@history_call
 def get_mon_node_key(node, key):
     result = None
     node_str = rdb.get(ns.nodes_checks + '::' + node)
@@ -269,11 +277,13 @@ def get_history():
 
 
 @route('/config', method='GET')
+@history_call
 def get_config():
     return resp_or_404(json.dumps(rdb.hgetall(ns.config)))
 
 
 @route('/config/<variable>', method='GET')
+@history_call
 def get_config_variable(variable):
     value = rdb.hget(ns.config, variable)
     if value:
