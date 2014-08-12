@@ -59,7 +59,7 @@ def history_call(f):
 # Return a connection graph for all nodes
 def get_connections():
     key_arr = []
-    for key in rdb.keys(connections_key + '*'):
+    for key in rdb.keys(ns.connections + '*'):
         field_arr = key.split('::')
         if not (not field_arr[3].isdigit() or field_arr[4].startswith('127')
                 or field_arr[2].startswith('127')):
@@ -73,7 +73,7 @@ def get_connections():
 
 def get_node_alerts(node):
     try:
-        return json.loads(rdb.get(mon_nodes_key_pfx + node))
+        return json.loads(rdb.get(ns.nodes_checks + '::' + node))
     except TypeError:
         print "No node monitoring..."
 
@@ -90,7 +90,7 @@ def queue_func(fn, *args, **kwargs):
 # Bottle HTTP routing
 @route('/geo/nodes')
 def get_geo_nodes():
-    prefix = resolver_key + '::ip_to_node::'
+    prefix = ns.resolver + '::ip_to_node::'
     ips = rdb.keys(prefix + '*')
     nodes = rdb.mget(ips)
     ips = [ip.replace(prefix, '') for ip in ips]
@@ -115,7 +115,7 @@ def get_geo_nodes():
 @route('/nodes', method='GET')
 def get_nodes():
     monitoring = {}
-    nodes = rdb.lrange(nodes_key, 0, -1)
+    nodes = rdb.lrange(ns.nodes, 0, -1)
     for node in nodes:
         monitoring[node] = get_node_alerts(node)
     return resp_or_404(json.dumps({'nodes': nodes,
@@ -127,20 +127,20 @@ def get_nodes():
 @route('/nodes', method='POST')
 def add_node():
     # FIXME: validate name
-    rdb.lpush(nodes_key, request.forms.get('name'))
+    rdb.lpush(ns.nodes, request.forms.get('name'))
 
 
 @route('/nodes/<name>', method='GET')
 def get_node(name):
     time_now = int(time.time())
     connection_aging = int(get_setting('aging')['Connections'])
-    prefix = nodes_key + '::' + name
+    prefix = ns.nodes + '::' + name
     nodeDetails = rdb.hgetall(prefix)
     serviceDetails = get_service_details(name)
 
     # Fetch all connection details and expand known services
     # with their name and state details
-    prefix = connections_key + '::' + name + '::'
+    prefix = ns.connections + '::' + name + '::'
     connectionDetails = {}
     connections = [c.replace(prefix, '') for c in rdb.keys(prefix + '*')]
     for c in connections:
@@ -165,7 +165,7 @@ def get_node(name):
         connectionDetails[c] = cHash
 
     serviceAlerts = []
-    for s in rdb.lrange(mon_services_key_pfx + name, 0, -1):
+    for s in rdb.lrange(ns.services_checks + '::' + name, 0, -1):
         serviceAlerts.append(dict(json.loads(s)))
 
     return resp_or_404(json.dumps({'name': name,
@@ -174,8 +174,7 @@ def get_node(name):
                                    'connections': connectionDetails,
                                    'monitoring': {
                                        'node': get_node_alerts(name),
-                                       'services': serviceAlerts
-								   }}))
+                                       'services': serviceAlerts}}))
 
 
 @route('/backend/settings/<action>/<key>', method='POST')
@@ -188,22 +187,22 @@ def get_node(name):
 def change_settings(action, key):
     if key in settings:
         if action == 'set' and settings[key]['type'] == 'simple_value':
-                rdb.set(config_key + '::' + key, request.forms.get('value'))
+                rdb.set(ns.config + '::' + key, request.forms.get('value'))
         elif action == 'add' and settings[key]['type'] == 'array':
-                rdb.lpush(config_key + '::' + key, request.forms.get('value'))
+                rdb.lpush(ns.config + '::' + key, request.forms.get('value'))
         elif action == 'remove' and settings[key]['type'] == 'array':
-                rdb.lrem(config_key + '::' + key, request.forms.get('key'), 1)
+                rdb.lrem(ns.config + '::' + key, request.forms.get('key'), 1)
         elif action == 'setHash' and settings[key]['type'] == 'hash':
                 # setHash might set multiple enumerated keys, e.g. to set all
                 # Nagios instance settings, therefore we need to loop here
                 i = 1
                 while request.forms.get('key' + str(i)):
-                    rdb.hset(config_key + '::' + key,
+                    rdb.hset(ns.config + '::' + key,
                              request.forms.get('key' + str(i)),
                              request.forms.get('value' + str(i)))
                     i += 1
         elif action == 'delHash' and settings[key]['type'] == 'hash':
-                rdb.hdel(config_key + '::' + key, request.forms.get('key'))
+                rdb.hdel(ns.config + '::' + key, request.forms.get('key'))
         else:
             return json_error("This is not a valid command and settings type combination", 400)
         return "OK"
@@ -229,18 +228,18 @@ def get_mon_nodes():
 
 @route('/mon/nodes/<node>')
 def get_mon_node(node):
-    return resp_or_404(rdb.get(mon_nodes_key_pfx + node))
+    return resp_or_404(rdb.get(ns.nodes_checks + '::' + node))
 
 
 @route('/mon/services/<node>')
 def get_mon_node_services(node):
-    return resp_or_404(json.dumps(get_json_array(mon_services_key_pfx + node)))
+    return resp_or_404(json.dumps(get_json_array(ns.services_checks + '::' + node)))
 
 
 @route('/mon/nodes/<node>/<key>')
 def get_mon_node_key(node, key):
     result = None
-    node_str = rdb.get(mon_nodes_key_pfx + node)
+    node_str = rdb.get(ns.nodes_checks + '::' + node)
     if node_str:
         node_obj = json.loads(node_str)
         if key in node_obj:
@@ -266,17 +265,17 @@ def queue_result(key):
 
 @route('/history', method='GET')
 def get_history():
-    return resp_or_404(json.dumps(rdb.lrange(history_key, 0, -1)))
+    return resp_or_404(json.dumps(rdb.lrange(ns.history, 0, -1)))
 
 
 @route('/config', method='GET')
 def get_config():
-    return resp_or_404(json.dumps(rdb.hgetall(config_key)))
+    return resp_or_404(json.dumps(rdb.hgetall(ns.config)))
 
 
 @route('/config/<variable>', method='GET')
 def get_config_variable(variable):
-    value = rdb.hget(config_key, variable)
+    value = rdb.hget(ns.config, variable)
     if value:
         return resp_or_404(vars_to_json(variable, value))
     return resp_or_404()
@@ -297,7 +296,7 @@ def set_config():
     for key, val in data_obj.items():
         # TODO: allow only defined variable names with defined value type and
         # maximum length
-        rdb.hset(config_key, key, val)
+        rdb.hset(ns.config, key, val)
     return resp_or_404(json.dumps(data_obj))
 
 

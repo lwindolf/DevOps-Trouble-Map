@@ -13,21 +13,7 @@ from dotm_namespace import DOTMNamespace
 # Redis namespace configuration
 ns = DOTMNamespace()
 
-general_prefix = 'dotm'
-nodes_key = general_prefix + '::nodes'
-connections_key = general_prefix + '::connections'
-#queue_key = general_prefix + '::queue'
-history_key = general_prefix + '::history'
-config_key = general_prefix + '::config'
-services_key = general_prefix + '::services'
-checks_key = general_prefix + '::checks'
-resolver_key = general_prefix + '::resolver'
-mon_nodes_key_pfx = checks_key + '::nodes::'
-mon_services_key_pfx = checks_key + '::services::'
-#mon_config_key = checks_key + '::config'
-#mon_config_key_pfx = mon_config_key + '::'
-
-history_key_set = (nodes_key, connections_key, services_key, checks_key, config_key, resolver_key)
+history_key_set = (ns.nodes, ns.connections, ns.services, ns.checks, ns.config, ns.resolver)
 
 
 # Default DOTM Settings
@@ -120,11 +106,11 @@ settings = {
 def get_setting(s, values=None):
     """Get setting from Redis or default settings from settings dict"""
     if settings[s]['type'] == 'single_value':
-        values = rdb.get(config_key + '::' + s)
+        values = rdb.get(ns.config + '::' + s)
     elif settings[s]['type'] == 'array':
-        values = rdb.lrange(config_key + '::' + s, 0, -1)
+        values = rdb.lrange(ns.config + '::' + s, 0, -1)
     elif settings[s]['type'] == 'hash':
-        values = rdb.hgetall(config_key + '::' + s)
+        values = rdb.hgetall(ns.config + '::' + s)
         # We always get a hash back from hgetall() but it might be incomplete
         # or empty. So we fill in the defaults where needed.
         if 'default' in settings[s]:
@@ -140,7 +126,7 @@ def get_setting(s, values=None):
 
 
 def get_service_details(node):
-    prefix = services_key + '::' + node + '::'
+    prefix = ns.services + '::' + node + '::'
     service_details = {}
     services = [s.replace(prefix, '') for s in rdb.keys(prefix + '*')]
     for s in services:

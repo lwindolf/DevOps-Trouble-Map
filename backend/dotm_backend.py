@@ -104,25 +104,27 @@ def history_add():
                     rdb.evalsha(redis_copy, 2, key, str(time_now) + '::' + key)
                     break
 
-    func_on_keys(copy_keys_to_history, general_prefix)
-    rdb.rpush(history_key, time_now)
+    func_on_keys(copy_keys_to_history, ns.prefix)
+    rdb.rpush(ns.history, time_now)
 
 
 def history_rotate(keep_sec=0):
     """Rotate history by removing old keys (default: 0 - do not keep history)"""
     time_now = int(time.time())
+    time_limit = time_now - keep_sec
+
     def delete_keys(keys):
         for key in keys:
             rdb.delete(key)
-    time_limit = time_now - keep_sec
+
     while True:
         try:
-            hist_first = rdb.lrange(history_key, 0, 1)[0]
+            hist_first = rdb.lrange(ns.history, 0, 1)[0]
         except IndexError:
             break
         if int(hist_first) < time_limit:
             func_on_keys(delete_keys, hist_first)
-            rdb.lpop(history_key)
+            rdb.lpop(ns.history)
         else:
             break
 
@@ -158,7 +160,7 @@ def monitoring_reload():
             # 1. Process and save services
             for key, val in mon.get_services().items():
                 # Apply user defined node mapping or overwrite hostname given by Nagios
-                node = rdb.hget(config_key + "::user_node_aliases", key) or key
+                node = rdb.hget(ns.config + "::user_node_aliases", key) or key
 
                 service_details = get_service_details(node)
                 if service_details:
@@ -170,7 +172,7 @@ def monitoring_reload():
                             if 'last_connection' in service_details[s]:
                                 if time_now - int(service_details[s]['last_connection']) < service_aging:
                                     age = 'fresh'
-                            rdb.hset(services_key + '::' + node + '::' + s, 'age', age)
+                            rdb.hset(ns.services + '::' + node + '::' + s, 'age', age)
 
                             # Map node alerts to services and store service
                             # alert summary into node alerts, these are two
@@ -181,7 +183,7 @@ def monitoring_reload():
                                     if re.match(service_mapping[service_regexp],
                                                 service_details[s]['process'],
                                                 re.IGNORECASE):
-                                        rdb.hset(services_key + '::' + node + '::' + s, 'alert_status', sa['status'])
+                                        rdb.hset(ns.services + '::' + node + '::' + s, 'alert_status', sa['status'])
                                         sa['mapping'] = service_details[s]['process']
                                         # Add non-OK services to it's nodes alert info
                                         if sa['status'] != 'OK':
@@ -190,15 +192,15 @@ def monitoring_reload():
                                             tmp_services_broken[node][service_details[s]['process']] = sa['status']
 
                 # And store in list...
-                rdb.delete(mon_services_key_pfx + node)
+                rdb.delete(ns.services_checks + '::' + node)
                 for v in val:
-                    rdb.lpush(mon_services_key_pfx + node, json.dumps(v))
-                rdb.expire(mon_services_key_pfx + node, config['expire'])
+                    rdb.lpush(ns.services_checks + '::' + node, json.dumps(v))
+                rdb.expire(ns.services_checks + '::' + node, config['expire'])
 
             # 2. Merge broken services into node info and save it
             for key, val in mon.get_nodes().items():
                 # Apply user defined node mapping
-                tmp = rdb.hget(config_key + '::user_node_aliases', key)
+                tmp = rdb.hget(ns.config + '::user_node_aliases', key)
                 if tmp:
                     val['node'] = tmp   # Overwrite hostname given by Nagios
                 # Merge broken services summary
@@ -206,7 +208,7 @@ def monitoring_reload():
                     val['services_alerts'] = tmp_services_broken[val['node']]
 
                 # And store in string...
-                rdb.setex(mon_nodes_key_pfx + val['node'], json.dumps(val), config['expire'])
+                rdb.setex(ns.nodes_checks + '::' + val['node'], json.dumps(val), config['expire'])
 
             time_now = int(time.time())
             rdb.set(update_time_key, time_now)
