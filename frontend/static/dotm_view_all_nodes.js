@@ -12,6 +12,9 @@ DOTMViewAllNodes.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex,
 	n['width'] = 100;
 	n['height'] = 40;
 
+	/* We expect a node label font size of 10pt! */
+	n['width'] = 6 * n['name'].length + 48;
+
 	if(monitoring[node]) {
 		n['status'] = monitoring[node]['status'];
 		/* add space for services */
