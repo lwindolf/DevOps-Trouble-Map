@@ -7,34 +7,48 @@ import time
 class DOTMMonitor(object):
     """Class to deliver monitoring data"""
 
-    version = '0.2.0'
+    version = '0.2.1'
 
-    def __init__(self, mon_url, user=None, paswd=None, provider='icinga'):
+    def __init__(self, mon_url, user=None, paswd=None, provider='icinga', logger=None):
         self.user = user
         self.paswd = paswd
         self.provider = provider
+        self.logger = logger
         if provider == 'icinga':
             self.mon_url = mon_url.rstrip('/') + '/status.cgi?style=hostservicedetail&jsonoutput'
         elif provider == 'nagios':
-            # TODO: implement more providers for Monitoring.mon_url
+            # TODO: implement more providers for DOTMMonitor.mon_url
             pass
         else:
             raise NameError('Unknown provider')
 
+    def _output(self, msg, level=40):
+        # Use logger for output if defined, otherwise print to console
+        if self.logger:
+            self.logger.log(level, msg)
+        else:
+            print(msg)
+
     def _get_req(self):
         # Get request object from monitoring server
-        if self.user and self.paswd:
-            return requests.get(self.mon_url, auth=(self.user, self.paswd), verify=False, timeout=10)
-        return requests.get(self.mon_url, verify=False)
+        try:
+            if self.user and self.paswd:
+                return requests.get(self.mon_url, auth=(self.user, self.paswd), verify=False, timeout=10)
+            return requests.get(self.mon_url, verify=False)
+        except Exception as e:
+            self._output(e)
 
     def get_data(self):
         """Get text data from monitoring server"""
         req = self._get_req()
+        if 'req' not in locals() or req is None:
+            self._output('Connection to {} failed'.format(self.mon_url))
+            return None
         if req.ok:
             return req.text
         else:
-            raise Exception("Error getting Monitoring data from {}"
-                            " (status_code: {})".format(self.mon_url, req.status_code))
+            self._output('Error getting Monitoring data from {}'
+                         ' (status_code: {})'.format(self.mon_url, req.status_code))
 
     @staticmethod
     def _nagios_last_check_converter(last_check):
@@ -52,8 +66,9 @@ class DOTMMonitor(object):
         data = self.get_data()
         try:
             json_data = json.loads(data.replace('\t', ' '))
-        except ValueError:
-            raise ValueError("Value returned by Monitoring server is not in JSON format")
+        except (ValueError, AttributeError):
+            self._output('Value returned by Monitoring server is not in JSON format')
+            return {}
         js = json_data['status']['host_status']
         rjs = {}
         for elem in js:
@@ -71,7 +86,11 @@ class DOTMMonitor(object):
     def _get_services_icinga(self):
         # Get services status from Icinga
         data = self.get_data()
-        json_data = json.loads(data.replace('\t', ' '))
+        try:
+            json_data = json.loads(data.replace('\t', ' '))
+        except (ValueError, AttributeError):
+            self._output('Value returned by Monitoring server is not in JSON format')
+            return {}
         js = json_data['status']['service_status']
         rjs = {}
         for elem in js:
@@ -117,7 +136,7 @@ class DOTMMonitor(object):
         if self.provider == 'icinga':
             return self._get_nodes_icinga()
         elif self.provider == 'nagios':
-            # TODO: implement more providers for Monitoring.get_hosts()
+            # TODO: implement more providers for DOTMMonitor.get_hosts()
             pass
 
     def get_services(self):
@@ -156,5 +175,5 @@ class DOTMMonitor(object):
         if self.provider == 'icinga':
             return self._get_services_icinga()
         elif self.provider == 'nagios':
-            # TODO: implement more providers for Monitoring.get_services()
+            # TODO: implement more providers for DOTMMonitor.get_services()
             pass
