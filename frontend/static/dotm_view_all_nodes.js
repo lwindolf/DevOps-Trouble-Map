@@ -36,6 +36,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	var color = d3.scale.category20();
 
 	var d3cola = cola.d3adaptor()
+	    .convergenceThreshold(0.01)
 	    .linkDistance(150)
 	    .avoidOverlaps(true)
 	    .size([width, height]);
@@ -124,12 +125,16 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 						return '#f30';
 					if(d.status == 'UNKNOWN')
 						return '#fca';
+					if($.inArray(d.name, data.nodes) == -1)
+						return '#eee';
+
 					return 'white';
 				    })
 				    .style("stroke-width", 1)
 				    .style("stroke", "gray")
 				    .on("mouseover", function(d) {
-					d3.select(this).style({'stroke-width':2,'stroke':'black'});
+					if($.inArray(d.name, data.nodes) != -1)
+						d3.select(this).style({'stroke-width':2,'stroke':'black'});
 				    })
 				    .on("mouseout", function(d) {
 					if(d.name != view.selectedNode)
