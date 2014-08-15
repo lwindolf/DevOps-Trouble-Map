@@ -60,7 +60,8 @@ def history_call(f):
 def get_connections():
     key_arr = []
     for key in rdb.keys(ns.connections + '*'):
-        field_arr = key.split('::')
+        # Remove history prefix before we split the key into a value array
+        field_arr = key.lstrip('01234567890:').split('::')
         if not (not field_arr[3].isdigit() or field_arr[4].startswith('127')
                 or field_arr[2].startswith('127')):
             direction = rdb.hget(key, 'direction')
