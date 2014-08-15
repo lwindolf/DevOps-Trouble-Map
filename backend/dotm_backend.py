@@ -144,7 +144,7 @@ def monitoring_reload():
         update_time = int(update_time_str)
         if time_now - update_time >= int(config['refresh']):
             rdb.setex(update_lock_key, update_lock_expire, 1)
-            mon = DOTMMonitor(config['url'], config['user'], config['password'])
+            mon = DOTMMonitor(config['url'], config['user'], config['password'], logger=logger)
 
             # FIXME: not sure this is a good way. Planning on moving reload lock and history operation
             # higher up the call chain.
