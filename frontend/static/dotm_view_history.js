@@ -37,7 +37,6 @@ DOTMViewHistory.prototype.reload = function() {
 
 		if(selected != "")
 			navigation +=
-				"<p>Currently selected snapshot is '"+selected+"'</p>" +
 				"<p>" +
 				"<input type='button' value='Reset to Live View' onclick='setHistoryIndex(\"\")'/>" +
 				"</p><p>" +
