@@ -49,6 +49,17 @@ settings = {
                                     'refresh': 60},
                                 'fields': ['Parameter', 'Value'],
                                 'position': 3},
+    'history':                 {'description': 'How often and if at all to store history snapshots. Default is one snapshot every hour and expiration after 1 week. All values in seconds',
+                                'title': 'History Snapshots',
+                                'type': 'hash',
+                                'default': {
+                                    'enabled': 1,
+                                    'interval': 60*60,
+                                    'expire': 7*24*60*60
+                                },
+                                'fields': ['Parameter', 'Value'],
+                                'position': 4
+                               }, 
     'aging':                   {'description': 'Number of seconds after which a services/connections are'
                                 ' considered unused. Default is "300"s.',
                                 'title': 'Service Aging',
@@ -57,7 +68,7 @@ settings = {
                                     'Services': 5 * 60,
                                     'Connections': 5 * 60},
                                 'fields': ['Parameter', 'Value'],
-                                'position': 4},
+                                'position': 5},
     'expire':                  {'description': 'Number of days after which old data should be forgotten.'
                                 ' Default is "0" (never).',
                                 'title': 'Data Retention',
@@ -66,9 +77,9 @@ settings = {
                                     'Services': 0,
                                     'Connections': 0,
                                     'Nagios Alerts': 0,
-                                    'History': 0},
+                                },
                                 'fields': ['Parameter', 'Value'],
-                                'position': 5},
+                                'position': 6},
     'hiding':                  {'description': 'Number of days after which old service/connection data should not'
                                 ' be displayed in node graph anymore. Default is "7" days.',
                                 'title': 'Hiding Old Objects',
@@ -77,7 +88,7 @@ settings = {
                                     'Services': 7,
                                     'Connections': 7},
                                 'fields': ['Parameter', 'Value'],
-                                'position': 6},
+                                'position': 7},
     'service_mapping':         {'description': 'Rules that map Nagios service check names to process names as seen'
                                 ' by DOTM. Those rules can be regular expressions. Note that both the service check'
                                 ' name as well as the process name can be a regular expression. To enforce exact'
@@ -97,7 +108,7 @@ settings = {
 								},
                                 'add': True,
                                 'fields': ['Service Check Regex', 'Process Regex'],
-                                'position': 7},
+                                'position': 8},
     'service_port_whitelist':  {'description': 'Comma separated list of port numbers that are to be ignored.'
                                 ' This is to avoid presenting basic Unix services (Postfix, any shared filesystem'
                                 ' or monitoring agents) as high-level services of interest. Add ports of services'
@@ -105,7 +116,7 @@ settings = {
                                 'title': 'Aggregator: Service Port Whitelist',
                                 'type': 'single_value',
                                 'default': '53,22,5666,4949,4848,25,631',
-                                'position': 8}
+                                'position': 9}
 }
 
 
