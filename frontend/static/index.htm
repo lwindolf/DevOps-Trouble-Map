@@ -57,10 +57,13 @@
 	<div class='ui-layout-north'>
 		<h1 class='title'>Devops Trouble Map</h1>
 		<div class='menu'>
-			<a href="javascript:loadConfig('.ui-layout-center .ui-layout-content');">Settings</a>
+			<a href="javascript:setView('right', new DOTMViewConfig('.ui-layout-center .ui-layout-content'));">Settings</a>
 		</div>
 		<div class='menu'>
-			<a href="javascript:display_ip_map();">Map</a>
+			<a href="javascript:setView('right', new DOTMViewHistory('.ui-layout-center .ui-layout-content'));">History</a>
+		</div>
+		<div class='menu'>
+			<a href="javascript:setView('right', new DOTMViewGMap('.ui-layout-center .ui-layout-content'));">Map</a>
 		</div>
 	</div>
 
@@ -77,26 +80,27 @@
 	<script>
 		var myLayout;
 		var panes = Array();
-		var reloadTimeout;
+		var reloadTimeout = Array();
 
 		function loadNode(node) {
-			panes['right'] = new DOTMViewNode('.ui-layout-center .ui-layout-content', node);
+			setView('right', new DOTMViewNode('.ui-layout-center .ui-layout-content', node));
 		}
 
-		function reload() {
+		function reload(position) {
 			try {
-				panes['left'].reload();
+				panes[position].reload();
 			} catch(e) {
-				console.log(e);
-			}
-			try {
-				panes['right'].reload();
-			} catch(e) {
-				console.log(e);
+				console.log('Reload position '+position+' failed: '+e);
 			}
 
-			clearTimeout(reloadTimeout);
-			reloadTimeout = setTimeout(function(){reload()}, 30000);
+			// FIXME: hard-coded timeout
+			clearTimeout(reloadTimeout[position]);
+			reloadTimeout[position] = setTimeout("reload('"+position+"');", 30000);
+		}
+
+		function setView(position, view) {
+			panes[position] = view;
+			reload(position);
 		}
 
 		(function() {
@@ -111,11 +115,8 @@
 			jQuery.timeago.settings.strings.suffixAgo = null;
 
 			// Setup views
-			panes['right'] = new DOTMViewGMap('.ui-layout-center .ui-layout-content');
-			panes['left'] = new DOTMViewAllNodes('.ui-layout-west .ui-layout-content');
-
-			// FIXME: hard-coded timeout
-			reloadTimeout = setTimeout(function(){reload()}, 30000);
+			setView('right', new DOTMViewGMap('.ui-layout-center .ui-layout-content'));
+			setView('left', new DOTMViewAllNodes('.ui-layout-west .ui-layout-content'));
 		})();
 	</script>
 </body>

@@ -1,6 +1,11 @@
-/* Simle view that generates HTML forms and fills values from JSON */
+/* Simple view that generates HTML forms and fills values from JSON */
 
-function printConfigForm(key, setting) {
+function DOTMViewConfig(stage, anchor) {
+	this.stage = stage;
+	this.loadConfig(anchor);
+}
+
+DOTMViewConfig.prototype.printConfigForm = function(key, setting) {
 	var result = "<div class='settingsForm'>";
 	result += "<a name='"+key+"'/>";
 	result += "<div class='title'>"+setting.title+"</div>";
@@ -94,28 +99,35 @@ function printConfigForm(key, setting) {
 	return result;
 }
 
-function loadConfig(stage, anchor) {
+DOTMViewConfig.prototype.loadConfig = function(anchor) {
+	var view = this;
+
 	// Clean everything
-	setStatus(stage, 'Fetching settings...');
-	$(stage).html("");
+	setStatus(this.stage, 'Fetching settings...');
+	$(this.stage).html("");
 
 	$.getJSON("backend/settings", {})
 	.done(function (data) {
 		var forms = new Array();;
 
 		$.each(data, function(key, setting) {
-			forms[setting.position] = printConfigForm(key, setting);
+			forms[setting.position] = view.printConfigForm(key, setting);
 		});
 		$.each(forms, function(position, html) {
-			$(stage).append(html);
+			$(view.stage).append(html);
 		});
 
 		if(anchor)
 			location.hash = "#" + anchor;	/* scroll to form selected */
 
-		clearStatus(stage);
+		clearStatus(view.stage);
 	})
 	.fail(function (jqxhr, textStatus, error) {
-		setError(stage, 'Fetching settings failed! ('+error+')');
+		setError(view.stage, 'Fetching settings failed! ('+error+')');
 	})
 }
+
+
+DOTMViewConfig.prototype.reload = function() {
+	// We don't reload for simplicity
+};
