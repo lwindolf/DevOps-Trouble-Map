@@ -72,11 +72,12 @@ def get_connections():
                 source = fields[4]
                 destination = fields[2]
 
-            name = source+'::'+destination
-            if not name in connections:
-                connections[name] = {'source': source, 'destination': destination, 'ports': [int(fields[3])]}
-            else:
-                connections[name]['ports'].append(int(fields[3]))
+            if not source == destination:
+                name = source+'::'+destination
+                if not name in connections:
+                    connections[name] = {'source': source, 'destination': destination, 'ports': [int(fields[3])]}
+                else:
+                    connections[name]['ports'].append(int(fields[3]))
     return connections
 
 
