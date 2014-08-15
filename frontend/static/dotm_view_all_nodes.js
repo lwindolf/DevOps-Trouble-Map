@@ -45,7 +45,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	    .size([width, height]);
 	    //.jaccardLinkLengths(150);
 	
-	$(this.stage).html("<form id='node_add' action='backend/nodes' method='POST'><input size='10' type='text' name='name'/><input type='submit' value='Add Node'/></form>");
+	$(this.stage).html("<form id='node_add' action='backend/nodes"+getParams()+"' method='POST'><input size='10' type='text' name='name'/><input type='submit' value='Add Node'/></form>");
 	var svg = d3.select(this.stage).append("svg")
 	    .attr("width", width)
 	    .attr("height", height);
@@ -246,7 +246,7 @@ DOTMViewAllNodes.prototype.reload = function() {
 	var view = this;
 
 	setStatus(this.stage, 'Fetching nodes...');
-	$.getJSON("backend/nodes", {})
+	$.getJSON("backend/nodes"+getParams(), {})
 	.done(function (data) {
 		clearStatus(view.stage);
 		view.setData(data);

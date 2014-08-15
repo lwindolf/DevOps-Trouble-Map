@@ -6,6 +6,7 @@ function setStatus(id, text) {
 
 	statusBox
 	.addClass('normal')
+	.removeClass('warning')
 	.removeClass('error')
 	.html(text)
 	.show();
@@ -18,11 +19,26 @@ function setStatus(id, text) {
 	}, 5000);
 }
 
+function setWarning(id, text) {
+	$(id)
+	.parent()
+	.find('.statusBox')
+	.removeClass('normal')
+	.removeClass('error')
+	.addClass('warning')
+	.html(text)
+	.show();
+
+	if(timeouts[id])	
+		clearTimeout(timeouts[id]);
+}
+
 function setError(id, text) {
 	$(id)
 	.parent()
 	.find('.statusBox')
 	.removeClass('normal')
+	.removeClass('warning')
 	.addClass('error')
 	.html(text)
 	.show();
@@ -36,6 +52,7 @@ function clearStatus(id) {
 	.parent()
 	.find('.statusBox')
 	.removeClass('normal')
+	.removeClass('warning')
 	.removeClass('error')
 	.html('test')
 	.hide();

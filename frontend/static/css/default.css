@@ -179,6 +179,10 @@ a:hover {
 	background:#cfc;
 }
 
+.statusBox.warning {
+	background:#ff7;
+}
+
 .statusBox.error {
 	background:#faa;
 	color:white;

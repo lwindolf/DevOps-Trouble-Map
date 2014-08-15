@@ -51,6 +51,7 @@
 	<script type="text/javascript" src="dotm_view_all_nodes.js"></script>
 	<script type="text/javascript" src="dotm_view_gmap.js"></script>
 	<script type="text/javascript" src="dotm_view_config.js"></script>
+	<script type="text/javascript" src="dotm_view_history.js"></script>
 	<script src="d3.v3.js"></script>
 	<script src="cola.v3.min.js"></script>
 
@@ -81,6 +82,24 @@
 		var myLayout;
 		var panes = Array();
 		var reloadTimeout = Array();
+		var historyIndex = "";
+
+		function setHistoryIndex(timestamp) {
+			historyIndex = timestamp;
+			reload('left');
+			reload('right');
+		}
+
+		function getHistoryIndex() {
+			return historyIndex;
+		}
+
+		function getParams() {
+			if(historyIndex == "")
+				return "";
+			else
+				return "?history="+historyIndex;
+		}
 
 		function loadNode(node) {
 			setView('right', new DOTMViewNode('.ui-layout-center .ui-layout-content', node));

@@ -143,7 +143,7 @@ DOTMViewNode.prototype.reload = function() {
 
 	setStatus(this.stage, 'Fetching details for '+this.selectedNode+'...');
 
-	$.getJSON("backend/nodes/"+this.selectedNode, {})
+	$.getJSON("backend/nodes/"+this.selectedNode+getParams(), {})
 	.done(function (data) {
 		clearStatus(view.stage);
 		view.setData(data);

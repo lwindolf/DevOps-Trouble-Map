@@ -104,7 +104,7 @@ DOTMViewGMap.prototype.setData = function(locations) {
 DOTMViewGMap.prototype.reload = function() {
 	var view = this;
 
-	$.getJSON("backend/geo/nodes", {})
+	$.getJSON("backend/geo/nodes"+getParams(), {})
 	.done(function (data) {
 		view.setData(data.locations);
 	})
