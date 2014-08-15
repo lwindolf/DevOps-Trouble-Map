@@ -98,11 +98,9 @@ def func_on_keys(func, prefix):
 
 def history_add():
     """Copy keys to history (<timestamp>::<key>) while resetting expiration"""
-    keep_history_sec = int(get_setting('expire')['History'])
-    if keep_history_sec < 60:
-        return
 
     time_now = int(time.time())
+    logger.info("Adding history snapshot " + str(time_now))
 
     def copy_keys_to_history(keys):
         for key in keys:
@@ -141,7 +139,7 @@ def monitoring_reload():
     service_aging = int(get_setting('aging')['Services'])
     service_mapping = get_setting('service_mapping')
     config = get_setting('nagios_instance')
-    keep_history_sec = int(get_setting('expire')['History'])
+    history_settings = get_setting('history')
     time_now = int(time.time())
     update_time_key = ns.config + '::last_updated'
     update_lock_key = ns.config + '::update_running'
@@ -157,9 +155,10 @@ def monitoring_reload():
             # higher up the call chain.
 
             # Put keys to history before reloading monitoring
-            if keep_history_sec > 60:
+            if int(history_settings['enabled']) == 1:
+                # FIXME: check last history save time and only run in accordance with history_settings['interval']
                 history_add()
-                history_rotate(keep_history_sec)
+                history_rotate(int(history_settings['expire']))
 
             # Track broken mapped services per node to later save them into node alert info
             tmp_services_broken = {}
