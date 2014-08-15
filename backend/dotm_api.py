@@ -58,18 +58,26 @@ def history_call(f):
 
 # Return a connection graph for all nodes
 def get_connections():
-    key_arr = []
+    connections = {}
     for key in rdb.keys(ns.connections + '*'):
         # Remove history prefix before we split the key into a value array
-        field_arr = key.lstrip('01234567890:').split('::')
-        if not (not field_arr[3].isdigit() or field_arr[4].startswith('127')
-                or field_arr[2].startswith('127')):
+        fields = key.lstrip('01234567890:').split('::')
+        if not (not fields[3].isdigit() or fields[4].startswith('127')
+                or fields[2].startswith('127')):
             direction = rdb.hget(key, 'direction')
             if direction == "out":
-                key_arr.append({'source': field_arr[2], 'destination': field_arr[4], 'name': key})
+                source = fields[2]
+                destination = fields[4]
             else:
-                key_arr.append({'destination': field_arr[2], 'source': field_arr[4], 'name': key})
-    return key_arr
+                source = fields[4]
+                destination = fields[2]
+
+            name = source+'::'+destination
+            if not name in connections:
+                connections[name] = {'source': source, 'destination': destination, 'ports': [int(fields[3])]}
+            else:
+                connections[name]['ports'].append(int(fields[3]))
+    return connections
 
 
 def get_node_alerts(node):
