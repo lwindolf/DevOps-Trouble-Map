@@ -11,5 +11,5 @@ Alias /dotm @prefix@/share/dotm_frontend/static
 </Directory>
 
 # Passing backend requests to avoid Cross-Origin query
-ProxyPass /dotm/backend/	http://localhost:8080/
-ProxyPassReverse /dotm/backend/	http://localhost:8080/
+ProxyPass /dotm/backend/	http://localhost:8080/ retry=5
+ProxyPassReverse /dotm/backend/	http://localhost:8080/ retry=5
