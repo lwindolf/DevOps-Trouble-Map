@@ -240,6 +240,8 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 
 		node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 	  });
+
+	setWarning(view.stage, "Warning: you are viewing historic data! <input type='button' value='Reset to Live View' onclick='javascript:setHistoryIndex(\"\");'/>");
 };
 
 DOTMViewAllNodes.prototype.reload = function() {
