@@ -9,7 +9,7 @@ DOTMViewReport.prototype.reload = function() {
 
 	// Clean everything
 	setStatus(this.stage, 'Fetching report...');
-	$(this.stage).html("test");
+	$(this.stage).html("");
 
 	$.getJSON("backend/report", {})
 	.done(function (data) {
