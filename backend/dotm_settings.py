@@ -115,7 +115,7 @@ settings = {
                                 ' you do not care about. Currently only TCP ports are handled.',
                                 'title': 'Aggregator: Service Port Whitelist',
                                 'type': 'single_value',
-                                'default': '53,953,22,5666,4949,4848,25,631',
+                                'default': '53,953,22,5666,4949,4848,25,631,24007,24009,111,2049',
                                 'position': 9}
 }
 
