@@ -180,19 +180,23 @@ def monitoring_reload():
                 service_details = get_service_details(node)
                 if service_details:
                     # FIXME: Refactor for/for/for (Andrej)
-                    for service_regexp in service_mapping:
-                        for s in service_details:
-                            # Do time diff to indicate out-dated services
-                            age = 'old'
-                            if 'last_connection' in service_details[s]:
-                                if time_now - int(service_details[s]['last_connection']) < service_aging:
-                                    age = 'fresh'
-                            rdb.hset(ns.services + '::' + node + '::' + s, 'age', age)
+                    for s in service_details:
+                        # a) Always reset service status, because it might not be set below.
+                        # FIXME: this is a race with the GUI viewing this!
+                        rdb.hdel(ns.services + '::' + node + '::' + s, 'alert_status')
 
-                            # Map node alerts to services and store service
-                            # alert summary into node alerts, these are two
-                            # denormalizations used to simplify the /nodes
-                            # and the /node/<name> callback.
+                        # b) Do time diff to indicate out-dated services
+                        age = 'old'
+                        if 'last_connection' in service_details[s]:
+                            if time_now - int(service_details[s]['last_connection']) < service_aging:
+                                age = 'fresh'
+                        rdb.hset(ns.services + '::' + node + '::' + s, 'age', age)
+
+                        # c) Map node alerts to services and store service
+                        # alert summary into node alerts, these are two
+                        # denormalizations used to simplify the /nodes
+                        # and the /node/<name> callback.
+                        for service_regexp in service_mapping:
                             for sa in val:
                                 if re.match(service_regexp, sa['service']):
                                     if re.match(service_mapping[service_regexp],
@@ -206,7 +210,7 @@ def monitoring_reload():
                                                 tmp_services_broken[node] = {}
                                             tmp_services_broken[node][service_details[s]['process']] = sa['status']
 
-                # And store in list...
+                # And store service check results in list...
                 rdb.delete(ns.services_checks + '::' + node)
                 for v in val:
                     rdb.lpush(ns.services_checks + '::' + node, json.dumps(v))
