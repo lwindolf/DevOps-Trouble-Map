@@ -142,6 +142,10 @@ Right now the following relation namespaces are used in Redis
         }
     ]
 - dotm::config::\* (all preferences, for descriptions check the 'Settings' page)
+- dotm::state (state info, usually update locks + timestamps)
+  * last_updated (timestamp)
+  * update_running (0 or 1)
+  * last_snapshot (timestamp)
 - dotm::queue (list of queued backend tasks in JSON)
   * {"id": &lt;task key>, "fn": &lt;function name/action>, "args": &lt;function arguments>, "kwargs": &lt;function keywords>}
 - dotm::queue::result::&lt;uuid4 name> (status and result of the queued task in JSON)
