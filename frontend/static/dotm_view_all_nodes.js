@@ -30,8 +30,27 @@ DOTMViewAllNodes.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex,
 	nodeIndex[node] = Object.keys(nodeIndex).length;
 };
 
+function expandGroup(g, ms) {
+    if (g.groups) {
+        g.groups.forEach(function (cg) {
+            return expandGroup(cg, ms);
+        });
+    }
+    if (g.leaves) {
+        g.leaves.forEach(function (l) {
+            ms.push(l.index + 1);
+        });
+    }
+}
+
+function getId(v, n) {
+    return (typeof v.index === 'number' ? v.index : v.id + n) + 1;
+}
+
+
 DOTMViewAllNodes.prototype.setData = function(data) {
 	var view = this;
+	var powerGraph;
 	var width = $(this.stage).width(),
 	    height = $(this.stage).height(),
 	    r = 9, margin = 0;
@@ -57,7 +76,6 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	graph = new Array();
 	graph["nodes"] = new Array();
 	graph["links"] = new Array();
-	graph["groups"] = new Array();
 	$.each(data.nodes, function(index, nodeData) {
 		view.addNodeToColaNodeList(graph['nodes'], nodeIndex, nodeData, data.monitoring);
 	});
@@ -74,17 +92,12 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 		graph['links'].push(l);
 	});
 
-	// Do normal d3+cola rendering
-	d3cola
-	      .nodes(graph.nodes)
-	      .links(graph.links)
-	      .groups(graph.groups)
-	      .start(5,15,20);
+	var doLayout = function () {
 
 	svg.append('svg:defs').append('svg:marker').attr('id', 'end-arrow').attr('viewBox', '0 -5 10 10').attr('refX', 5).attr('markerWidth', 9).attr('markerHeight', 3).attr('orient', 'auto').append('svg:path').attr('d', 'M0,-5L10,0L0,5L2,0').attr('stroke-width', '0xp').attr('fill', '#555');
-	
+
 	var group = svg.selectAll(".group")
-	      .data(graph.groups)
+	      .data(powerGraph.groups)
 	      .enter().append("rect")
 	      .attr("rx", r).attr("ry", r)
 	      .attr("class", "group")
@@ -206,13 +219,19 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 		})
 	        .call(d3cola.drag);
 
+	d3cola.start(5,15,20);
 	d3cola.on("tick", function() {
-		node.each(function (d) {
-			return d.innerBounds = d.bounds.inflate(-margin);
-		});
-		link.each(function (d) {
-			cola.vpsc.makeEdgeBetween(d, d.source.innerBounds, d.target.innerBounds, 5);
-		});
+                node.each(function (d) {
+                    d.bounds.setXCentre(d.x);
+                    d.bounds.setYCentre(d.y);
+                    d.innerBounds = d.bounds.inflate(-margin);
+                });
+                group.each(function (d) {
+                    return d.innerBounds = d.bounds.inflate(-margin);
+                });
+                link.each(function (d) {
+                    cola.vpsc.makeEdgeBetween(d, d.source.innerBounds, d.target.innerBounds, 5);
+                });
 		link.attr("x1", function (d) {
 			return d.sourceIntersection.x;
 		}).attr("y1", function (d) {
@@ -233,13 +252,41 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 			return d.innerBounds.height();
 		});
 	
-/*	            group.attr("x", function (d) { return d.bounds.x = Math.max(r, Math.min(width - r, d.bounds.x)); })
-	                 .attr("y", function (d) { return d.bounds.y = Math.max(r, Math.min(height - r, d.bounds.y)); })
-	                .attr("width", function (d) { return d.bounds.width(); })
-	                .attr("height", function (d) { return d.bounds.height(); });*/
+                group.attr("x", function (d) {
+                    return d.innerBounds.x;
+                }).attr("y", function (d) {
+                    return d.innerBounds.y;
+                }).attr("width", function (d) {
+                    return d.innerBounds.width();
+                }).attr("height", function (d) {
+                    return d.innerBounds.height();
+                });
 
 		node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
 	  });
+	};
+
+	d3cola.nodes(graph.nodes)
+	      .links(graph.links)
+	      .powerGraphGroups(function (d) {
+		    return (powerGraph = d).groups.forEach(function (v) {
+			return v.padding = 10;
+		    });
+	      });
+
+	var modules = { N: graph.nodes.length, ms: [], edges: [] };
+        var n = modules.N;
+        powerGraph.groups.forEach(function (g) {
+            var m = [];
+            expandGroup(g, m);
+            modules.ms.push(m);
+        });
+        powerGraph.powerEdges.forEach(function (e) {
+            var N = graph.nodes.length;
+            modules.edges.push({ source: getId(e.source, N), target: getId(e.target, N) });
+        });
+console.log(JSON.stringify(modules));
+	doLayout();
 
 	if(getHistoryIndex() != "")
 		setWarning(view.stage, "Warning: you are viewing historic data! <input type='button' value='Reset to Live View' onclick='javascript:setHistoryIndex(\"\");'/>");
