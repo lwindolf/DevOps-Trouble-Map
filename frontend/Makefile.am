@@ -17,6 +17,7 @@ dotm_frontend_static_DATA = \
 	static/dotm_view_gmap.js \
 	static/dotm_view_config.js \
 	static/dotm_view_history.js \
+	static/dotm_view_report.js \
 	static/tiny_grid.png \
 	static/cloud.png
 

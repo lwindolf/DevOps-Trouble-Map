@@ -52,6 +52,7 @@
 	<script type="text/javascript" src="dotm_view_gmap.js"></script>
 	<script type="text/javascript" src="dotm_view_config.js"></script>
 	<script type="text/javascript" src="dotm_view_history.js"></script>
+	<script type="text/javascript" src="dotm_view_report.js"></script>
 	<script src="d3.v3.js"></script>
 	<script src="cola.v3.min.js"></script>
 
@@ -59,6 +60,9 @@
 		<h1 class='title'>Devops Trouble Map</h1>
 		<div class='menu'>
 			<a href="javascript:setView('right', new DOTMViewConfig('.ui-layout-center .ui-layout-content'));">Settings</a>
+		</div>
+		<div class='menu'>
+			<a href="javascript:setView('right', new DOTMViewReport('.ui-layout-center .ui-layout-content'));">Report</a>
 		</div>
 		<div class='menu'>
 			<a href="javascript:setView('right', new DOTMViewHistory('.ui-layout-center .ui-layout-content'));">History</a>

@@ -6,9 +6,9 @@ from bottle import route, run, response, request, debug, static_file
 
 # Backend Web API local imports
 # FIXME: import only what is needed instead of *
-from settings import *
+from dotm_settings import *
+from dotm_common import *
 from dotm_queue import QResponse
-
 
 # JSON Response helper functions
 def json_error(message="Not Found", status_code=404):
@@ -55,37 +55,6 @@ def history_call(f):
         f.func_globals['ns'] = DOTMNamespace(request.query.get('history'))
         return f(*args, **kwargs)
     return wrap
-
-# Return a connection graph for all nodes
-def get_connections():
-    connections = {}
-    for key in rdb.keys(ns.connections + '*'):
-        # Remove history prefix before we split the key into a value array
-        fields = key.lstrip('01234567890:').split('::')
-        if not (not fields[3].isdigit() or fields[4].startswith('127')
-                or fields[2].startswith('127')):
-            direction = rdb.hget(key, 'direction')
-            if direction == "out":
-                source = fields[2]
-                destination = fields[4]
-            else:
-                source = fields[4]
-                destination = fields[2]
-
-            if not source == destination:
-                name = source+'::'+destination
-                if not name in connections:
-                    connections[name] = {'source': source, 'destination': destination, 'ports': [int(fields[3])]}
-                else:
-                    connections[name]['ports'].append(int(fields[3]))
-    return connections
-
-
-def get_node_alerts(node):
-    try:
-        return json.loads(rdb.get(ns.nodes_checks + '::' + node))
-    except TypeError:
-        print "No node monitoring..."
 
 
 # Backend Queue helper functions
@@ -300,6 +269,37 @@ def get_config_variable(variable):
         return resp_or_404(vars_to_json(variable, value))
     return resp_or_404()
 
+
+@route('/report', method='GET')
+def get_report():
+    """ Returns data for a system report including information about
+    		- unmonitored services
+    		- ununsed services
+    """
+    # FIXME: Do calculation in backend (better for Nagios checks too
+    # and just return results here.
+    alerts = {}
+    nodes = rdb.lrange(ns.nodes, 0, -1)
+    for node in nodes:
+        alerts[node] = []
+        monitoring = get_node_alerts(node)
+        nodeDetails = rdb.hgetall(ns.nodes+'::'+node)
+        serviceDetails = get_service_details(node)
+        if not monitoring:
+	        alerts[node].append({'category': 'monitoring', 'severity':'WARNING', 'message':'Monitoring missing for this node'})
+        if not nodeDetails:
+	        alerts[node].append({'category': 'agent', 'severity':'WARNING', 'message':'No info for this node fetched from remote agent.'})
+
+        for s in serviceDetails:
+            # If there is Nagios alert data and some service checks could not be mapped to services...
+	        if monitoring and not 'alert_status' in serviceDetails[s]:
+		        alerts[node].append({'category': 'monitoring', 'severity':'WARNING', 'message':'Service "'+serviceDetails[s]['process']+'" has no known service check.'})
+	        if 'age' in serviceDetails and serviceDetails[s]['age'] == 'old':
+		        alerts[node].append({'category': 'usage', 'severity':'WARNING', 'message':'Service "'+serviceDetails[s]['process']+'" is unused for quite some time.'})
+
+    return resp_or_404(json.dumps({'nodes': nodes,
+                                   'alerts': alerts}))
+	
 
 @route('/config', method='POST')
 def set_config():

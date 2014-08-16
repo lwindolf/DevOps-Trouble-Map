@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
+# vim: ts=4 sw=4
 """Backend Settings Module"""
 
-import argparse
 import re
-import redis
 import GeoIP
 import time
 import json
 from uuid import uuid4
+from dotm_common import *
 from dotm_namespace import DOTMNamespace
 
 # Redis namespace configuration
@@ -142,43 +142,3 @@ def get_setting(s, values=None):
     return values
 
 
-def get_service_details(node):
-    prefix = ns.services + '::' + node + '::'
-    service_details = {}
-    services = [s.replace(prefix, '') for s in rdb.keys(prefix + '*')]
-    for s in services:
-        service_details[s] = rdb.hgetall(prefix + s)
-    return service_details
-
-
-def vars_to_json(key, val):
-    return json.dumps({key: val})
-
-
-def get_json_array(key, start=0, end=-1):
-    return [json.loads(el) for el in rdb.lrange(key, start, end)]
-
-
-# Command-line argument parsing
-cl_parser = argparse.ArgumentParser(description='DOTM Backend')
-cl_parser.add_argument('-r', '--redis-server', help='Redis Server', type=str, default='localhost')
-cl_parser.add_argument("-P", '--redis-port', help='Redis Port', type=int, default=6379)
-cl_parser.add_argument("-d", '--redis-db', help='Redis Database', type=int, default=0)
-cl_parser.add_argument("-p", '--redis-password', help='Redis Password', type=str, default=None)
-cl_parser.add_argument("-D", '--debug', help='DEBUG Mode On', action="store_true")
-cl_parser.add_argument("-l", '--log', help='Log file', type=str, default=None)
-cl_args = cl_parser.parse_args()
-
-
-try:
-    # Redis connection initialization
-    rdb = redis.Redis(host=cl_args.redis_server,
-                      port=cl_args.redis_port,
-                      db=cl_args.redis_db,
-                      password=cl_args.redis_password)
-
-    # GeoIP Database setup
-    gi = GeoIP.open("/usr/share/GeoIP/GeoIPCity.dat", 0)
-
-except Exception as e:
-    print e

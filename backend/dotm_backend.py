@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# vim: ts=4 sw=4
 # -*- coding: utf-8 -*-
 
 import signal
@@ -7,7 +8,8 @@ import logging
 
 # Backend local imports
 # FIXME: import only what is needed instead of *
-from settings import *
+from dotm_settings import *
+from dotm_common import *
 from dotm_queue import QResponse
 from dotm_monitor import DOTMMonitor
 
