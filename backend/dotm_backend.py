@@ -133,16 +133,26 @@ def history_rotate(keep_sec=0):
         else:
             break
 
+def update_history():
+    now = int(time.time())
+    settings = get_setting('history')
+    if int(settings['enabled']) == 1:
+        last_snapshot = rdb.get(ns.state + '::last_snapshot')
+        if not last_snapshot or now - int(last_snapshot) >= int(settings['interval']):
+            history_add()
+            history_rotate(int(settings['expire']))
+            rdb.set(ns.state + '::last_snapshot', now)
+        else:
+            logger.debug("Creating no snapshot yet as last one was done before "+str(now - int(last_snapshot))+ "s and interval is "+str(settings['interval'])+"s")
 
 def monitoring_reload():
     # FIXME: add logging to monitoring_reload()
     service_aging = int(get_setting('aging')['Services'])
     service_mapping = get_setting('service_mapping')
     config = get_setting('nagios_instance')
-    history_settings = get_setting('history')
     time_now = int(time.time())
-    update_time_key = ns.config + '::last_updated'
-    update_lock_key = ns.config + '::update_running'
+    update_time_key = ns.state + '::last_updated'
+    update_lock_key = ns.state + '::update_running'
     update_lock_expire = config['refresh'] * 5
     update_time_str = rdb.get(update_time_key)
     if update_time_str and not rdb.get(update_lock_key):
@@ -155,10 +165,7 @@ def monitoring_reload():
             # higher up the call chain.
 
             # Put keys to history before reloading monitoring
-            if int(history_settings['enabled']) == 1:
-                # FIXME: check last history save time and only run in accordance with history_settings['interval']
-                history_add()
-                history_rotate(int(history_settings['expire']))
+            update_history()
 
             # Track broken mapped services per node to later save them into node alert info
             tmp_services_broken = {}
