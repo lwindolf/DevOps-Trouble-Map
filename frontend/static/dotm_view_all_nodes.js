@@ -274,6 +274,10 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 		    });
 	      });
 
+	graph.nodes.forEach(function (v, i) {
+            v.index = i;
+        });
+
 	var modules = { N: graph.nodes.length, ms: [], edges: [] };
         var n = modules.N;
         powerGraph.groups.forEach(function (g) {
