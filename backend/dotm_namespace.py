@@ -14,7 +14,7 @@ class DOTMNamespace(object):
         self.queue = self.prefix + '::queue'
         self.history = self.prefix + '::history'
         self.config = self.prefix + '::config'
-	self.state = self.prefix + '::state'
+        self.state = self.prefix + '::state'
 
         if history_key:
             self.history_prefix = history_key + '::' + self.prefix
