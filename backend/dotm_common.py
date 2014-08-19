@@ -10,6 +10,7 @@ from dotm_namespace import DOTMNamespace
 # Redis namespace configuration
 ns = DOTMNamespace()
 
+
 def vars_to_json(key, val):
     return json.dumps({key: val})
 
@@ -17,8 +18,9 @@ def vars_to_json(key, val):
 def get_json_array(key, start=0, end=-1):
     return [json.loads(el) for el in rdb.lrange(key, start, end)]
 
-# Return a connection graph for all nodes
+
 def get_connections():
+    """Return a connection graph for all nodes"""
     connections = {}
     for key in rdb.keys(ns.connections + '*'):
         # Remove history prefix before we split the key into a value array
@@ -34,7 +36,7 @@ def get_connections():
                 destination = fields[2]
 
             if not source == destination:
-                name = source+'::'+destination
+                name = source + '::' + destination
                 if not name in connections:
                     connections[name] = {'source': source, 'destination': destination, 'ports': [int(fields[3])]}
                 else:
@@ -56,6 +58,7 @@ def get_service_details(node):
     for s in services:
         service_details[s] = rdb.hgetall(prefix + s)
     return service_details
+
 
 # Command-line argument parsing
 cl_parser = argparse.ArgumentParser(description='DOTM Backend')

@@ -56,6 +56,7 @@ elseif var_type == 'list' then
     return true
 end""")
 
+
 def process_queue():
     """Process Redis message queue"""
     logger.info('DOTM Backend Started')
@@ -135,6 +136,7 @@ def history_rotate(keep_sec=0):
         else:
             break
 
+
 def update_history():
     now = int(time.time())
     settings = get_setting('history')
@@ -145,7 +147,9 @@ def update_history():
             history_rotate(int(settings['expire']))
             rdb.set(ns.state + '::last_snapshot', now)
         else:
-            logger.debug("Creating no snapshot yet as last one was done before "+str(now - int(last_snapshot))+ "s and interval is "+str(settings['interval'])+"s")
+            logger.debug("Creating no snapshot yet as last one was done before "
+                         + str(now - int(last_snapshot)) + "s and interval is "+str(settings['interval'])+"s")
+
 
 def monitoring_reload():
     # FIXME: add logging to monitoring_reload()

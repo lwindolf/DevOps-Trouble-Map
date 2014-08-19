@@ -49,7 +49,9 @@ settings = {
                                     'refresh': 60},
                                 'fields': ['Parameter', 'Value'],
                                 'position': 3},
-    'history':                 {'description': 'How often and if at all to store history snapshots. Default is one snapshot every hour and expiration after 1 week. All values in seconds',
+    'history':                 {'description': 'How often and if at all to store history snapshots.'
+                                ' Default is one snapshot every hour and expiration after 1 week.'
+                                ' All values are in seconds.',
                                 'title': 'History Snapshots',
                                 'type': 'hash',
                                 'default': {
@@ -58,8 +60,7 @@ settings = {
                                     'expire': 7*24*60*60
                                 },
                                 'fields': ['Parameter', 'Value'],
-                                'position': 4
-                               }, 
+                                'position': 4},
     'aging':                   {'description': 'Number of seconds after which a services/connections are'
                                 ' considered unused. Default is "300"s.',
                                 'title': 'Service Aging',
@@ -98,14 +99,13 @@ settings = {
                                 'default': {
                                     '^HTTP'			: '^nginx.*|^apache.*|^lighttpd.*',
                                     '^Redis'		: '^redis-server.*',
-									'^CouchDB'		: '^couch.*',
+                                    '^CouchDB'		: '^couch.*',
                                     '^MySQL.*'		: '^mysql.*',
                                     '^Postgres.*'	: '^postmaster.*',
-									'^PgBouncer.*'	: '^pgbouncer.*',
-									'^memcached'	: '^memcached.*',
-									'^node\.?js'	: '^nodejs.*',
-									'.*DNS.*'		: '^named.*'
-								},
+                                    '^PgBouncer.*'	: '^pgbouncer.*',
+                                    '^memcached'	: '^memcached.*',
+                                    '^node\.?js'	: '^nodejs.*',
+                                    '.*DNS.*'		: '^named.*'},
                                 'add': True,
                                 'fields': ['Service Check Regex', 'Process Regex'],
                                 'position': 8},
@@ -140,5 +140,3 @@ def get_setting(s, values=None):
         values = settings[s]['default']
 
     return values
-
-

@@ -10,6 +10,7 @@ from dotm_settings import *
 from dotm_common import *
 from dotm_queue import QResponse
 
+
 # JSON Response helper functions
 def json_error(message="Not Found", status_code=404):
     return '{"error": {"message": "' + message + '", "status_code": ' + str(status_code) + '}}'
@@ -273,33 +274,45 @@ def get_config_variable(variable):
 @route('/report', method='GET')
 def get_report():
     """ Returns data for a system report including information about
-    		- unmonitored services
-    		- ununsed services
+            - unmonitored services
+            - unused services
     """
-    # FIXME: Do calculation in backend (better for Nagios checks too
+    # FIXME: Do calculation in backend (better for Nagios checks too)
     # and just return results here.
     alerts = {}
     nodes = rdb.lrange(ns.nodes, 0, -1)
     for node in nodes:
         alerts[node] = []
         monitoring = get_node_alerts(node)
-        nodeDetails = rdb.hgetall(ns.nodes+'::'+node)
+        nodeDetails = rdb.hgetall(ns.nodes + '::' + node)
         serviceDetails = get_service_details(node)
         if not monitoring:
-	        alerts[node].append({'category': 'monitoring', 'severity':'WARNING', 'message':'Monitoring missing for this node'})
+            alerts[node].append({'category': 'monitoring',
+                                 'severity': 'WARNING',
+                                 'message': 'Monitoring missing for this node'})
         if not nodeDetails:
-	        alerts[node].append({'category': 'agent', 'severity':'WARNING', 'message':'No info for this node fetched from remote agent.'})
+            alerts[node].append({'category': 'agent',
+                                 'severity': 'WARNING',
+                                 'message': 'No info for this node fetched from remote agent.'})
 
         for s in serviceDetails:
             # If there is Nagios alert data and some service checks could not be mapped to services...
-	        if monitoring and not 'alert_status' in serviceDetails[s]:
-		        alerts[node].append({'category': 'monitoring', 'severity':'WARNING', 'message':'Service "'+serviceDetails[s]['process']+'" has no known service check.'})
-	        if 'age' in serviceDetails and serviceDetails[s]['age'] == 'old':
-		        alerts[node].append({'category': 'usage', 'severity':'WARNING', 'message':'Service "'+serviceDetails[s]['process']+'" is unused for quite some time.'})
+            if monitoring and not 'alert_status' in serviceDetails[s]:
+                alerts[node].append({'category': 'monitoring',
+                                     'severity': 'WARNING',
+                                     'message': 'Service "'
+                                                + serviceDetails[s]['process']
+                                                + '" has no known service check.'})
+            if 'age' in serviceDetails and serviceDetails[s]['age'] == 'old':
+                alerts[node].append({'category': 'usage',
+                                     'severity': 'WARNING',
+                                     'message': 'Service "'
+                                                + serviceDetails[s]['process']
+                                                + '" is unused for quite some time.'})
 
     return resp_or_404(json.dumps({'nodes': nodes,
                                    'alerts': alerts}))
-	
+
 
 @route('/config', method='POST')
 def set_config():
