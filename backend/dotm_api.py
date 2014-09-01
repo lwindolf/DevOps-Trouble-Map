@@ -100,7 +100,7 @@ def get_nodes():
     nodes = rdb.lrange(ns.nodes, 0, -1)
     for node in nodes:
         monitoring[node] = get_node_alerts(node)
-    return resp_or_404(json.dumps({'nodes': nodes,
+    return resp_or_404(json.dumps({'nodes': list(monitoring.keys()),
                                    'monitoring': monitoring,
                                    'connections': get_connections()}))
 
