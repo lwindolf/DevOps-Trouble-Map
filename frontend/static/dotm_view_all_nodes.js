@@ -104,7 +104,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	      .style("fill", function (d, i) { return color(i); });
 	
 	var link = svg.selectAll(".link")
-	      .data(graph.links)
+	      .data(powerGraph.powerEdges)
 	      .enter().append("line")
 	      .attr("class", "link")
 	      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
