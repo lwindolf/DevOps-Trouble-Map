@@ -40,6 +40,10 @@ function expandGroup(g, ms) {
         g.leaves.forEach(function (l) {
             ms.push(l.index + 1);
         });
+    } else {
+	// FIXME: dirty workaround, sometimes auto-grouping causes group without
+	// leaves which causes an Exception, which we do not want
+        g.leaves = new Array();
     }
 }
 
