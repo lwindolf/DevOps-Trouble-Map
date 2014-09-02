@@ -103,7 +103,9 @@ def get_nodes():
         monitoring[node] = get_node_alerts(node)
     return resp_or_404(json.dumps({'nodes': list(monitoring.keys()),
                                    'monitoring': monitoring,
-                                   'connections': get_connections()}))
+                                   'connections': get_connections()}),
+				       'application/javascript',
+					   'no-cache, no-store, must-revalidate')
 
 
 @route('/backend/nodes', method='POST')
@@ -137,7 +139,7 @@ def node_suggestions():
             if already_known == 0:
                 suggested_nodes.append(fields[1])
 
-    return resp_or_404(json.dumps({'nodes': suggested_nodes}))
+    return resp_or_404(json.dumps({'nodes': suggested_nodes}), 'application/javascript', 'no-cache, no-store, must-revalidate')
 
 
 @route('/nodes/<name>', method='GET')
