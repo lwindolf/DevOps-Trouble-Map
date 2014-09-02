@@ -109,7 +109,11 @@ def get_nodes():
 @route('/nodes', method='POST')
 def add_node():
     # FIXME: validate name
-    rdb.lpush(ns.nodes, request.forms.get('name'))
+    action = request.forms.get('action')
+    if action == "add":
+        rdb.lpush(ns.nodes, request.forms.get('name'))
+    elif action == "remove":
+        rdb.lrem(ns.nodes, request.forms.get('name'), 1)
 
 
 @route('/nodes/<name>', method='GET')

@@ -14,6 +14,7 @@ dotm_frontend_static_DATA = \
 	static/dotm_common.js \
 	static/dotm_view_node.js \
 	static/dotm_view_all_nodes.js \
+	static/dotm_view_manage_nodes.js \
 	static/dotm_view_gmap.js \
 	static/dotm_view_config.js \
 	static/dotm_view_history.js \

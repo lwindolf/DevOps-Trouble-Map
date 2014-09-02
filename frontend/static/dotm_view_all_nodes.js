@@ -64,7 +64,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	    .size([width, height]);
 	    //.jaccardLinkLengths(150);
 	
-	$(this.stage).html("<form id='node_add' action='backend/nodes"+getParams()+"' method='POST'><input size='10' type='text' name='name'/><input type='submit' value='Add Node'/></form>");
+	$(this.stage).html("");
 	var svg = d3.select(this.stage).append("svg")
 	    .attr("width", width)
 	    .attr("height", height);
