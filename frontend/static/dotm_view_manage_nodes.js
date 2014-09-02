@@ -48,7 +48,7 @@ DOTMViewManageNodes.prototype.loadConfig = function(anchor) {
 		var html = "<div class='settingsForm'><h3>Known Nodes</h3><table border='0'>";
 
 		/* Print forms for existing nodes */
-		$.each(data.nodes, function(index, node) {
+		$.each(data.nodes.sort(), function(index, node) {
 			html += "<tr><td>" + node + "</td><td>";
 			html += "<a name='" + node + "'/>";
 			html += "<input type='button' value='Remove' onclick='javascript:removeNode(\""+node+"\")'/>";
