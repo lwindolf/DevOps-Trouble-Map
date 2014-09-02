@@ -3,6 +3,7 @@
 # -*- coding: utf-8 -*-
 
 from bottle import route, run, response, request, debug, static_file
+from subprocess import check_output
 
 # Backend Web API local imports
 # FIXME: import only what is needed instead of *
@@ -107,13 +108,36 @@ def get_nodes():
 
 @route('/backend/nodes', method='POST')
 @route('/nodes', method='POST')
-def add_node():
+def add_or_remove_node():
     # FIXME: validate name
     action = request.forms.get('action')
     if action == "add":
         rdb.lpush(ns.nodes, request.forms.get('name'))
     elif action == "remove":
         rdb.lrem(ns.nodes, request.forms.get('name'), 1)
+
+
+@route('/nodes/suggestions')
+def node_suggestions():
+    known_nodes = rdb.lrange(ns.nodes, 0, -1)
+    suggested_nodes = []
+    for line in check_output(['getent', 'hosts']).splitlines():
+        print line
+        fields = line.split()
+        # FIXME: Maybe improve following matching to private AND known networks
+        # FIXME: Poor mans grepping instead of correct network matching
+        if re.match('^(10\.|172\.|192\.168\.)', fields[0]):
+            # FIXME: checking if IP is resolved in dotm::resolver would be much 
+            # much more exact. For now check if we know any alias in this line
+            already_known = 0
+            for name in fields:
+                if name in known_nodes:
+                    already_known = 1
+            
+            if already_known == 0:
+                suggested_nodes.append(fields[1])
+
+    return resp_or_404(json.dumps({'nodes': suggested_nodes}))
 
 
 @route('/nodes/<name>', method='GET')
