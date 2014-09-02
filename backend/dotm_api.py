@@ -320,7 +320,13 @@ def get_report():
             alerts[node].append({'category': 'monitoring',
                                  'severity': 'WARNING',
                                  'message': 'Monitoring missing for this node'})
-        if not nodeDetails:
+
+        if 'fetch_status' in nodeDetails and nodeDetails['fetch_status'] != 'OK':
+            alerts[node].append({'category': 'agent',
+                                 'severity': 'CRITICAL',
+                                 'message': nodeDetails['fetch_status']})
+		# FIXME: check on out-dated results too!
+        elif not nodeDetails:
             alerts[node].append({'category': 'agent',
                                  'severity': 'WARNING',
                                  'message': 'No info for this node fetched from remote agent.'})
