@@ -82,6 +82,12 @@ DOTMViewNode.prototype.setData = function(data) {
 		var arrow;
 		var tmp;
 		var nodeDetails = "<table><tr><th></th><th></th><th>"+this.selectedNode+"</th><th></th><th></th></tr>";
+		var servicePortCount = new Array;
+		$.each(data.services, function(service, serviceData) {
+			if(!servicePortCount[serviceData.process])
+				servicePortCount[serviceData.process] = 0;
+			servicePortCount[serviceData.process]++;
+		});
 		$.each(data.services, function(service, serviceData) {
 			tmp = "";
 			nodeDetails += "<tr class='service "+serviceData.age+"'><td>";
@@ -115,7 +121,11 @@ DOTMViewNode.prototype.setData = function(data) {
 					tmp += "</div>";
 				}
 			})
-			nodeDetails += "</td></td><td class='service status_"+(serviceData.alert_status?serviceData.alert_status:'')+"'>"+serviceData.process+"</td><td>";
+			nodeDetails += "</td></td><td class='service status_"+(serviceData.alert_status?serviceData.alert_status:'')+"'>";
+			nodeDetails += serviceData.process;
+			if (servicePortCount[serviceData.process] > 1)
+				nodeDetails += ":"+service;
+			nodeDetails += "</td><td>";
 			if(tmp)
 				nodeDetails += "<img src='arrow-right"+((serviceData.age=="fresh")?'':'-dashed')+".svg'/>";
 			nodeDetails += "</td><td>" + tmp + "</td></tr>";
