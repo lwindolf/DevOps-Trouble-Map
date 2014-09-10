@@ -173,8 +173,9 @@ def monitoring_reload():
             # Put keys to history before reloading monitoring
             update_history()
 
-            # Track broken mapped services per node to later save them into node alert info
+            # Track mapped/unmapped alerts per node to later save them into node alert info
             tmp_services_broken = {}
+            other_alerts = {}
 
             # 1. Process and save services
             for key, val in mon.get_services().items():
@@ -214,6 +215,16 @@ def monitoring_reload():
                                                 tmp_services_broken[node] = {}
                                             tmp_services_broken[node][service_details[s]['process']] = sa['status']
 
+                # d) Map all critical alerts that cannot be matched
+                # to a service to an additional list for rendering
+                for sa in val:
+                    if not 'mapping' in sa:
+                        if sa['status'] in ('CRITICAL', 'WARNING'):
+                            print sa['service']
+                            if not node in other_alerts:
+                                other_alerts[node] = {}
+                            other_alerts[node][sa['service']] = sa['status']
+
                 # And store service check results in list...
                 rdb.delete(ns.services_checks + '::' + node)
                 for v in val:
@@ -229,6 +240,8 @@ def monitoring_reload():
                 # Merge broken services summary
                 if val['node'] in tmp_services_broken:
                     val['services_alerts'] = tmp_services_broken[val['node']]
+                if val['node'] in other_alerts:
+                    val['other_alerts'] = other_alerts[val['node']]
 
                 # And store in string...
                 rdb.setex(ns.nodes_checks + '::' + val['node'], json.dumps(val), config['expire'])

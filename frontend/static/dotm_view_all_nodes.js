@@ -24,6 +24,10 @@ DOTMViewAllNodes.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex,
 			n['height'] += 30 * Object.keys(monitoring[node]['services_alerts']).length;
 			n['services'] = monitoring[node]['services_alerts'];
 		}
+		if(monitoring[node]['other_alerts']) {
+			n['height'] += 30 * Object.keys(monitoring[node]['other_alerts']).length;
+			$.extend(n['services'], monitoring[node]['other_alerts']);
+		}
 	} else {
 		n['status'] = '';
 	}
