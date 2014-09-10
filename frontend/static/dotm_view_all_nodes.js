@@ -3,6 +3,8 @@
 function DOTMViewAllNodes(stage) {
 	this.stage = stage;
 	this.selectedNode = null;
+	this.graph = null;
+	this.nodePositions = new Array();
 	this.reload();
 }
 
@@ -24,6 +26,11 @@ DOTMViewAllNodes.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex,
 		}
 	} else {
 		n['status'] = '';
+	}
+
+	if(this.nodePositions[node]) {
+		n.x = this.nodePositions[node].x;
+		n.y = this.nodePositions[node].y;
 	}
 
 	nodeList.push(n);
@@ -77,23 +84,23 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	var i = 0;
 	var nodeIndex = {};
 
-	graph = new Array();
-	graph["nodes"] = new Array();
-	graph["links"] = new Array();
+	view.graph = new Array();
+	view.graph["nodes"] = new Array();
+	view.graph["links"] = new Array();
 	$.each(data.nodes, function(index, nodeData) {
-		view.addNodeToColaNodeList(graph['nodes'], nodeIndex, nodeData, data.monitoring);
+		view.addNodeToColaNodeList(view.graph['nodes'], nodeIndex, nodeData, data.monitoring);
 	});
 	$.each(data.connections, function(index, connectionData) {
 		// Node sources and target might not exist
 		// in case of non-managed nodes we connect to/from
 		if(nodeIndex[connectionData.source] == undefined)
-			view.addNodeToColaNodeList(graph['nodes'], nodeIndex, connectionData.source, data.monitoring);
+			view.addNodeToColaNodeList(view.graph['nodes'], nodeIndex, connectionData.source, data.monitoring);
 		if(nodeIndex[connectionData.destination] == undefined)
-			view.addNodeToColaNodeList(graph['nodes'], nodeIndex, connectionData.destination, data.monitoring);
+			view.addNodeToColaNodeList(view.graph['nodes'], nodeIndex, connectionData.destination, data.monitoring);
 		var l = {};
 		l['source'] = nodeIndex[connectionData.source];
 		l['target'] = nodeIndex[connectionData.destination];
-		graph['links'].push(l);
+		view.graph['links'].push(l);
 	});
 
 	var doLayout = function () {
@@ -115,7 +122,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	
 	var pad = 3;
 	var node = svg.selectAll(".node")
-		.data(graph.nodes);
+		.data(view.graph.nodes);
 
 	node.enter().append("g")
 		.attr("class", "node")
@@ -270,19 +277,19 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	  });
 	};
 
-	d3cola.nodes(graph.nodes)
-	      .links(graph.links)
+	d3cola.nodes(view.graph.nodes)
+	      .links(view.graph.links)
 	      .powerGraphGroups(function (d) {
 		    return (powerGraph = d).groups.forEach(function (v) {
 			return v.padding = 10;
 		    });
 	      });
 
-	graph.nodes.forEach(function (v, i) {
+	view.graph.nodes.forEach(function (v, i) {
             v.index = i;
         });
 
-	var modules = { N: graph.nodes.length, ms: [], edges: [] };
+	var modules = { N: view.graph.nodes.length, ms: [], edges: [] };
         var n = modules.N;
         powerGraph.groups.forEach(function (g) {
             var m = [];
@@ -290,7 +297,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
             modules.ms.push(m);
         });
         powerGraph.powerEdges.forEach(function (e) {
-            var N = graph.nodes.length;
+            var N = view.graph.nodes.length;
             modules.edges.push({ source: getId(e.source, N), target: getId(e.target, N) });
         });
 console.log(JSON.stringify(modules));
@@ -302,6 +309,16 @@ console.log(JSON.stringify(modules));
 
 DOTMViewAllNodes.prototype.reload = function() {
 	var view = this;
+
+	/* save old node positions */
+	if(view.graph) {
+		view.graph.nodes.forEach(function (e) {
+			if(!view.nodePositions[e.name])
+				view.nodePositions[e.name] = new Array();
+			view.nodePositions[e.name].x = e.x;
+			view.nodePositions[e.name].y = e.y;
+		});
+	}
 
 	setStatus(this.stage, 'Fetching nodes...');
 	$.getJSON("backend/nodes"+getParams(), {})
