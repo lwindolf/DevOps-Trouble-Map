@@ -116,7 +116,6 @@
 
 		function reloadTimer(position) {
 			idle[position]++;
-			console.log("idle["+position+"]="+idle[position]);
 
 			if (idle[position] >= 6)
 				reload(position);	/* 5*6 = every 30s */
