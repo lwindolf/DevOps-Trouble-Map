@@ -91,6 +91,7 @@
 		var panes = Array();
 		var reloadTimeout = Array();
 		var historyIndex = "";
+		var idle = Array();
 
 		function setHistoryIndex(timestamp) {
 			historyIndex = timestamp;
@@ -113,6 +114,17 @@
 			setView('right', new DOTMViewNode('.ui-layout-center .ui-layout-content', node));
 		}
 
+		function reloadTimer(position) {
+			idle[position]++;
+			console.log("idle["+position+"]="+idle[position]);
+
+			if (idle[position] >= 6)
+				reload(position);	/* 5*6 = every 30s */
+
+			clearTimeout(reloadTimeout[position]);
+			reloadTimeout[position] = setTimeout("reloadTimer('"+position+"');", 5000);
+		}
+
 		function reload(position) {
 			try {
 				panes[position].reload();
@@ -121,13 +133,26 @@
 			}
 
 			// FIXME: hard-coded timeout
-			clearTimeout(reloadTimeout[position]);
-			reloadTimeout[position] = setTimeout("reload('"+position+"');", 30000);
+			idle[position] = 0;
 		}
 
 		function setView(position, view) {
 			panes[position] = view;
-			reload(position);
+			idle[position] = 6;
+			reloadTimer(position);
+
+			// User interaction timer reset
+			if(position == "left") {
+				$(view.stage).mousedown	(function (e) { idle["left"] = 0; });
+				$(view.stage).mouseup	(function (e) { idle["left"] = 0; });
+				$(view.stage).click	(function (e) { idle["left"] = 0; });
+				$(view.stage).keypress	(function (e) { idle["left"] = 0; });
+			} else {
+				$(view.stage).mousedown	(function (e) { idle["right"] = 0; });
+				$(view.stage).mouseup	(function (e) { idle["right"] = 0; });
+				$(view.stage).click	(function (e) { idle["right"] = 0; });
+				$(view.stage).keypress	(function (e) { idle["right"] = 0; });
+			}
 		}
 
 		(function() {
