@@ -222,6 +222,13 @@ main()
 				continue
 			fi
 
+			# Detect local connection service endpoint
+			local_service=
+			if [ "$remoteip" == "127.0.0.1" ]; then
+				local_service="local_service '${listen_ports[$remoteport]}'"
+				echo "      connected to local service >>>$local_service<<<"
+			fi
+
 			remoteip=$(ip_to_name $remoteip)
 
 			# FIXME: local connections currently are described as incoming
@@ -230,6 +237,7 @@ main()
 				if [ "$remoteport" -gt 1023 ]; then
 					remoteport="high"
 				fi
+
 				echo "  -> outgoing connection to $remoteaddr (to $remoteip by $program)"
 				conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
 				redis_push "dotm::connections::${c}::${remoteport}::${remoteip}" \
@@ -238,12 +246,14 @@ main()
 					local_port "$localport" \
 					remote_port "$remoteport" \
 					remote_host "$remoteip" \
+					$local_service \
 					connections "$conn_count" \
 					direction "out"	
 			else
 				# FIXME: Consolidate incoming connections based on frequency
 				# e.g. count per net and combine to network if too many appear
 				echo "  -> incoming from $remoteaddr ($remoteip to $localport $program)"
+
 				conn_count=$(echo "$output" | grep "[[:space:]]$localaddr[[:space:]]*$remoteip:[0-9][0-9]*[[:space:]]" | wc -l)
 				redis_push "dotm::connections::${c}::${localport}::${remoteip}" \
 					process "$program" \

@@ -95,12 +95,16 @@ DOTMViewNode.prototype.setData = function(data) {
 				if(connectionData.local_port == service &&
 				   connectionData.direction == "in" &&
 				   tmp.indexOf(">"+connectionData.remote_host+"<") == -1) {
-					tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remote_host)+"</div>";
+					tmp += "<div class='node "+connectionData.age+"'>"+nodeLink(connectionData.remote_host);
 					if(connectionData['remote_service']) {
 						if(connectionData.remote_service['process']) {
 							tmp += "<div class='remoteService service status_"+connectionData.remote_service.alert_status+"'>"+connectionData.remote_service.process+"</div>";
 						}
 					}
+					if(connectionData['local_service']) {
+						tmp += "<div class='remoteService service'>"+connectionData.local_service+"</div>";
+					}
+					tmp += "</div>";
 				}
 			})
 			nodeDetails += tmp + "<td>";
@@ -117,6 +121,9 @@ DOTMViewNode.prototype.setData = function(data) {
 						if(connectionData.remote_service['process']) {
 							tmp += "<div class='remoteService service status_"+connectionData.remote_service.alert_status+"'>"+connectionData.remote_service.process+"</div>";
 						}
+					}
+					if(connectionData['local_service']) {
+						tmp += "<div class='remoteService service'>"+connectionData.local_service+"</div>";
 					}
 					tmp += "</div>";
 				}
