@@ -19,6 +19,7 @@ DOTMViewAllNodes.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex,
 
 	if(monitoring[node]) {
 		n['status'] = monitoring[node]['status'];
+
 		/* add space for services */
 		if(monitoring[node]['services_alerts']) {
 			n['height'] += 30 * Object.keys(monitoring[node]['services_alerts']).length;
@@ -116,7 +117,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	      .enter().append("rect")
 	      .attr("rx", r).attr("ry", r)
 	      .attr("class", "group")
-	      .style("fill", function (d, i) { return color(i); });
+	      .style("fill", function (d, i) { return '#ddd8ae'; });
 	
 	var link = svg.selectAll(".link")
 	      .data(powerGraph.powerEdges)
@@ -151,7 +152,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 				    .attr("class", function (d) { return "node_rect node_" + d.name.replace('.',''); })
 				    .style("fill", function (d) {
 					if(d.status == 'UP')
-						return '#0c3';
+						return '#fff';
 					if(d.status == 'DOWN')
 						return '#f30';
 					if(d.status == 'UNKNOWN')
