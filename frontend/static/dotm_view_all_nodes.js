@@ -1,9 +1,11 @@
 /* DOTM view displaying all node connections and faulty services */
 
 function DOTMViewAllNodes(stage) {
-	this.stage = stage;
+	this.stage = stage;		/* parent <div> selector */
 	this.selectedNode = null;
 	this.graph = null;
+	this.viewBoxX = 0;		/* panning coordinates */
+	this.viewBoxY = 0;
 	this.nodePositions = new Array();
 	this.reload();
 }
@@ -81,6 +83,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	    //.jaccardLinkLengths(150);
 	
 	$(this.stage).html("");
+	$(this.stage).css("overflow", "hidden");
 	var svg = d3.select(this.stage).append("svg")
 	    .attr("width", width)
 	    .attr("height", height);
@@ -88,11 +91,10 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	// Allow panning as suggested in by dersinces (CC BY-SA 3.0) in
 	// http://stackoverflow.com/questions/20099299/implement-panning-while-keeping-nodes-draggable-in-d3-force-layout
 	var drag = d3.behavior.drag();
-	var viewBoxX = 0, viewBoxY = 0;
 	drag.on('drag', function() {
-	    viewBoxX -= d3.event.dx;
-	    viewBoxY -= d3.event.dy;
-	    svg.select('g.node-area').attr('transform', 'translate(' + (-viewBoxX) + ',' + (-viewBoxY) + ')');
+	    view.viewBoxX -= d3.event.dx;
+	    view.viewBoxY -= d3.event.dy;
+	    svg.select('g.node-area').attr('transform', 'translate(' + (-view.viewBoxX) + ',' + (-view.viewBoxY) + ')');
 	});
 	svg.append('rect')
 	  .classed('bg', true)
@@ -105,6 +107,9 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	  .call(drag);
 
 	var nodeArea = svg.append('g').classed('node-area', true);
+
+	// Restore previous panning
+	svg.select('g.node-area').attr('transform', 'translate(' + (-view.viewBoxX) + ',' + (-view.viewBoxY) + ')');
 	
 	// Map data 
 	var i = 0;
