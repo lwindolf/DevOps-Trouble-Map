@@ -89,14 +89,10 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	// http://stackoverflow.com/questions/20099299/implement-panning-while-keeping-nodes-draggable-in-d3-force-layout
 	var drag = d3.behavior.drag();
 	var viewBoxX = 0, viewBoxY = 0;
-	drag.on('dragstart', function() {
-	    console.log('new dragstart is called');
-	}).on('drag', function() {
+	drag.on('drag', function() {
 	    viewBoxX -= d3.event.dx;
 	    viewBoxY -= d3.event.dy;
 	    svg.select('g.node-area').attr('transform', 'translate(' + (-viewBoxX) + ',' + (-viewBoxY) + ')');
-	}).on('dragend', function() {
-	    console.log('new dragend is called');
 	});
 	svg.append('rect')
 	  .classed('bg', true)
@@ -350,7 +346,7 @@ DOTMViewAllNodes.prototype.reload = function() {
 		});
 	}
 
-	setStatus(this.stage, 'Fetching nodes...');
+	setStatus(this.stage, 'Updating...');
 	$.getJSON("backend/nodes"+getParams(), {})
 	.done(function (data) {
 		clearStatus(view.stage);
