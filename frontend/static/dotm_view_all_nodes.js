@@ -256,7 +256,14 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 		})
 	        .call(d3cola.drag);
 
-	d3cola.start(5,15,20);
+	if(view.nodePositions.length == 0) {
+		setStatus(this.stage, "Calculating layout...");
+		d3cola.start(10,20,30);
+	} else {
+		/* Do only a few full constraint iterations */
+		d3cola.start(0,0,5);
+	}
+
 	d3cola.on("tick", function() {
                 node.each(function (d) {
                     d.bounds.setXCentre(d.x);
