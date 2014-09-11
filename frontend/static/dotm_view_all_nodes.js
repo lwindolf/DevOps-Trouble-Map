@@ -44,28 +44,6 @@ DOTMViewAllNodes.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex,
 	nodeIndex[node] = Object.keys(nodeIndex).length;
 };
 
-function expandGroup(g, ms) {
-    if (g.groups) {
-        g.groups.forEach(function (cg) {
-            return expandGroup(cg, ms);
-        });
-    }
-    if (g.leaves) {
-        g.leaves.forEach(function (l) {
-            ms.push(l.index + 1);
-        });
-    } else {
-	// FIXME: dirty workaround, sometimes auto-grouping causes group without
-	// leaves which causes an Exception, which we do not want
-        g.leaves = new Array();
-    }
-}
-
-function getId(v, n) {
-    return (typeof v.index === 'number' ? v.index : v.id + n) + 1;
-}
-
-
 DOTMViewAllNodes.prototype.setData = function(data) {
 	var view = this;
 	var powerGraph;
@@ -80,7 +58,6 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	    .linkDistance(150)
 	    .avoidOverlaps(true)
 	    .size([width, height]);
-	    //.jaccardLinkLengths(150);
 	
 	$(this.stage).html("");
 	$(this.stage).css("overflow", "hidden");
@@ -323,22 +300,6 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 		    });
 	      });
 
-	view.graph.nodes.forEach(function (v, i) {
-            v.index = i;
-        });
-
-	var modules = { N: view.graph.nodes.length, ms: [], edges: [] };
-        var n = modules.N;
-        powerGraph.groups.forEach(function (g) {
-            var m = [];
-            expandGroup(g, m);
-            modules.ms.push(m);
-        });
-        powerGraph.powerEdges.forEach(function (e) {
-            var N = view.graph.nodes.length;
-            modules.edges.push({ source: getId(e.source, N), target: getId(e.target, N) });
-        });
-console.log(JSON.stringify(modules));
 	doLayout();
 
 	if(getHistoryIndex() != "")
