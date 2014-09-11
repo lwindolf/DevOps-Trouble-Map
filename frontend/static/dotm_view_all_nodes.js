@@ -44,6 +44,20 @@ DOTMViewAllNodes.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex,
 	nodeIndex[node] = Object.keys(nodeIndex).length;
 };
 
+// FIXME: dirty workaround, sometimes auto-grouping causes group without
+// leaves which causes an Exception, which we do not want
+function fixGroups(g) {
+	if (g.groups) {
+		g.groups.forEach(function (cg) {
+			return fixGroups(cg);
+		});
+	}
+	if (g.leaves)
+		return;
+
+	g.leaves = new Array();
+}
+
 DOTMViewAllNodes.prototype.setData = function(data) {
 	var view = this;
 	var powerGraph;
@@ -300,6 +314,7 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 		    });
 	      });
 
+	powerGraph.groups.forEach(function (g) { fixGroups(g); });
 	doLayout();
 
 	if(getHistoryIndex() != "")
