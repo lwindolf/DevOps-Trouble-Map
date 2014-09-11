@@ -84,6 +84,31 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 	var svg = d3.select(this.stage).append("svg")
 	    .attr("width", width)
 	    .attr("height", height);
+
+	// Allow panning as suggested in by dersinces (CC BY-SA 3.0) in
+	// http://stackoverflow.com/questions/20099299/implement-panning-while-keeping-nodes-draggable-in-d3-force-layout
+	var drag = d3.behavior.drag();
+	var viewBoxX = 0, viewBoxY = 0;
+	drag.on('dragstart', function() {
+	    console.log('new dragstart is called');
+	}).on('drag', function() {
+	    viewBoxX -= d3.event.dx;
+	    viewBoxY -= d3.event.dy;
+	    svg.select('g.node-area').attr('transform', 'translate(' + (-viewBoxX) + ',' + (-viewBoxY) + ')');
+	}).on('dragend', function() {
+	    console.log('new dragend is called');
+	});
+	svg.append('rect')
+	  .classed('bg', true)
+	  .attr('stroke', 'transparent')
+	  .attr('fill', 'transparent')
+	  .attr('x', 0)
+	  .attr('y', 0)
+	  .attr('width', width)
+	  .attr('height', height)
+	  .call(drag);
+
+	var nodeArea = svg.append('g').classed('node-area', true);
 	
 	// Map data 
 	var i = 0;
@@ -112,21 +137,21 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 
 	svg.append('svg:defs').append('svg:marker').attr('id', 'end-arrow').attr('viewBox', '0 -5 10 10').attr('refX', 5).attr('markerWidth', 9).attr('markerHeight', 3).attr('orient', 'auto').append('svg:path').attr('d', 'M0,-5L10,0L0,5L2,0').attr('stroke-width', '0xp').attr('fill', '#555');
 
-	var group = svg.selectAll(".group")
+	var group = nodeArea.selectAll(".group")
 	      .data(powerGraph.groups)
 	      .enter().append("rect")
 	      .attr("rx", r).attr("ry", r)
 	      .attr("class", "group")
 	      .style("fill", function (d, i) { return '#ddd8ae'; });
 	
-	var link = svg.selectAll(".link")
+	var link = nodeArea.selectAll(".link")
 	      .data(powerGraph.powerEdges)
 	      .enter().append("line")
 	      .attr("class", "link")
 	      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
 	
 	var pad = 3;
-	var node = svg.selectAll(".node")
+	var node = nodeArea.selectAll(".node")
 		.data(view.graph.nodes);
 
 	node.enter().append("g")
