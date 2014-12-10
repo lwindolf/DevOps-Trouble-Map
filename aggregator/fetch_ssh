@@ -1,0 +1,32 @@
+# This file is part of Devops Trouble Map (short DOTM).
+#
+# DOTM is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# DOTM is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with DOTM.  If not, see <http://www.gnu.org/licenses/>.
+
+# This is a temporary hack to provide the "periodic state fetcher"
+# functionality. As Bash is not the best choice for data transformations
+# it should be reimplemented in Python using a real Redis binding
+
+SSH="ssh -t -o ConnectTimeout=3 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey"
+
+check() {
+	:
+}
+
+fetch() {
+	node=$1
+
+	echo "hostname=$1"
+	# FIXME: sudo needed for automatic process resolving...
+	$SSH $node "export LANG=C; sudo /bin/netstat -antlp; /sbin/ip addr"
+}
