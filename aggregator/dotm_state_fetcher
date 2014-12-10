@@ -144,14 +144,20 @@ if ! $REDIS_CLI info >/dev/null; then
 	exit 1
 fi
 
-if ! $NETCAT -h 2>/dev/null; then
-	echo "ERROR: Cannot run '$NETCAT'! Is it installed?" >&2
-	exit 1
-fi
-
 readonly CLIENTS=$($REDIS_CLI lrange dotm::nodes 0 -1)
 if [ "$CLIENTS" == "" ]; then
 	echo "ERROR: Could not determine list of client nodes!" >&2
+	exit 1
+fi
+
+FETCH_METHOD=$($REDIS_CLI get dotm::config::fetch_method)
+if [ "$FETCH_METHOD" == "" ]; then
+	FETCH_METHOD="ssh"
+fi
+
+. $(dirname $0)/fetch_${FETCH_METHOD}
+if [ $? != 0 ]; then
+	echo "ERROR: Failed to source fetch method '$FETCH_METHOD'!"
 	exit 1
 fi
 
@@ -164,7 +170,7 @@ main()
 	for c in $CLIENTS;
 	do
 		echo "Fetching from '$c'..."
-		output=$($NETCAT "$c" 4848)
+		output=$(fetch $c)
 		if [ $? -ne 0 ]; then
 			node_fetch_error "Connection to $c failed"
 			continue

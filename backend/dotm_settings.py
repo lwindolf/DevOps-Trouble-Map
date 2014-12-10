@@ -18,6 +18,13 @@ history_key_set = (ns.nodes, ns.connections, ns.services, ns.checks, ns.config, 
 
 # Default DOTM Settings
 settings = {
+    'fetch_method':            {'description': 'Fetch method: How to fetch node infos. Possible values are:'
+                                ' "agent" (when you have installed dotm_agent) and "ssh" (when you want to'
+                                ' rely on root equivalency between the DOTM server and all monitored nodes).',
+                                'title': 'Fetch Method',
+                                'type': 'single_value',
+                                'default': 'ssh',
+                                'position': 0},
     'other_internal_networks': {'description': 'Networks that DOTM should consider internal. Note that private'
                                 ' networks (127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16) are always'
                                 ' considered internal. Separate different networks in CIDR syntax by spaces.',
