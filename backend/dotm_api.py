@@ -78,7 +78,7 @@ def get_services():
     nodes = rdb.lrange(ns.nodes, 0, -1)
     for node in nodes:
         monitoringDetails = get_node_alerts(node)
-        if 'services_alerts' in monitoringDetails:
+        if monitoringDetails and 'services_alerts' in monitoringDetails:
             for m in monitoringDetails['services_alerts']:
                 monitoring.append({'service': m, 
                                    'status': monitoringDetails['services_alerts'][m],
