@@ -69,6 +69,37 @@ def queue_func(fn, *args, **kwargs):
 
 
 # Bottle HTTP routing
+@route('/services')
+@history_call
+def get_services():
+    services = {}
+    monitoring = []
+    connections = []
+    nodes = rdb.lrange(ns.nodes, 0, -1)
+    for node in nodes:
+        monitoringDetails = get_node_alerts(node)
+        for m in monitoringDetails['services_alerts']:
+            monitoring.append({'service': m, 
+                               'status': monitoringDetails['services_alerts'][m],
+                               'node': node})
+
+        serviceDetails = get_service_details(node)
+        for s in serviceDetails:
+            if not 'process' in serviceDetails[s]:
+                name = 'port %s' % s
+            else:
+                name = serviceDetails[s]['process']
+            if not name in services:
+                services[name] = {}
+                services[name]['nodes'] = []
+            services[name]['nodes'].append(node)
+
+    return resp_or_404(json.dumps({'services': services,
+                                   'connections': connections,
+                                   'monitoring': monitoring}),
+				       'application/javascript',
+					   'no-cache, no-store, must-revalidate')
+
 @route('/geo/nodes')
 @history_call
 def get_geo_nodes():
