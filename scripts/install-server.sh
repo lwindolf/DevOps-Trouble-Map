@@ -9,7 +9,7 @@ if [ ! -f configure.ac ]; then
 	exit 1
 fi
 
-if ! lsb_release -i | egrep 'Debian|Ubuntu' >/dev/null; then
+if ! lsb_release -i | egrep 'Debian|Ubuntu|Mint' >/dev/null; then
 	echo "ERROR: Currently only Debian/Ubuntu are supported by this script!"
 	echo "Please contribute installation instructions for other distributions!"
 	exit 1
