@@ -7,6 +7,7 @@ function DOTMViewAllNodes(stage) {
 	this.viewBoxX = 0;		/* panning coordinates */
 	this.viewBoxY = 0;
 	this.nodePositions = new Array();
+	this.initialized = 0;           /* 0 = not yet rendered, 1 = rendered once */
 }
 
 DOTMViewAllNodes.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex, node, monitoring) {
@@ -251,9 +252,10 @@ DOTMViewAllNodes.prototype.setData = function(data) {
 		})
 	        .call(d3cola.drag);
 
-	if(view.nodePositions.length == 0) {
+	if(view.initialized == 0) {
 		setStatus(this.stage, "Calculating layout...");
 		d3cola.start(10,20,30);
+		view.initialized = 1;
 	} else {
 		/* Do only a few full constraint iterations */
 		d3cola.start(0,0,5);
