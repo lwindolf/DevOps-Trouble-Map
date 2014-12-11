@@ -7,7 +7,6 @@ function DOTMViewAllNodes(stage) {
 	this.viewBoxX = 0;		/* panning coordinates */
 	this.viewBoxY = 0;
 	this.nodePositions = new Array();
-	this.reload();
 }
 
 DOTMViewAllNodes.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex, node, monitoring) {
