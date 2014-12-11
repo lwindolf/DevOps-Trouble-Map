@@ -39,9 +39,25 @@ chmod a+x /etc/init.d/dotm_api
 update-rc.d dotm_api defaults
 /etc/init.d/dotm_api restart
 
-echo "### Setting up Apache config..."
-ln -s /usr/local/share/dotm_frontend/apache-2.4.conf /etc/apache2/conf-enabled/dotm.conf
-/etc/init.d/apache2 reload
-
 echo "### Installing state fetcher cron..."
 cp aggregator/cron_dotm_aggregator /etc/cron.d/
+
+# Debian Apache 2.4
+if dpkg -s apache2.4-common >/dev/null; then
+	echo "### Setting up Apache 2.4 config..."
+	a2enmod proxy
+	a2enmod proxy_http
+	ln -s /usr/local/share/dotm_frontend/apache-2.4.conf /etc/apache2/conf-enabled/dotm.conf
+	/etc/init.d/apache2 reload
+# Debian Apache 2.2
+elif dpkg -s apache2.2-common >/dev/null; then
+        echo "### Setting up Apache 2.2 config..."
+	a2enmod proxy
+	a2enmod proxy_http
+        ln -s /usr/local/share/dotm_frontend/apache-2.2.conf /etc/apache2/conf.d/dotm.conf
+        /etc/init.d/apache2 reload
+else
+	echo "Could not detect a webserver. You might want to manually"
+	echo "choose a config file from /usr/local/share/dotm_frontend"
+	echo "and configure it with your webserver!"
+fi

@@ -9,6 +9,7 @@ backend/Makefile
 backend/dotm_backend.rc
 backend/dotm_api.rc
 frontend/Makefile
+frontend/apache-2.2.conf
 frontend/apache-2.4.conf
 aggregator/Makefile
 scripts/Makefile

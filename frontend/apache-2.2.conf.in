@@ -1,0 +1,15 @@
+Alias /dotm @prefix@/share/dotm_frontend/static
+<Directory @prefix@/share/dotm_frontend/static>
+	Allow from localhost
+
+	# You want to active the following config:
+	#
+	# AuthUserFile /etc/dotm/dotm-htpasswd
+        # AuthName "Devops Trouble Map"
+        # AuthType Basic
+        # require valid-user
+</Directory>
+
+# Passing backend requests to avoid Cross-Origin query
+ProxyPass /dotm/backend/	http://localhost:8080/ retry=5
+ProxyPassReverse /dotm/backend/	http://localhost:8080/ retry=5

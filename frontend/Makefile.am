@@ -28,4 +28,6 @@ dotm_frontend_css_DATA = \
 	static/css/layout-default.css
 
 dotm_frontenddir = $(datadir)/dotm_frontend
-dotm_frontend_DATA = apache-2.4.conf
+dotm_frontend_DATA = \
+	apache-2.2.conf \
+	apache-2.4.conf
