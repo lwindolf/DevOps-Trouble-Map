@@ -72,6 +72,8 @@ def queue_func(fn, *args, **kwargs):
 @route('/services')
 @history_call
 def get_services():
+    whitelist_ports = get_setting('service_port_whitelist').split(',')
+    whitelist_names = get_setting('service_name_whitelist').split(',')
     services = {}
     monitoring = []
     connections = []
@@ -86,14 +88,21 @@ def get_services():
 
         serviceDetails = get_service_details(node)
         for s in serviceDetails:
-            if not 'process' in serviceDetails[s]:
-                name = 'port %s' % s
+	    if not s in whitelist_ports:
+                if not 'process' in serviceDetails[s]:
+                    name = 'port %s' % s
+                else:
+                    name = serviceDetails[s]['process']
+                if not name in whitelist_names:
+                    if not name in services:
+                        services[name] = {}
+                        services[name]['nodes'] = []
+                    if not node in services[name]['nodes']:
+                        services[name]['nodes'].append(node)
+                else:
+                    print "%s is whitelisted" % name
             else:
-                name = serviceDetails[s]['process']
-            if not name in services:
-                services[name] = {}
-                services[name]['nodes'] = []
-            services[name]['nodes'].append(node)
+                print "%s is whitelisted (ports)" % s
 
     return resp_or_404(json.dumps({'services': services,
                                    'connections': connections,
