@@ -31,7 +31,7 @@ redis_push() {
 	local key=$(shift)
 	local params=("$@")
 	local output=$($REDIS_CLI hmset $key "${params[@]}")
-	if [ $? -ne 0 -o "$output" != "OK" ]; then 
+	if [ $? -ne 0 -o "$output" != "OK" ]; then
 		echo "ERROR: Failed to run >>>$REDIS_CLI hmset $key ${params[@]}<<<!" >&2
 		echo "$output"
 	fi
@@ -41,7 +41,7 @@ redis_push() {
 declare -a netmasks
 load_nets() {
 	# Note: configuration contains CIDR netmasks that we need
-	# to convert to hex values for easy checking 
+	# to convert to hex values for easy checking
 	private_networks="127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
 	extra_networks=$($REDIS_CLI lrange dotm::config::other_internal_networks 0 -1 2>/dev/null)
 	for cidr in $private_networks $extra_networks
@@ -85,7 +85,7 @@ match_nets() {
 	fi
 
 	for entry in ${!netmasks[*]}
-	do	
+	do
 		eval "${netmasks[$entry]}"
 		if [[ $(($ip & $netmask)) -eq $network ]]; then
 			return 1
@@ -94,6 +94,8 @@ match_nets() {
 
 	return 0
 }
+
+declare -a ip_to_name_cache
 
 # Make an IP human readable, by either deciding it to be
 # Internet (thereby reducing it) or mapping to a known node name.
@@ -105,7 +107,23 @@ match_nets() {
 ip_to_name() {
 	local ip=$1
 
-	out=$($REDIS_CLI get "dotm::resolver::ip_to_node::$ip" 2>/dev/null)
+  ip_key="i${ip//./_}"
+	if [ "${ip_to_name_cache[$ip_key]}" == "" ]; then
+		# Try internal resolver
+		out=$($REDIS_CLI get "dotm::resolver::ip_to_node::$ip" 2>/dev/null)
+
+		# Try local resolving
+		if [ "$out" == "" ]; then
+			out=$(getent hosts $ip | awk '{print $2}')
+		fi
+
+		if [ "$out" != "" ]; then
+			ip_to_name_cache[$ip_key]=$out
+	  fi
+	else
+		out="${ip_to_name_cache[$ip_key]}"
+	fi
+
 	if [ "$out" != "" ]; then
 		echo "$out"
 		return
@@ -136,7 +154,7 @@ if [ "$PID" != "" ]; then
 		echo "WARNING: Terminating, another instance is still running ($PID)!"
 		exit 0
 	fi
-fi	
+fi
 echo $$ >"$PIDFILE"
 
 if ! $REDIS_CLI info >/dev/null; then
@@ -165,6 +183,10 @@ main()
 {
 	load_settings
 
+	# Get index of previously known connections to match for remote
+	# service endpoints we know and care about
+	known_connections=$($REDIS_CLI keys dotm::connections::*)
+
 	declare -A listen_ports
 	declare -A used_services
 	for c in $CLIENTS;
@@ -190,16 +212,16 @@ main()
 			node_fetch_error "Result from $c missing connection listing"
 			continue
 		fi
-	
+
 		# There should be at least one interface listed
 		if [[ ! "$output" =~ inet\  ]]; then
 			node_fetch_error "Result from $c missing interface listing"
 			continue
 		fi
-	
+
 		# Parse output and store into Redis
 		now=$(date +%s)
-	
+
 		echo "Services:"
 		unset listen_ports
 		unset used_services
@@ -224,7 +246,7 @@ main()
 			program=${program##*/}
 			program=${program:-unknown}
 
-			if [ "$program" == "dotm_node" ]; then 
+			if [ "$program" == "dotm_node" ]; then
 				continue
 			fi
 
@@ -240,8 +262,13 @@ main()
 			# FIXME: local connections currently are described as incoming
 			if [ "${listen_ports[${localport}]}" == "" ]; then
 				# Reduce listings of random ports
+				# FIXME: do not do this for well known remote server ports
+				# FIXME: do not do this for services we know about
 				if [ "$remoteport" -gt 1023 ]; then
-					remoteport="high"
+					echo "Checking dotm::connections::${remoteip}::${remoteport}::" >&2
+					if ! echo "$known_connections" | grep "^dotm::connections::${remoteip}::${remoteport}::" >/dev/null; then
+						remoteport="high"
+					fi
 				fi
 
 				echo "  -> outgoing connection to $remoteaddr (to $remoteip by $program)"
@@ -254,7 +281,7 @@ main()
 					remote_host "$remoteip" \
 					$local_service \
 					connections "$conn_count" \
-					direction "out"	
+					direction "out"
 			else
 				# FIXME: Consolidate incoming connections based on frequency
 				# e.g. count per net and combine to network if too many appear

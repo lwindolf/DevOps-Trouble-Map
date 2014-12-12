@@ -130,7 +130,7 @@ settings = {
                                 ' you do not care about. Currently only TCP ports are handled.',
                                 'title': 'Aggregator: Service Name Whitelist',
                                 'type': 'single_value',
-                                'default': 'rpc.statd,rpc.mountd',
+                                'default': 'rpc.statd,rpcstatd,rpc.mountd',
                                 'position': 10}
 }
 

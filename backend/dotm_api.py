@@ -72,6 +72,7 @@ def queue_func(fn, *args, **kwargs):
 @route('/services')
 @history_call
 def get_services():
+    # FIXME: move service whitelisting into get_service_details()
     whitelist_ports = get_setting('service_port_whitelist').split(',')
     whitelist_names = get_setting('service_name_whitelist').split(',')
     services = {}
@@ -82,7 +83,7 @@ def get_services():
         monitoringDetails = get_node_alerts(node)
         if monitoringDetails and 'services_alerts' in monitoringDetails:
             for m in monitoringDetails['services_alerts']:
-                monitoring.append({'service': m, 
+                monitoring.append({'service': m,
                                    'status': monitoringDetails['services_alerts'][m],
                                    'node': node})
 
@@ -90,22 +91,20 @@ def get_services():
         for s in serviceDetails:
 	    if not s in whitelist_ports:
                 if not 'process' in serviceDetails[s]:
-                    name = 'port %s' % s
+                    name = ':%s' % s
                 else:
                     name = serviceDetails[s]['process']
-                if not name in whitelist_names:
+                if not name in whitelist_names and name != '-':
                     if not name in services:
                         services[name] = {}
                         services[name]['nodes'] = []
+                        services[name]['port'] = s
                     if not node in services[name]['nodes']:
                         services[name]['nodes'].append(node)
-                else:
-                    print "%s is whitelisted" % name
-            else:
-                print "%s is whitelisted (ports)" % s
+
 
     return resp_or_404(json.dumps({'services': services,
-                                   'connections': connections,
+                                   'connections': get_service_connections(),
                                    'monitoring': monitoring}),
 				       'application/javascript',
 					   'no-cache, no-store, must-revalidate')
@@ -170,13 +169,13 @@ def node_suggestions():
         # FIXME: Maybe improve following matching to private AND known networks
         # FIXME: Poor mans grepping instead of correct network matching
         if re.match('^(10\.|172\.|192\.168\.)', fields[0]):
-            # FIXME: checking if IP is resolved in dotm::resolver would be much 
+            # FIXME: checking if IP is resolved in dotm::resolver would be much
             # much more exact. For now check if we know any alias in this line
             already_known = 0
             for name in fields:
                 if name in known_nodes:
                     already_known = 1
-            
+
             if already_known == 0:
                 suggested_nodes.append(fields[1])
 

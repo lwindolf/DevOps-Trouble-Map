@@ -10,11 +10,14 @@ function DOTMViewAllServices(stage) {
 	this.initialized = 0;           /* 0 = not yet rendered, 1 = rendered once */
 }
 
-DOTMViewAllServices.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex, node, monitoring) {
+DOTMViewAllServices.prototype.addNodeToColaNodeList = function(nodeList, nodeIndex, node, monitoring, services) {
 	var n = {};
 	n['name'] = node;
 	n['width'] = 100;
 	n['height'] = 40;
+
+  if(services)
+		n['name'] += ' (' + services[node]['nodes'].length + ')';
 
 	/* We expect a node label font size of 10pt! */
 	n['width'] = 6 * n['name'].length + 48;
@@ -72,7 +75,7 @@ DOTMViewAllServices.prototype.setData = function(data) {
 	    .linkDistance(150)
 	    .avoidOverlaps(true)
 	    .size([width, height]);
-	
+
 	$(this.stage).html("");
 	$(this.stage).css("overflow", "hidden");
 	var svg = d3.select(this.stage).append("svg")
@@ -101,8 +104,8 @@ DOTMViewAllServices.prototype.setData = function(data) {
 
 	// Restore previous panning
 	svg.select('g.node-area').attr('transform', 'translate(' + (-view.viewBoxX) + ',' + (-view.viewBoxY) + ')');
-	
-	// Map data 
+
+	// Map data
 	var i = 0;
 	var nodeIndex = {};
 
@@ -110,7 +113,7 @@ DOTMViewAllServices.prototype.setData = function(data) {
 	view.graph["nodes"] = new Array();
 	view.graph["links"] = new Array();
 	$.each(data.services, function(index, nodeData) {
-		view.addNodeToColaNodeList(view.graph['nodes'], nodeIndex, index, data.monitoring);
+		view.addNodeToColaNodeList(view.graph['nodes'], nodeIndex, index, data.monitoring, data.services);
 	});
 	$.each(data.connections, function(index, connectionData) {
 		// Node sources and target might not exist
@@ -135,13 +138,13 @@ DOTMViewAllServices.prototype.setData = function(data) {
 	      .attr("rx", r).attr("ry", r)
 	      .attr("class", "group")
 	      .style("fill", function (d, i) { return '#ddd8ae'; });
-	
+
 	var link = nodeArea.selectAll(".link")
 	      .data(powerGraph.powerEdges)
 	      .enter().append("line")
 	      .attr("class", "link")
 	      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
-	
+
 	var pad = 3;
 	var node = nodeArea.selectAll(".node")
 		.data(view.graph.nodes);
@@ -235,7 +238,7 @@ DOTMViewAllServices.prototype.setData = function(data) {
 					    .attr("fill", function(d) {
 						if(state == "CRITICAL")
 							return "#F30";
-						else 
+						else
 							return "#FF0";
 					    });
 
@@ -292,7 +295,7 @@ DOTMViewAllServices.prototype.setData = function(data) {
 		}).attr("height", function (d) {
 			return d.innerBounds.height();
 		});
-	
+
                 group.attr("x", function (d) {
                     return d.innerBounds.x;
                 }).attr("y", function (d) {

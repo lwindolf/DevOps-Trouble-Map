@@ -17,7 +17,7 @@
 # functionality. As Bash is not the best choice for data transformations
 # it should be reimplemented in Python using a real Redis binding
 
-SSH="ssh -t -o ConnectTimeout=3 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey"
+SSH="ssh -t -o ConnectTimeout=3 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey -l admin"
 
 check() {
 	:
