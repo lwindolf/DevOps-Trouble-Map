@@ -4,7 +4,6 @@
 function DOTMViewNode(stage, node) {
 	this.stage = stage;
 	this.selectedNode = node;
-	this.reload();
 }
 
 DOTMViewNode.prototype.setData = function(data) {

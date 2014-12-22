@@ -4,11 +4,15 @@
 
 import argparse
 import redis
+import re
 from dotm_settings import *
 from dotm_namespace import DOTMNamespace
 
 # Redis namespace configuration
 ns = DOTMNamespace()
+
+def clean_string(s):
+    return re.sub('[^\w]', '', s)
 
 
 def vars_to_json(key, val):
@@ -18,6 +22,31 @@ def vars_to_json(key, val):
 def get_json_array(key, start=0, end=-1):
     return [json.loads(el) for el in rdb.lrange(key, start, end)]
 
+
+def get_service_connections():
+    """Return a connection graph for all nodes"""
+    connections = {}
+    tmp = {}
+    for key in rdb.keys(ns.connections + '*'):
+        # Remove history prefix before we split the key into a value array
+        fields = key.lstrip('01234567890:').split('::')
+        if not (not fields[3].isdigit() or fields[4].startswith('127')
+                or fields[2].startswith('127')):
+            connectionDetails = rdb.hgetall(key)
+
+            source = connectionDetails['process']
+            remoteServiceDetails = rdb.hgetall(ns.services + "::" + connectionDetails['remote_host'] + "::" + connectionDetails['remote_port'])
+            if 'process' in remoteServiceDetails:
+                if source != remoteServiceDetails['process']:
+                    connKey = source+"::"+remoteServiceDetails['process']
+                    if not connKey in tmp:
+                        tmp[connKey] = 1
+                        connections[connKey] = {
+                            'source': source,
+                            'destination': remoteServiceDetails['process']
+                        }
+
+    return connections
 
 def get_connections():
     """Return a connection graph for all nodes"""
@@ -57,6 +86,8 @@ def get_service_details(node):
     services = [s.replace(prefix, '') for s in rdb.keys(prefix + '*')]
     for s in services:
         service_details[s] = rdb.hgetall(prefix + s)
+	for x in service_details[s]:
+		service_details[s][x] = clean_string(service_details[s][x])
     return service_details
 
 

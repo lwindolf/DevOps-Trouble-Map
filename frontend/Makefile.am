@@ -14,6 +14,7 @@ dotm_frontend_static_DATA = \
 	static/dotm_common.js \
 	static/dotm_view_node.js \
 	static/dotm_view_all_nodes.js \
+	static/dotm_view_all_services.js \
 	static/dotm_view_manage_nodes.js \
 	static/dotm_view_gmap.js \
 	static/dotm_view_config.js \
@@ -28,4 +29,6 @@ dotm_frontend_css_DATA = \
 	static/css/layout-default.css
 
 dotm_frontenddir = $(datadir)/dotm_frontend
-dotm_frontend_DATA = apache-2.4.conf
+dotm_frontend_DATA = \
+	apache-2.2.conf \
+	apache-2.4.conf

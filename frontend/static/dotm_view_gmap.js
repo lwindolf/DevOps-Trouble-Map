@@ -4,7 +4,6 @@
 function DOTMViewGMap(stage) {
 	this.stage = stage;
 	this.selectedNode = null;
-	this.reload();
 }
 
 function dotm_view_gmap_render_services (data) {

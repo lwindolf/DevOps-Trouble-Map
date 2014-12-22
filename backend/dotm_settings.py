@@ -123,7 +123,15 @@ settings = {
                                 'title': 'Aggregator: Service Port Whitelist',
                                 'type': 'single_value',
                                 'default': '53,953,22,5666,4949,4848,25,631,24007,24009,111,2049',
-                                'position': 9}
+                                'position': 9},
+    'service_name_whitelist':  {'description': 'Comma separated list of service names that are to be ignored.'
+                                ' This is to avoid presenting basic Unix services (Postfix, any shared filesystem'
+                                ' or monitoring agents) as high-level services of interest. Add ports of services'
+                                ' you do not care about. Currently only TCP ports are handled.',
+                                'title': 'Aggregator: Service Name Whitelist',
+                                'type': 'single_value',
+                                'default': 'rpc.statd,rpcstatd,rpc.mountd',
+                                'position': 10}
 }
 
 
