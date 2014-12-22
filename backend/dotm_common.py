@@ -26,19 +26,25 @@ def get_json_array(key, start=0, end=-1):
 def get_service_connections():
     """Return a connection graph for all nodes"""
     connections = {}
+    tmp = {}
     for key in rdb.keys(ns.connections + '*'):
         # Remove history prefix before we split the key into a value array
         fields = key.lstrip('01234567890:').split('::')
         if not (not fields[3].isdigit() or fields[4].startswith('127')
                 or fields[2].startswith('127')):
-            direction = rdb.hget(key, 'direction')
-            if direction == "out":
-                source = fields[2]
-                destination = fields[4]
-            else:
-                source = fields[4]
-                destination = fields[2]
+            connectionDetails = rdb.hgetall(key)
 
+            source = connectionDetails['process']
+            remoteServiceDetails = rdb.hgetall(ns.services + "::" + connectionDetails['remote_host'] + "::" + connectionDetails['remote_port'])
+            if 'process' in remoteServiceDetails:
+                if source != remoteServiceDetails['process']:
+                    connKey = source+"::"+remoteServiceDetails['process']
+                    if not connKey in tmp:
+                        tmp[connKey] = 1
+                        connections[connKey] = {
+                            'source': source,
+                            'destination': remoteServiceDetails['process']
+                        }
 
     return connections
 
