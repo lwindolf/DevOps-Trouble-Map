@@ -50,7 +50,7 @@ DOTMViewManageNodes.prototype.loadConfig = function(anchor) {
 
 		/* Print forms for existing nodes */
 		$.each(data.nodes.sort(), function(index, node) {
-			html += "<tr><td>" + node + "</td><td>";
+			html += "<tr><td><a href='javascript:loadNode(\""+node+"\")'>" + node + "</a></td><td>";
 			html += "<a name='" + node + "'/>";
 			html += "<input type='button' value='Remove' onclick='javascript:removeNode(\""+node+"\")'/>";
 			html += "</td></tr>";

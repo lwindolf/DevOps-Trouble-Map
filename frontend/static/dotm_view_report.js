@@ -19,7 +19,7 @@ DOTMViewReport.prototype.reload = function() {
 				$.each(alerts, function(index, alert) {
 					list += "<tr class='service'>" +
 						"<td class='category'>"+alert['category']+"</td>"+
-						"<td class='node'>"+node+"</td>"+
+						"<td class='node'><a href='javascript:loadNode(\""+node+"\")'>"+node+"</a></td>"+
 						"<td class='service severity status_"+alert['severity']+"'>"+alert['severity']+"</td>"+
 						"<td class='message'>"+alert['message']+"</td>"+
 						"</tr>";

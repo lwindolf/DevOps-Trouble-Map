@@ -1,9 +1,14 @@
 /* DOTM view displaying alert, service and connection detail tables for 
    a single node */
 
-function DOTMViewNode(stage, node) {
+function DOTMViewNode(stage) {
 	this.stage = stage;
+	this.selectedNode;
+}
+
+DOTMViewNode.prototype.select = function(node) {
 	this.selectedNode = node;
+	this.reload();
 }
 
 DOTMViewNode.prototype.setData = function(data) {
@@ -157,14 +162,16 @@ DOTMViewNode.prototype.setData = function(data) {
 DOTMViewNode.prototype.reload = function() {
 	var view = this;
 
-	setStatus(this.stage, 'Updating...');
+	if (this.selectedNode) {
+		setStatus(this.stage, 'Updating...');
 
-	$.getJSON("backend/nodes/"+this.selectedNode+getParams(), {})
-	.done(function (data) {
-		clearStatus(view.stage);
-		view.setData(data);
-	})
-	.fail(function (jqxhr, textStatus, error) {
-		setError(view.stage, 'Node fetch failed! ('+error+')');
-	})
+		$.getJSON("backend/nodes/"+this.selectedNode+getParams(), {})
+		.done(function (data) {
+			clearStatus(view.stage);
+			view.setData(data);
+		})
+		.fail(function (jqxhr, textStatus, error) {
+			setError(view.stage, 'Node fetch failed! ('+error+')');
+		})
+	}
 };
