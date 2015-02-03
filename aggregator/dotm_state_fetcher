@@ -23,6 +23,11 @@ readonly PIDFILE=/tmp/$(basename $0).pid
 readonly NETCAT="nc -w 3 "
 readonly REDIS_CLI="redis-cli -n 0 -h localhost -p 6379"
 
+NL="
+"
+
+strstr() { [ -z "${2##*$1*}" ] && [ -n "$2" -o -z "$1" ]; }
+
 # Push a list of key values into a given Redis key
 #
 # $1		the key
@@ -95,7 +100,7 @@ match_nets() {
 	return 0
 }
 
-declare -a ip_to_name_cache
+declare -A ip_to_name_cache
 
 # Make an IP human readable, by either deciding it to be
 # Internet (thereby reducing it) or mapping to a known node name.
@@ -103,12 +108,15 @@ declare -a ip_to_name_cache
 #
 # $1	IPv4 address
 #
-# Prints a non-empty string (either node name or 'Internet' or the IP)
+# Sets variable $resolved to a non-empty string (either node name or 'Internet' or the IP)
 ip_to_name() {
 	local ip=$1
 
-  ip_key="i${ip//./_}"
-	if [ "${ip_to_name_cache[$ip_key]}" == "" ]; then
+	ip_key="i${ip//./_}"
+
+	if [[ ${ip_to_name_cache[$ip_key]} ]]; then
+		out="${ip_to_name_cache[$ip_key]}"
+	else
 		# Try internal resolver
 		out=$($REDIS_CLI get "dotm::resolver::ip_to_node::$ip" 2>/dev/null)
 
@@ -118,23 +126,21 @@ ip_to_name() {
 		fi
 
 		if [ "$out" != "" ]; then
-			ip_to_name_cache[$ip_key]=$out
-	  fi
-	else
-		out="${ip_to_name_cache[$ip_key]}"
+			ip_to_name_cache[$ip_key]="$out"
+		fi
 	fi
 
 	if [ "$out" != "" ]; then
-		echo "$out"
+		resolved="$out"
 		return
 	fi
 
 	if match_nets $ip; then
-		echo "Internet"
+		resolved="Internet"
 		return
 	fi
 
-	echo $ip
+	resolved=$ip
 }
 
 # Node state fetch failed. Add info to Redis
@@ -222,7 +228,7 @@ main()
 		# Parse output and store into Redis
 		now=$(date +%s)
 
-		echo "Services:"
+		echo "Services $c:"
 		unset listen_ports
 		unset used_services
 		while read proto recvq sendq localaddr remoteaddr state program rest; do
@@ -237,7 +243,9 @@ main()
 			fi
 		done < <(echo "$output" | grep "^tcp.*LISTEN")
 
-		echo "Connections:"
+		echo "Connections $c:"
+		added_in=
+		added_out=
 		while read proto recvq sendq localaddr remoteaddr state program rest; do
 			localip=${localaddr%%:*}
 			localport=${localaddr##*:}
@@ -254,10 +262,11 @@ main()
 			local_service=
 			if [ "$remoteip" == "127.0.0.1" ]; then
 				local_service="local_service '${listen_ports[$remoteport]}'"
-				echo "      connected to local service >>>$local_service<<<"
+				#echo "      connected to local service >>>$local_service<<<"
 			fi
 
-			remoteip=$(ip_to_name $remoteip)
+			ip_to_name $remoteip
+			remoteip=$resolved
 
 			# FIXME: local connections currently are described as incoming
 			if [ "${listen_ports[${localport}]}" == "" ]; then
@@ -265,38 +274,46 @@ main()
 				# FIXME: do not do this for well known remote server ports
 				# FIXME: do not do this for services we know about
 				if [ "$remoteport" -gt 1023 ]; then
-					echo "Checking dotm::connections::${remoteip}::${remoteport}::" >&2
 					if ! echo "$known_connections" | grep "^dotm::connections::${remoteip}::${remoteport}::" >/dev/null; then
 						remoteport="high"
 					fi
 				fi
 
-				echo "  -> outgoing connection to $remoteaddr (to $remoteip by $program)"
-				conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
-				redis_push "dotm::connections::${c}::${remoteport}::${remoteip}" \
-					process "$program" \
-					last_seen "$now" \
-					local_port "$localport" \
-					remote_port "$remoteport" \
-					remote_host "$remoteip" \
-					$local_service \
-					connections "$conn_count" \
-					direction "out"
+				key="dotm::connections::${c}::${remoteport}::${remoteip}"
+				if ! strstr "$key" "$added_out"; then
+					conn_count=$(echo "$output" | grep "[[:space:]]$localip:[0-9][0-9]*[[:space:]]*$remoteaddr[[:space:]]" | wc -l)
+					echo "  -> $conn_count outgoing connection to $remoteaddr (to $remoteip:$remoteport by $program)"
+					redis_push "$key" \
+						process "$program" \
+						last_seen "$now" \
+						local_port "$localport" \
+						remote_port "$remoteport" \
+						remote_host "$remoteip" \
+						$local_service \
+						connections "$conn_count" \
+						direction "out"
+					added_out="${added_out}${NL}$key"
+				fi
 			else
-				# FIXME: Consolidate incoming connections based on frequency
-				# e.g. count per net and combine to network if too many appear
-				echo "  -> incoming from $remoteaddr ($remoteip to $localport $program)"
+				key="dotm::connections::${c}::${localport}::${remoteip}"
+				if ! strstr "$key" "$added_in"; then
+					# FIXME: Consolidate incoming connections based on frequency
+					# e.g. count per net and combine to network if too many appear
 
-				conn_count=$(echo "$output" | grep "[[:space:]]$localaddr[[:space:]]*$remoteip:[0-9][0-9]*[[:space:]]" | wc -l)
-				redis_push "dotm::connections::${c}::${localport}::${remoteip}" \
-					process "$program" \
-					last_seen "$now" \
-					local_port "$localport" \
-					remote_port "$remoteport" \
-					remote_host "$remoteip" \
-					connections "$conn_count" \
-					direction "in"
-				used_services[$localport]=1
+					# FIXME: connection count wrong
+					conn_count=$(echo "$output" | grep "[[:space:]]$localaddr[[:space:]]*$remoteip:[0-9][0-9]*[[:space:]]" | wc -l)
+					echo "  -> $conn_count incoming from $remoteaddr ($remoteip to $localport $program)"
+					redis_push "$key" \
+						process "$program" \
+						last_seen "$now" \
+						local_port "$localport" \
+						remote_port "$remoteport" \
+						remote_host "$remoteip" \
+						connections "$conn_count" \
+						direction "in"
+					used_services[$localport]=1
+					added_in="${added_in}${NL}$key"
+				fi
 			fi
 		done < <(echo "$output" | grep ESTABL | egrep -v "$ESTABLISHED_FILTER")
 
