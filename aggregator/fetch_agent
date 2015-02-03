@@ -17,6 +17,8 @@
 # functionality. As Bash is not the best choice for data transformations
 # it should be reimplemented in Python using a real Redis binding
 
+readonly NETCAT="nc -w 3 "
+
 check() {
 	if ! $NETCAT -h 2>/dev/null; then
 		echo "ERROR: Cannot run '$NETCAT'! Is it installed?" >&2
