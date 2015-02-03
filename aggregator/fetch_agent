@@ -27,5 +27,5 @@ check() {
 }
 
 fetch() {
-	$($NETCAT "$1" 4848)
+	$NETCAT "$1" 4848
 }
