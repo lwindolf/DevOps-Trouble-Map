@@ -173,7 +173,7 @@ if [ "$CLIENTS" == "" ]; then
 	exit 1
 fi
 
-FETCH_METHOD=$($REDIS_CLI get dotm::config::fetch_method)
+FETCH_METHOD=$($REDIS_CLI hget dotm::config::fetch_parameters method)
 if [ "$FETCH_METHOD" == "" ]; then
 	FETCH_METHOD="ssh"
 fi

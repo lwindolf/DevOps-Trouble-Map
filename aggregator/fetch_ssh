@@ -17,7 +17,17 @@
 # functionality. As Bash is not the best choice for data transformations
 # it should be reimplemented in Python using a real Redis binding
 
-SSH="ssh -t -o ConnectTimeout=3 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey -l admin"
+SSH_USER=$($REDIS_CLI hget dotm::config::fetch_parameters ssh_user)
+SSH_KEY=$($REDIS_CLI hget dotm::config::fetch_parameters ssh_key)
+
+if [ "$SSH_KEY" != "" ]; then
+	SSH_KEY_PARAM="-i $SSH_KEY "
+fi
+if [ "$SSH_USER" == "" ]; then
+	SSH_USER="root"
+fi
+
+SSH="ssh -t -o ConnectTimeout=3 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey -l $SSH_USER $SSH_KEY_PARAM"
 
 check() {
 	:
