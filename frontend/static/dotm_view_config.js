@@ -12,7 +12,8 @@ DOTMViewConfig.prototype.printConfigForm = function(key, setting) {
 	result += "<div class='description'>"+setting.description+"</div>";
 	if(setting.type == 'single_value') {
 		result += "<form action='backend/settings/set/"+key+"' method='POST'>";
-		result += "<input type='text' value='"+(setting.values?setting.values:"")+"'/>";
+                result += "<input type='text' name='value' value='"+(setting.values?setting.values:"")+"'/>";
+                result += "<input type='hidden' name='type' value='single_value'/>";
 		result += "<input type='submit' value='Save'/>";
 		result += "</form>";
 	}

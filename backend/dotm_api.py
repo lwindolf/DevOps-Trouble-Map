@@ -240,7 +240,7 @@ def get_node(name):
 # same time support HTTP methods ["GET"|"POST"|"PUT"|"DELETE"] for actions.
 def change_settings(action, key):
     if key in settings:
-        if action == 'set' and settings[key]['type'] == 'simple_value':
+        if action == 'set' and settings[key]['type'] == 'single_value':
                 rdb.set(ns.config + '::' + key, request.forms.get('value'))
         elif action == 'add' and settings[key]['type'] == 'array':
                 rdb.lpush(ns.config + '::' + key, request.forms.get('value'))
