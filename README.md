@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/lwindolf/DevOps-Trouble-Map.svg?branch=master)](https://travis-ci.org/lwindolf/DevOps-Trouble-Map)
+*Note: this project is discontinued. Experiences from it went into its successor [Polscan](https://github.com/lwindolf/polscan)!*
 
 
 DevOps Trouble Map
